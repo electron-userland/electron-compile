@@ -1,3 +1,5 @@
+'use babel';
+
 import _ from 'lodash';
 
 const promisify = (funcOrObject) => {
