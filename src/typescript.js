@@ -1,3 +1,5 @@
+'use babel';
+
 import _ from 'lodash';
 import CompileCache from './compile-cache';
 
@@ -7,12 +9,12 @@ export default class TypeScriptCompiler extends CompileCache {
   constructor(options={}) {
     super();
     
-    this.compilerInformation = _.extend({}, options, {
+    this.compilerInformation = _.extend({}, {
       extension: 'ts',
       target: 1,
       module: 'commonjs',
       sourceMap: true
-    });
+    }, options);
   }
     
   getCompilerInformation() {

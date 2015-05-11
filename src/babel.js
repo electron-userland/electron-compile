@@ -1,3 +1,5 @@
+'use babel';
+
 import _ from 'lodash';
 import CompileCache from './compile-cache';
 
@@ -9,7 +11,7 @@ export default class BabelCompiler extends CompileCache {
   constructor(options={}) {
     super();
     
-    this.compilerInformation = _.extend({}, options, {
+    this.compilerInformation = _.extend({}, {
       extension: 'js',
       sourceMap: 'inline',
       blacklist: [
@@ -21,7 +23,7 @@ export default class BabelCompiler extends CompileCache {
         // supports yield so the transpiled code is cleaner/smaller.
         'asyncToGenerator'
       ],
-    });
+    }, options);
     
   }
     
