@@ -31,6 +31,7 @@
     "ncp": "^2.0.0",
     "promise": "^7.0.1",
     "rimraf": "^2.3.3",
+    "typescript-simple": "^1.0.3",
     "yargs": "^3.8.0"
   },
   "devDependencies": {
