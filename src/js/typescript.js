@@ -1,7 +1,7 @@
 'use babel';
 
 import _ from 'lodash';
-import CompileCache from './compile-cache';
+import CompileCache from '../compile-cache';
 
 let tss = null;
 
