@@ -130,7 +130,7 @@ export default class CompileCache {
     let js = this.getCachedJavaScript(cachePath);
     
     if (!js) {
-      js = this.compile(sourceCode, filePath);
+      js = this.compile(sourceCode, filePath, cachePath);
       this.stats.misses++;
       
       fs.writeFileSync(cachePath, js);
