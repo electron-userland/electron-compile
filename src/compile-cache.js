@@ -14,6 +14,7 @@ export default class CompileCache {
     
     this.cacheDir = null;
     this.jsCacheDir = null;
+    this.seenFilePaths = {};
   }
     
   getCompilerInformation() {
@@ -24,7 +25,7 @@ export default class CompileCache {
     throw new Error("Implement this in a derived class");
   }
   
-  shouldCompileFile(sourceCode) {
+  shouldCompileFile(sourceCode, fullPath) {
     return true;
   }
   
@@ -114,9 +115,12 @@ export default class CompileCache {
   // Returns the transpiled version of the JavaScript code at filePath, which is
   // either generated on the fly or pulled from cache.
   loadFile(module, filePath, returnOnly=false) {
+    let fullPath = path.resolve(filePath);
+    this.seenFilePaths[path.dirname(filePath)] = true;
+    
     const sourceCode = fs.readFileSync(filePath, 'utf8');
     
-    if (!this.shouldCompileFile(sourceCode)) {
+    if (!this.shouldCompileFile(sourceCode, fullPath)) {
       if (returnOnly) return sourceCode;
       
       return module._compile(sourceCode, filePath);
