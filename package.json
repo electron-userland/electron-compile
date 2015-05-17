@@ -32,6 +32,7 @@
     "lodash": "^3.8.0",
     "mkdirp": "^0.5.0",
     "ncp": "^2.0.0",
+    "node-sass": "^3.1.1",
     "promise": "^7.0.1",
     "rimraf": "^2.3.3",
     "typescript-simple": "^1.0.3",
