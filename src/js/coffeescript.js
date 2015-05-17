@@ -2,8 +2,9 @@
 
 import _ from 'lodash';
 import path from 'path';
-import CompileCache from './compile-cache';
 import btoa from 'btoa';
+
+import CompileCache from '../compile-cache';
 
 let coffee = null;
 
