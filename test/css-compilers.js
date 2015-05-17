@@ -33,11 +33,38 @@ describe('The LESS Compiler', function() {
   });
 });
 
+describe('The SCSS Compiler', function() {
+  it('should compile valid SCSS', function() {
+    let fixture = new ScssCompiler();
+    
+    let input = path.join(__dirname, '..', 'test', 'fixtures', 'valid.scss');
+    let result = fixture.compile(fs.readFileSync(input, 'utf8'), input);
+    
+    expect(result.length > 0).to.be.ok;
+  });
+  
+  it('should fail on invalid SCSS', function() {
+    let fixture = new ScssCompiler();
+    
+    let input = path.join(__dirname, '..', 'test', 'fixtures', 'invalid.scss');
+    
+    let shouldDie = true;
+    try {
+      let result = fixture.compile(fs.readFileSync(input, 'utf8'), input);
+      console.log(result);
+    } catch (e) {
+      shouldDie = false;
+    }
+    
+    expect(shouldDie).not.to.be.ok;
+  });
+});
+
 describe('The Sass Compiler', function() {
   it('should compile valid Sass', function() {
     let fixture = new ScssCompiler();
     
-    let input = path.join(__dirname, '..', 'test', 'fixtures', 'valid.scss');
+    let input = path.join(__dirname, '..', 'test', 'fixtures', 'valid.sass');
     let result = fixture.compile(fs.readFileSync(input, 'utf8'), input);
     
     expect(result.length > 0).to.be.ok;
