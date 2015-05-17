@@ -1,93 +1,10 @@
 require('./support.js');
 
-import BabelCompiler from '../lib/babel';
-import TypeScriptCompiler from '../lib/typescript';
-import CoffeeScriptCompiler from '../lib/coffeescript';
-import fs from 'fs';
 import path from 'path';
 import rimraf from 'rimraf';
 
-describe('The CoffeeScript Compiler', function() {
-  it('should compile valid CoffeeScript', function() {
-    let fixture = new CoffeeScriptCompiler();
-    
-    let input = path.join(__dirname, '..', 'test', 'fixtures', 'valid.coffee');
-    let result = fixture.compile(fs.readFileSync(input, 'utf8'));
-    
-    expect(result.length > 0).to.be.ok;
-  });
-  
-  it('should fail on invalid CoffeeScript', function() {
-    let fixture = new CoffeeScriptCompiler();
-    
-    let input = path.join(__dirname, '..', 'test', 'fixtures', 'invalid.coffee');
-    
-    let shouldDie = true;
-    try {
-      let result = fixture.compile(fs.readFileSync(input, 'utf8'));
-      console.log(result);
-    } catch (e) {
-      shouldDie = false;
-    }
-    
-    expect(shouldDie).not.to.be.ok;
-  });
-});
-
-
-describe('The Babel Compiler', function() {
-  it('should compile itself', function() {
-    let fixture = new BabelCompiler();
-    
-    let input = require.resolve('../src/babel.js');
-    let result = fixture.compile(fs.readFileSync(input, 'utf8'));
-    
-    expect(result.length > 0).to.be.ok;
-  });
-  
-  it('should fail on bogus input', function() {
-    let fixture = new BabelCompiler();
-    
-    let input = require.resolve('../src/babel.js');
-    
-    let shouldDie = true;
-    try {
-      let result = fixture.compile(fs.readFileSync(input, 'utf8') + "\n\n!@!@!@!@!@!@!@!;");
-      console.log(result);
-    } catch (e) {
-      shouldDie = false;
-    }
-    
-    expect(shouldDie).not.to.be.ok;
-  });
-});
-
-describe('The TypeScript Compiler', function() {
-  it('should compile valid TypeScript', function() {
-    let fixture = new TypeScriptCompiler();
-    
-    let input = path.join(__dirname, '..', 'test', 'fixtures', 'valid.ts');
-    let result = fixture.compile(fs.readFileSync(input, 'utf8'));
-    
-    expect(result.length > 0).to.be.ok;
-  });
-  
-  it('should fail on invalid TypeScript', function() {
-    let fixture = new TypeScriptCompiler();
-    
-    let input = path.join(__dirname, '..', 'test', 'fixtures', 'invalid.ts');
-    
-    let shouldDie = true;
-    try {
-      let result = fixture.compile(fs.readFileSync(input, 'utf8'));
-      console.log(result);
-    } catch (e) {
-      shouldDie = false;
-    }
-    
-    expect(shouldDie).not.to.be.ok;
-  });
-});
+import BabelCompiler from '../lib/js/babel';
+import TypeScriptCompiler from '../lib/js/typescript';
 
 describe('The compile cache', function() {
   it('Should only call compile once for the same file', function() {
@@ -99,7 +16,7 @@ describe('The compile cache', function() {
     fixture.setCacheDirectory(cacheDir);
     
     try {
-      let input = require.resolve('../src/babel.js');
+      let input = require.resolve('../src/js/babel.js');
       let result = fixture.loadFile(module, input, true);
       
       expect(result.length > 0).to.be.ok;
