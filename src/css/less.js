@@ -41,7 +41,6 @@ export default class LessCompiler extends CompileCache {
       filename: path.basename(filePath)
     });
     
-    console.log(`Rendering LESS with Opts: ${opts}`);
     lessjs.render(sourceCode, opts, (err, out) => {
       // NB: Because we've forced less to work in sync mode, we can do this
       if (err) throw err;
