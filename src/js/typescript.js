@@ -25,12 +25,7 @@ export default class TypeScriptCompiler extends CompileCache {
     this.ensureTs();
     return tss.compile(sourceCode, filePath);
   }
-  
-  shouldCompileFile() {
-    this.ensureTs();
-    return true;
-  }
-  
+
   ensureTs() {
     if (!tss) {
       const {TypeScriptSimple} = require('typescript-simple');

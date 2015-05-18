@@ -24,7 +24,6 @@ export default class BabelCompiler extends CompileCache {
         'asyncToGenerator'
       ],
     }, options);
-    
   }
     
   getCompilerInformation() {
@@ -38,9 +37,9 @@ export default class BabelCompiler extends CompileCache {
     return babel.transform(sourceCode, this.babelCompilerOpts).code;
   }
   
-  shouldCompileFile(sourceCode) {
-    this.ensureBabel();
-    return /^("use babel"|'use babel'|"use babel"|'use babel')/.test(sourceCode);
+  shouldCompileFile(sourceCode, filePath) {
+    let ret = super.shouldCompileFile(sourceCode, filePath);
+    return ret && /^("use babel"|'use babel'|"use babel"|'use babel')/.test(sourceCode);
   }
   
   ensureBabel() {
