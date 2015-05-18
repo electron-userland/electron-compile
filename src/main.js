@@ -1,0 +1,76 @@
+'use babel';
+
+import _ from 'lodash';
+import mkdirp from 'mkdirp';
+import path from 'path';
+import fs from 'fs';
+
+const availableCompilers = _.map([
+  './js/babel',
+  './js/coffeescript',
+  './js/typescript',
+  './css/less',
+  './css/scss'
+], (x) => require(x));
+
+export function init(cacheDir=null) {
+  if (process.type && process.type !== 'browser') {
+    throw new Error("Only call this method in the browser process, in app.ready");
+  }
+  
+  if (!cacheDir) {
+    let tmpDir = process.env.TEMP || process.env.TMPDIR || '/tmp';
+    let hash = require('crypto').createHash('md5').update(process.execPath).digest('hex');
+    
+    cacheDir = path.join(tmpDir, `compileCache_${hash}`);
+    mkdirp.sync(cacheDir);
+  }
+  
+  _.each(availableCompilers, (compiler) => {
+    compiler.register();
+    compiler.setCacheDirectory(cacheDir);
+  });
+  
+  // If we're node.js / io.js, just bail
+  if (!process.type) return;
+  
+  const protocol = require('protocol');
+  protocol.registerProtocol('file', (request) => {
+    let filePath = request.url.substr(7);
+  
+    let sourceCode = null;
+    try {
+      sourceCode = fs.readFileSync(filePath, 'utf8');
+    } catch (e) {
+    }
+    
+    let compiler = _.some(availableCompilers, (x) => x.shouldCompileFile(sourceCode, filePath));
+    if (!compiler) {
+      return protocol.requestFileJob(filePath);
+    }
+    
+    let realSourceCode = null;
+    try {
+      realSourceCode = compiler.loadFile(null, filePath, true);
+    } catch (e) {
+      // TODO: Actually come correct with these error codes
+      if (e.errno === 34) {
+        return protocol.RequestErrorJob(-6); // net::ERR_FILE_NOT_FOUND
+      }
+      
+      if (e.errno) {
+        return protocol.RequestErrorJob(-2); // net::FAILED
+      }
+      
+      return protocol.requestStringJob({
+        mimeType: 'text/plain',
+        data: `Failed to compile ${filePath}: ${e.message}\n${e.stack}`
+      });
+    }
+    
+    return protocol.requestStringJob({
+      mimeType: compiler.getMimeType(),
+      data: realSourceCode,
+    });
+  });
+}
