@@ -32,6 +32,8 @@ export default class CoffeeScriptCompiler extends CompileCache {
     return js;
   }
   
+  getMimeType() { return 'text/javascript'; }
+  
   shouldCompileFile() {
     this.ensureCoffee();
     return true;

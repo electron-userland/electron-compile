@@ -51,6 +51,8 @@ export default class LessCompiler extends CompileCache {
     return source;
   }
   
+  getMimeType() { return 'text/css'; }
+  
   shouldCompileFile(sourceCode, filePath) {
     return filePath.match(lessFileExtensions);
   }

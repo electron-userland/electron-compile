@@ -47,6 +47,8 @@ export default class ScssCompiler extends CompileCache {
     return result.toString('utf8');
   }
   
+  getMimeType() { return 'text/css'; }
+  
   shouldCompileFile(sourceCode, filePath) {
     return filePath.match(scssFileExtensions);
   }

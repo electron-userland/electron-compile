@@ -26,6 +26,10 @@ export default class CompileCache {
     throw new Error("Implement this in a derived class");
   }
   
+  getMimeType() {
+    throw new Error("Implement this in a derived class");
+  }
+  
   shouldCompileFile(sourceCode, fullPath) {
     this.ensureInitialized();
     let lowerPath = fullPath.toLowerCase();
