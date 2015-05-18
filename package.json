@@ -8,9 +8,6 @@
     "prepublish": "npm run compile",
     "test": "npm run compile && mocha test-dist/*"
   },
-  "bin": {
-    "electron-run": "lib/cli.js"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/paulcbetts/electron-devmode"
