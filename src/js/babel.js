@@ -37,6 +37,8 @@ export default class BabelCompiler extends CompileCache {
     return babel.transform(sourceCode, this.babelCompilerOpts).code;
   }
   
+  getMimeType() { return 'text/javascript'; }
+  
   shouldCompileFile(sourceCode, filePath) {
     let ret = super.shouldCompileFile(sourceCode, filePath);
     return ret && /^("use babel"|'use babel'|"use babel"|'use babel')/.test(sourceCode);
