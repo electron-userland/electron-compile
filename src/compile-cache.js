@@ -126,13 +126,13 @@ export default class CompileCache {
   // Function that obeys the contract of an entry in the require.extensions map.
   // Returns the transpiled version of the JavaScript code at filePath, which is
   // either generated on the fly or pulled from cache.
-  loadFile(module, filePath, returnOnly=false) {
+  loadFile(module, filePath, returnOnly=false, sourceCode=null) {
     this.ensureInitialized();
     
     let fullPath = path.resolve(filePath);
     this.seenFilePaths[path.dirname(filePath)] = true;
     
-    const sourceCode = fs.readFileSync(filePath, 'utf8');
+    sourceCode = sourceCode || fs.readFileSync(filePath, 'utf8');
     
     if (!this.shouldCompileFile(sourceCode, fullPath)) {
       if (returnOnly) return sourceCode;
