@@ -46,12 +46,16 @@ export default class ScssCompiler extends CompileCache {
     let result = scss.renderSync(opts);
     return result.toString('utf8');
   }
+   
+  shouldCompileFile(sourceCode, fullPath) {
+    let ret = super.shouldCompileFile(sourceCode, fullPath);
+    if (!ret) return ret;
+    
+    this.ensureScss();
+    return ret;
+  }
   
   getMimeType() { return 'text/css'; }
-  
-  shouldCompileFile(sourceCode, filePath) {
-    return filePath.match(scssFileExtensions);
-  }
   
   register() {}
   
