@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import path from 'path';
 import fs from 'fs';
 import mkdirp from 'mkdirp';
+import _ from 'lodash';
 
 export default class CompileCache {
   constructor() {
@@ -26,7 +27,14 @@ export default class CompileCache {
   }
   
   shouldCompileFile(sourceCode, fullPath) {
-    return true;
+    this.ensureInitialized();
+    let lowerPath = fullPath.toLowerCase();
+    
+    // NB: require() normally does this for us, but in our protocol hook we 
+    // need to do this ourselves
+    return _.some(
+      this.extensions, 
+      (ext) => lowerPath.lastIndexOf(ext) + ext.length === lowerPath.length);
   }
   
   ///
@@ -115,6 +123,8 @@ export default class CompileCache {
   // Returns the transpiled version of the JavaScript code at filePath, which is
   // either generated on the fly or pulled from cache.
   loadFile(module, filePath, returnOnly=false) {
+    this.ensureInitialized();
+    
     let fullPath = path.resolve(filePath);
     this.seenFilePaths[path.dirname(filePath)] = true;
     
@@ -122,7 +132,6 @@ export default class CompileCache {
     
     if (!this.shouldCompileFile(sourceCode, fullPath)) {
       if (returnOnly) return sourceCode;
-      
       return module._compile(sourceCode, filePath);
     }
     
@@ -137,23 +146,32 @@ export default class CompileCache {
     } 
     
     if (returnOnly) return js;
-    
     return module._compile(js, filePath);
   }
   
   register() {
-    let info = this.getCompilerInformation();
+    this.ensureInitialized();
     
-    let extensions = (info.extensions ? info.extensions : [info.extension]);
-    
-    for (let i=0; i < extensions.length; i++) {
-      Object.defineProperty(require.extensions, `.${extensions[i]}`, {
+    for (let i=0; i < this.extensions.length; i++) {
+      Object.defineProperty(require.extensions, `.${this.extensions[i]}`, {
         enumerable: true,
         writable: false,
         value: (module, filePath) => this.loadFile(module, filePath)
       });
     }
-   }
+  }
+  
+  ensureInitialized() {
+    if (this.extensions) return;
+    
+    let info = this.getCompilerInformation();
+    
+    if (!info.extension && !info.extensions) {
+      throw new Error("Compiler must register at least one extension in getCompilerInformation");
+    }
+    
+    this.extensions = (info.extensions ? info.extensions : [info.extension]);
+  }
   
   setCacheDirectory(newCacheDir) {
     if (this.cacheDir === newCacheDir) return;
