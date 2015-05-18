@@ -4,6 +4,7 @@ import _ from 'lodash';
 import mkdirp from 'mkdirp';
 import path from 'path';
 import fs from 'fs';
+import url from 'url';
 
 const availableCompilers = _.map([
   './js/babel',
@@ -11,7 +12,10 @@ const availableCompilers = _.map([
   './js/typescript',
   './css/less',
   './css/scss'
-], (x) => require(x));
+], (x) => {
+  const Klass = require(x);
+  return new Klass();
+});
 
 export function init(cacheDir=null) {
   if (process.type && process.type !== 'browser') {
@@ -36,39 +40,51 @@ export function init(cacheDir=null) {
   
   const protocol = require('protocol');
   protocol.registerProtocol('file', (request) => {
-    let filePath = request.url.substr(7);
+    let filePath = url.parse(request.url).pathname;
   
     let sourceCode = null;
     try {
+      console.log(`Attempting to read: ${filePath}`);
       sourceCode = fs.readFileSync(filePath, 'utf8');
-    } catch (e) {
-    }
-    
-    let compiler = _.some(availableCompilers, (x) => x.shouldCompileFile(sourceCode, filePath));
-    if (!compiler) {
-      return protocol.requestFileJob(filePath);
-    }
-    
-    let realSourceCode = null;
-    try {
-      realSourceCode = compiler.loadFile(null, filePath, true);
     } catch (e) {
       // TODO: Actually come correct with these error codes
       if (e.errno === 34) {
-        return protocol.RequestErrorJob(-6); // net::ERR_FILE_NOT_FOUND
+        console.log(`File not found!`);
+        return new protocol.RequestErrorJob(6); // net::ERR_FILE_NOT_FOUND
       }
       
-      if (e.errno) {
-        return protocol.RequestErrorJob(-2); // net::FAILED
-      }
+      console.log(`Something weird! ${e.message}\n${e.stack}`);
+      return new protocol.RequestErrorJob(2); // net::FAILED
+    }
+    
+    let compiler = null;
+    try {
+      console.log("Looking for a compiler!");
+      compiler = _.find(availableCompilers, (x) => x.shouldCompileFile(sourceCode, filePath));
       
-      return protocol.requestStringJob({
+      if (!compiler) {
+        console.log("Didn't find one!");
+        return new protocol.RequestFileJob(filePath);
+      }
+    } catch (e) {
+      console.log(`Something weird! ${e.message}\n${e.stack}`);
+      return new protocol.RequestErrorJob(-2); // net::FAILED
+    }
+        
+    let realSourceCode = null;
+    try {
+      console.log("Executing compiler!");
+      console.log(Object.keys(compiler));
+      realSourceCode = compiler.loadFile(null, filePath, true, sourceCode);
+    } catch (e) {
+      return new protocol.RequestStringJob({
         mimeType: 'text/plain',
         data: `Failed to compile ${filePath}: ${e.message}\n${e.stack}`
       });
     }
     
-    return protocol.requestStringJob({
+    console.log("We did it!");
+    return new protocol.RequestStringJob({
       mimeType: compiler.getMimeType(),
       data: realSourceCode,
     });
