@@ -13,13 +13,14 @@ export default class LessCompiler extends CompileCache {
     super();
     
     const defaultOptions = {
-        compress: false, 
-        sourcemap: { sourcemapfileinline: true }
+      compress: false, 
+      sourcemap: { sourcemapfileinline: true }
     };
     
     const requiredOptions = { 
-        fileAsync: false,
-        async: false
+      extension: 'less',
+      fileAsync: false,
+      async: false
     };
     
     this.compilerInformation = _.extend(defaultOptions, options, requiredOptions);
@@ -53,6 +54,8 @@ export default class LessCompiler extends CompileCache {
   shouldCompileFile(sourceCode, filePath) {
     return filePath.match(lessFileExtensions);
   }
+  
+  register() {}
   
   ensureLess() {
     if (!lessjs) {

@@ -18,7 +18,9 @@ export default class ScssCompiler extends CompileCache {
       sourceMapContents: true,
     };
     
-    const requiredOptions = { };
+    const requiredOptions = { 
+      extensions: ['scss', 'sass']
+    };
     
     this.compilerInformation = _.extend(defaultOptions, options, requiredOptions);
   }
@@ -48,6 +50,8 @@ export default class ScssCompiler extends CompileCache {
   shouldCompileFile(sourceCode, filePath) {
     return filePath.match(scssFileExtensions);
   }
+  
+  register() {}
   
   ensureScss() {
     if (!scss) {
