@@ -41,6 +41,9 @@ export default class BabelCompiler extends CompileCache {
   
   shouldCompileFile(sourceCode, filePath) {
     let ret = super.shouldCompileFile(sourceCode, filePath);
+    if (!ret) return;
+    
+    this.ensureBabel();
     return ret && /^("use babel"|'use babel'|"use babel"|'use babel')/.test(sourceCode);
   }
   

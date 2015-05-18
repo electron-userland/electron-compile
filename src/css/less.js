@@ -53,8 +53,12 @@ export default class LessCompiler extends CompileCache {
   
   getMimeType() { return 'text/css'; }
   
-  shouldCompileFile(sourceCode, filePath) {
-    return filePath.match(lessFileExtensions);
+  shouldCompileFile(sourceCode, fullPath) {
+    let ret = super.shouldCompileFile(sourceCode, fullPath);
+    if (!ret) return ret;
+    
+    this.ensureLess();
+    return ret;
   }
   
   register() {}

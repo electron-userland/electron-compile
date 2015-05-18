@@ -26,6 +26,14 @@ export default class TypeScriptCompiler extends CompileCache {
     return tss.compile(sourceCode, filePath);
   }
   
+  shouldCompileFile(sourceCode, fullPath) {
+    let ret = super.shouldCompileFile(sourceCode, fullPath);
+    if (!ret) return ret;
+    
+    this.ensureTs();
+    return ret;
+  }
+  
   getMimeType() { return 'text/javascript'; }
 
   ensureTs() {
