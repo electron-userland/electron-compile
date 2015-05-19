@@ -127,6 +127,10 @@ export default class CompileCache {
     }
   }
 
+  saveCachedJavaScript(cachePath, js) {
+    fs.writeFileSync(cachePath, js);
+  }
+
   // Function that obeys the contract of an entry in the require.extensions map.
   // Returns the transpiled version of the JavaScript code at filePath, which is
   // either generated on the fly or pulled from cache.
@@ -157,7 +161,7 @@ export default class CompileCache {
       js = this.compile(sourceCode, filePath, cachePath);
       this.stats.misses++;
 
-      fs.writeFileSync(cachePath, js);
+      this.saveCachedJavaScript(cachePath, js);
     }
 
     if (returnOnly) return js;
