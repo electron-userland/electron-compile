@@ -8,7 +8,7 @@ let tss = null;
 export default class TypeScriptCompiler extends CompileCache {
   constructor(options={}) {
     super();
-    
+
     this.compilerInformation = _.extend({}, {
       extension: 'ts',
       target: 1,
@@ -16,32 +16,21 @@ export default class TypeScriptCompiler extends CompileCache {
       sourceMap: true
     }, options);
   }
-    
+
   getCompilerInformation() {
     return this.compilerInformation;
   }
-  
+
   compile(sourceCode, filePath) {
-    this.ensureTs();
     return tss.compile(sourceCode, filePath);
   }
-  
-  shouldCompileFile(sourceCode, fullPath) {
-    let ret = super.shouldCompileFile(sourceCode, fullPath);
-    if (!ret) return ret;
-    
-    this.ensureTs();
-    return ret;
-  }
-  
+
   getMimeType() { return 'text/javascript'; }
 
-  ensureTs() {
-    if (!tss) {
-      const {TypeScriptSimple} = require('typescript-simple');
-      tss = new TypeScriptSimple(this.compilerInformation, false);
-      
-      this.compilerInformation.version = require('typescript-simple/package.json').version;
-    }
+  initializeCompiler() {
+    const {TypeScriptSimple} = require('typescript-simple');
+    tss = new TypeScriptSimple(this.compilerInformation, false);
+
+    return require('typescript-simple/package.json').version;
   }
 }
