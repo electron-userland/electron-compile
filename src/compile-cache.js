@@ -143,6 +143,13 @@ export default class CompileCache {
       return module._compile(sourceCode, filePath);
     }
 
+    // NB: We do all of these backflips in order to not load compilers unless
+    // we actually end up using them, since loading them is typically fairly
+    // expensive
+    if (!this.compilerInformation.version) {
+      this.compilerInformation.version = this.initializeCompiler();
+    }
+
     let cachePath = this.getCachePath(sourceCode);
     let js = this.getCachedJavaScript(cachePath);
 
