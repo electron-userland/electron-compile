@@ -1,5 +1,3 @@
-'use babel';
-
 import _ from 'lodash';
 import CompileCache from '../compile-cache';
 
