@@ -1,5 +1,3 @@
-'use babel';
-
 import crypto from 'crypto';
 import path from 'path';
 import fs from 'fs';

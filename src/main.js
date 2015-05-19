@@ -1,5 +1,3 @@
-'use babel';
-
 import _ from 'lodash';
 import mkdirp from 'mkdirp';
 import path from 'path';
