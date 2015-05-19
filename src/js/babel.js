@@ -10,7 +10,7 @@ const validOpts = ['sourceMap', 'blacklist', 'stage', 'optional'];
 export default class BabelCompiler extends CompileCache {
   constructor(options={}) {
     super();
-    
+
     this.compilerInformation = _.extend({}, {
       extension: 'js',
       sourceMap: 'inline',
@@ -24,29 +24,28 @@ export default class BabelCompiler extends CompileCache {
         'asyncToGenerator'
       ],
     }, options);
-    
   }
-    
+
   getCompilerInformation() {
     return this.compilerInformation;
   }
-  
+
   compile(sourceCode) {
-    this.ensureBabel();
     this.babelCompilerOpts = this.babelCompilerOpts || _.pick(this.compilerInformation, validOpts);
-    
     return babel.transform(sourceCode, this.babelCompilerOpts).code;
   }
-  
-  shouldCompileFile(sourceCode) {
-    this.ensureBabel();
-    return /^("use babel"|'use babel'|"use babel"|'use babel')/.test(sourceCode);
+
+  getMimeType() { return 'text/javascript'; }
+
+  shouldCompileFile(sourceCode, filePath) {
+    let ret = super.shouldCompileFile(sourceCode, filePath);
+    if (!ret) return;
+
+    return ret && /^("use babel"|'use babel'|"use babel"|'use babel')/.test(sourceCode);
   }
-  
-  ensureBabel() {
-    if (!babel) {
-      babel = require('babel-core');
-      this.compilerInformation.version = babel.version;
-    }
+
+  initializeCompiler() {
+    babel = require('babel-core');
+    return babel.version;
   }
 }

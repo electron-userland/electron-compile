@@ -1,88 +1,46 @@
 require('./support.js');
 
-import fs from 'fs';
 import path from 'path';
 
-import LessCompiler from '../lib/css/less';
-import ScssCompiler from '../lib/css/scss';
+const toTest = [
+  { require: '../lib/css/less', extension: 'less' },
+  { require: '../lib/css/scss', extension: 'scss' },
+  { require: '../lib/css/scss', extension: 'sass' },
+];
 
-describe('The LESS Compiler', function() {
-  it('should compile valid LESS', function() {
-    let fixture = new LessCompiler();
-    
-    let input = path.join(__dirname, '..', 'test', 'fixtures', 'valid.less');
-    let result = fixture.compile(fs.readFileSync(input, 'utf8'), input);
-    
-    expect(result.length > 0).to.be.ok;
-  });
-  
-  it('should fail on invalid LESS', function() {
-    let fixture = new LessCompiler();
-    
-    let input = path.join(__dirname, '..', 'test', 'fixtures', 'invalid.less');
-    
-    let shouldDie = true;
-    try {
-      let result = fixture.compile(fs.readFileSync(input, 'utf8'), input);
-      console.log(result);
-    } catch (e) {
-      shouldDie = false;
-    }
-    
-    expect(shouldDie).not.to.be.ok;
-  });
-});
+for (let compiler of toTest) {
+  const Klass = require(compiler.require);
 
-describe('The SCSS Compiler', function() {
-  it('should compile valid SCSS', function() {
-    let fixture = new ScssCompiler();
-    
-    let input = path.join(__dirname, '..', 'test', 'fixtures', 'valid.scss');
-    let result = fixture.compile(fs.readFileSync(input, 'utf8'), input);
-    
-    expect(result.length > 0).to.be.ok;
-  });
-  
-  it('should fail on invalid SCSS', function() {
-    let fixture = new ScssCompiler();
-    
-    let input = path.join(__dirname, '..', 'test', 'fixtures', 'invalid.scss');
-    
-    let shouldDie = true;
-    try {
-      let result = fixture.compile(fs.readFileSync(input, 'utf8'), input);
-      console.log(result);
-    } catch (e) {
-      shouldDie = false;
-    }
-    
-    expect(shouldDie).not.to.be.ok;
-  });
-});
+  describe(`The ${compiler.require} compiler`, function() {
+    it(`should compile valid.${compiler.extension}`, function() {
+      let fixture = new Klass();
 
-describe('The Sass Compiler', function() {
-  it('should compile valid Sass', function() {
-    let fixture = new ScssCompiler();
-    
-    let input = path.join(__dirname, '..', 'test', 'fixtures', 'valid.sass');
-    let result = fixture.compile(fs.readFileSync(input, 'utf8'), input);
-    
-    expect(result.length > 0).to.be.ok;
+      let input = path.join(__dirname, '..', 'test', 'fixtures', `valid.${compiler.extension}`);
+      fixture.getCachedJavaScript = () => null;
+      fixture.saveCachedJavaScript = () => {};
+      fixture.getCachePath = () => 'cache.txt';
+
+      let result = fixture.loadFile(null, input, true);
+      expect(result.length > 0).to.be.ok;
+    });
+
+    it(`should fail on invalid.${compiler.extension}`, function() {
+      let fixture = new Klass();
+
+      let input = path.join(__dirname, '..', 'test', 'fixtures', `invalid.${compiler.extension}`);
+      fixture.getCachedJavaScript = () => null;
+      fixture.saveCachedJavaScript = () => {};
+      fixture.getCachePath = () => 'cache.txt';
+
+      let shouldDie = true;
+      try {
+        let result = fixture.loadFile(null, input, true);
+        console.log(result);
+      } catch (e) {
+        shouldDie = false;
+      }
+
+      expect(shouldDie).not.to.be.ok;
+    });
   });
-  
-  it('should fail on invalid Sass', function() {
-    let fixture = new ScssCompiler();
-    
-    let input = path.join(__dirname, '..', 'test', 'fixtures', 'invalid.sass');
-    
-    let shouldDie = true;
-    try {
-      let result = fixture.compile(fs.readFileSync(input, 'utf8'), input);
-      console.log(result);
-    } catch (e) {
-      shouldDie = false;
-    }
-    
-    expect(shouldDie).not.to.be.ok;
-  });
-});
+}
