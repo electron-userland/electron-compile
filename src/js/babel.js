@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import CompileCache from '../compile-cache';
+import fs from 'fs';
 
 let babel = null;
 
@@ -35,9 +36,21 @@ export default class BabelCompiler extends CompileCache {
 
   getMimeType() { return 'text/javascript'; }
 
-  shouldCompileFile(sourceCode, filePath) {
-    let ret = super.shouldCompileFile(sourceCode, filePath);
+  shouldCompileFile(filePath) {
+    let ret = super.shouldCompileFile(filePath);
     if (!ret) return;
+    
+    // Read the first 4k of the file
+    let fd = fs.openSync(filePath, 'r');
+    let sourceCode = '';
+    
+    try {
+      let buf = new Buffer(4*1024);
+      fs.readSync(fd, buf, 0, 4*1024, 0);
+      sourceCode = buf.toString('utf8');
+    } finally {
+      fs.closeSync(fd);
+    }
 
     return ret && !(/^("use nobabel"|'use nobabel')/.test(sourceCode));
   }
