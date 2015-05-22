@@ -40,6 +40,20 @@ export function init(cacheDir=null) {
   protocol.registerProtocol('file', (request) => {
     let filePath = url.parse(request.url).pathname;
   
+    let compiler = null;
+    try {
+      console.log("Looking for a compiler!");
+      compiler = _.find(availableCompilers, (x) => x.shouldCompileFile(filePath));
+      
+      if (!compiler) {
+        console.log("Didn't find one!");
+        return new protocol.RequestFileJob(filePath);
+      }
+    } catch (e) {
+      console.log(`Something weird! ${e.message}\n${e.stack}`);
+      return new protocol.RequestErrorJob(-2); // net::FAILED
+    }
+    
     let sourceCode = null;
     try {
       console.log(`Attempting to read: ${filePath}`);
@@ -53,21 +67,7 @@ export function init(cacheDir=null) {
       
       console.log(`Something weird! ${e.message}\n${e.stack}`);
       return new protocol.RequestErrorJob(2); // net::FAILED
-    }
-    
-    let compiler = null;
-    try {
-      console.log("Looking for a compiler!");
-      compiler = _.find(availableCompilers, (x) => x.shouldCompileFile(sourceCode, filePath));
-      
-      if (!compiler) {
-        console.log("Didn't find one!");
-        return new protocol.RequestFileJob(filePath);
-      }
-    } catch (e) {
-      console.log(`Something weird! ${e.message}\n${e.stack}`);
-      return new protocol.RequestErrorJob(-2); // net::FAILED
-    }
+    }  
         
     let realSourceCode = null;
     try {
