@@ -17,6 +17,10 @@ for (let compiler of toTest) {
       let fixture = new Klass();
 
       let input = path.join(__dirname, '..', 'test', 'fixtures', `valid.${compiler.extension}`);
+
+      // XXX: Work around broken Babel glob
+      input.replace('invalid.js', 'invalid.notjs');
+
       fixture.getCachedJavaScript = () => null;
       fixture.saveCachedJavaScript = () => {};
       fixture.getCachePath = () => 'cache.txt';
