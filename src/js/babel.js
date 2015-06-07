@@ -2,7 +2,7 @@ import _ from 'lodash';
 import CompileCache from '../compile-cache';
 import fs from 'fs';
 
-let babel = null;
+let babel = require('babel-core');
 
 const validOpts = ['sourceMap', 'blacklist', 'stage', 'optional'];
 
