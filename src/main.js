@@ -39,7 +39,12 @@ export function init(cacheDir=null) {
   const protocol = require('protocol');
   protocol.registerProtocol('file', (request) => {
     let filePath = url.parse(request.url).pathname;
-  
+
+    // NB: pathname has a leading '/' on Win32 for some reason
+    if (process.platform === 'win32') {
+      filePath = filePath.slice(1);
+    }
+
     let compiler = null;
     try {
       console.log("Looking for a compiler!");
