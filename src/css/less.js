@@ -32,6 +32,7 @@ export default class LessCompiler extends CompileCache {
 
   compile(sourceCode, filePath) {
     let source = '';
+    let error = null;
     let paths = Object.keys(this.seenFilePaths);
     paths.unshift('.');
 
@@ -41,10 +42,17 @@ export default class LessCompiler extends CompileCache {
     });
 
     lessjs.render(sourceCode, opts, (err, out) => {
-      // NB: Because we've forced less to work in sync mode, we can do this
-      if (err) throw err;
-      source = out.css;
+      if (err) {
+        error = err;
+      } else {
+        // NB: Because we've forced less to work in sync mode, we can do this
+        source = out.css;
+      }
     });
+
+    if (error) {
+      throw error;
+    }
 
     return source;
   }
