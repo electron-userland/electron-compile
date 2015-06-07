@@ -66,7 +66,7 @@ export default class CompileCache {
       return;
     }
 
-    if (value === null) {
+    if (!value) {
       shasum.update('null', 'utf8');
       return;
     }
