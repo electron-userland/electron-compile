@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/paulcbetts/electron-devmode",
   "dependencies": {
-    "babel-core": "^5.2.9",
+    "babel-core": "^5.5.4",
     "btoa": "^1.1.2",
     "coffee-script": "^1.9.2",
     "less": "^2.5.0",
@@ -36,7 +36,7 @@
     "yargs": "^3.8.0"
   },
   "devDependencies": {
-    "babel": "^5.2.9",
+    "babel": "^5.5.4",
     "chai": "^2.3.0",
     "chai-as-promised": "^5.0.0",
     "chai-spies": "^0.6.0",
