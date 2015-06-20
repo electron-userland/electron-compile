@@ -75,7 +75,7 @@ export function init(cacheDir=null) {
       realSourceCode = compiler.loadFile(null, filePath, true, sourceCode);
     } catch (e) {
       return new protocol.RequestStringJob({
-        mimeType: 'text/plain',
+        mimeType: compiler.getMimeType(),
         data: `Failed to compile ${filePath}: ${e.message}\n${e.stack}`
       });
     }
