@@ -38,13 +38,28 @@ export function init(cacheDir=null) {
 
   const protocol = require('protocol');
   protocol.registerProtocol('file', (request) => {
-    let filePath = url.parse(request.url).pathname;
+    let uri = url.parse(request.url);
+
+    // This is a protocol-relative URL that has gone pear-shaped in Electron,
+    // let's rewrite it
+    if (uri.host && uri.host.length > 1) {
+      if (!protocol.RequestHttpJob) {
+        console.log("Tried to correct protocol-relative URL, but this requires Electron 0.28.2 or higher: " + request.url);
+        return new protocol.RequestErrorJob(404);
+      }
+
+      return new protocol.RequestHttpJob({
+        url: request.url.replace(/^file:/, "https:")
+      });
+    }
+
+    let filePath = uri.pathname;
 
     // NB: pathname has a leading '/' on Win32 for some reason
     if (process.platform === 'win32') {
       filePath = filePath.slice(1);
     }
-
+  
     let compiler = null;
     try {
       compiler = _.find(availableCompilers, (x) => x.shouldCompileFile(filePath));
