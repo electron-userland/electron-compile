@@ -1,9 +1,12 @@
 import _ from 'lodash';
-import protocol from 'protocol';
 import url from 'url';  
 import fs from 'fs';
 
+let protocol = null;
+
 export function initializeProtocolHook(availableCompilers) {
+  protocol = protocol || require('protocol');
+  
   protocol.registerProtocol('file', (request) => {
     let uri = url.parse(request.url);
 
