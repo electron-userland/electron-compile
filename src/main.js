@@ -26,7 +26,7 @@ export function compile(filePath) {
   return compiler.loadFile(null, filePath, true, sourceCode);
 }
 
-export function init(cacheDir=null) {
+export function init(cacheDir=null, skipRegister=false) {
   if (!cacheDir) {
     let tmpDir = process.env.TEMP || process.env.TMPDIR || '/tmp';
     let hash = require('crypto').createHash('md5').update(process.execPath).digest('hex');
@@ -36,7 +36,7 @@ export function init(cacheDir=null) {
   }
 
   _.each(availableCompilers, (compiler) => {
-    compiler.register();
+    if (!skipRegister) compiler.register();
     compiler.setCacheDirectory(cacheDir);
   });
   
