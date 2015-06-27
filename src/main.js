@@ -17,10 +17,16 @@ export const availableCompilers = _.map([
   return new Klass();
 });
 
-export function compile(filePath) {
+export function compile(filePath, compilers=null) {
+  if (!hasInitialized && !compilers) {
+    throw new Error("Call init first!");
+  }
+  
+  compilers = compilers || availableCompilers;
+  
   let compiler = null;
-  compiler = _.find(availableCompilers, (x) => x.shouldCompileFile(filePath));
-  if (!compiler) return fs.readFileSync(path, 'utf8');
+  compiler = _.find(compilers, (x) => x.shouldCompileFile(filePath));
+  if (!compiler) return fs.readFileSync(filePath, 'utf8');
 
   let sourceCode = fs.readFileSync(filePath, 'utf8');
   return compiler.loadFile(null, filePath, true, sourceCode);
