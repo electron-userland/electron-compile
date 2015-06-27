@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
 import {initializeProtocolHook} from './protocol-hook';
@@ -15,6 +16,15 @@ export const availableCompilers = _.map([
   const Klass = require(x);
   return new Klass();
 });
+
+export function compile(filePath) {
+  let compiler = null;
+  compiler = _.find(availableCompilers, (x) => x.shouldCompileFile(filePath));
+  if (!compiler) return fs.readFileSync(path, 'utf8');
+
+  let sourceCode = fs.readFileSync(filePath, 'utf8');
+  return compiler.loadFile(null, filePath, true, sourceCode);
+}
 
 export function init(cacheDir=null) {
   if (!cacheDir) {
