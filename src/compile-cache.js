@@ -152,14 +152,20 @@ export default class CompileCache {
       this.compilerInformation.version = this.initializeCompiler();
     }
 
-    let cachePath = this.getCachePath(sourceCode);
-    let js = this.getCachedJavaScript(cachePath);
-
+    let js = null;
+    let cachePath = null;
+    if (!this.disableCache) {
+      cachePath = this.getCachePath(sourceCode);
+      js = this.disableCache ? null : this.getCachedJavaScript(cachePath);
+    } 
+    
     if (!js) {
       js = this.compile(sourceCode, filePath, cachePath);
       this.stats.misses++;
 
-      this.saveCachedJavaScript(cachePath, js);
+      if (!this.disableCache) {
+        this.saveCachedJavaScript(cachePath, js);
+      }
     }
 
     if (returnOnly) return js;
@@ -191,6 +197,7 @@ export default class CompileCache {
   }
 
   setCacheDirectory(newCacheDir) {
+    this.disableCache = (newCacheDir === null);
     if (this.cacheDir === newCacheDir) return;
 
     this.cacheDir = newCacheDir;
