@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import url from 'url';
 
-const availableCompilers = _.map([
+export const availableCompilers = _.map([
   './js/babel',
   './js/coffeescript',
   './js/typescript',
