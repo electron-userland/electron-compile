@@ -34,6 +34,10 @@ export function compile(filePath, compilers=null) {
   return compiler.loadFile(null, filePath, true, sourceCode);
 }
 
+export function compileAll(rootDirectory, compilers=null) {
+  forAllFiles(rootDirectory, (f) => compile(f, compilers));
+}
+
 export function init(cacheDir=null, skipRegister=false) {
   if (!cacheDir) {
     let tmpDir = process.env.TEMP || process.env.TMPDIR || '/tmp';
