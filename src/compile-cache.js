@@ -111,7 +111,7 @@ export default class CompileCache {
       mkdirp.sync(this.jsCacheDir);
     }
 
-    return path.join(this.jsCacheDir, `${digest}.js`);
+    return path.join(this.jsCacheDir, `${digest}`);
   }
 
   getCachedJavaScript(cachePath) {
