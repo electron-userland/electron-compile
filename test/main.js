@@ -69,5 +69,27 @@ describe('exports for this library', function() {
         rimraf.sync(targetDir);
       }
     });
+    
+    it('should fail when files have errors', function() {
+      let source = path.join(__dirname, '..', 'test', 'fixtures');
+      let targetDir = path.join(__dirname, 'compileAllFailCacheTest');
+      
+      let shouldDie = true;
+      try {
+        let compilers = createAllCompilers();
+        _.each(compilers, (x) => x.setCacheDirectory(targetDir));
+        
+        expect(compilers).to.be.ok;
+        
+        compileAll(source, compilers);
+      } catch (e) {
+        shouldDie = false;
+      } finally {
+        rimraf.sync(targetDir);
+      }
+      
+      expect(shouldDie).not.to.be.ok;
+    });
   });
 });
+  
