@@ -56,5 +56,5 @@ export function init(cacheDir=null, skipRegister=false) {
 
   // If we're not an Electron browser process, bail
   if (!process.type || process.type !== 'browser') return;
-  initializeProtocolHook(availableCompilers);
+  initializeProtocolHook(availableCompilers, cacheDir);
 }

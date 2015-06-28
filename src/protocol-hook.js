@@ -4,7 +4,21 @@ import fs from 'fs';
 
 let protocol = null;
 
-export function initializeProtocolHook(availableCompilers) {
+export function rigHtmlDocumentToInitializeElectronCompile(doc, cacheDir) {
+  let lines = doc.split("\n");
+  let replacement = `<head><script>if (process) { require('electron-compile').init("${cacheDir}") }</script>`;
+  
+  for (let i=0; i < lines.length; lines++) {
+    if (!lines[i].match(/<head>/i)) continue;
+    
+    lines[i] = lines[i].replace(/<head>/i, replacement);
+    break;
+  }
+  
+  return lines.join("\n");
+}
+
+export default function initializeProtocolHook(availableCompilers, cacheDir) {
   protocol = protocol || require('protocol');
   
   protocol.registerProtocol('file', (request) => {
@@ -33,7 +47,12 @@ export function initializeProtocolHook(availableCompilers) {
     let compiler = null;
     try {
       compiler = _.find(availableCompilers, (x) => x.shouldCompileFile(filePath));
-
+      
+      if (filePath.match(/\.html?$/i)) {
+        let contents = fs.readFileSync(filePath, 'utf8');
+        return new protocol.RequestStringJob(rigHtmlDocumentToInitializeElectronCompile(contents, cacheDir));
+      }
+      
       if (!compiler) {
         return new protocol.RequestFileJob(filePath);
       }
