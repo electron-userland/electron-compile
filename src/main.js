@@ -3,26 +3,28 @@ import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
 import {initializeProtocolHook} from './protocol-hook';
+import forAllFiles from './for-all-files';
 
-let hasInitialized = false;
+let availableCompilers = null;
 
-export const availableCompilers = _.map([
-  './js/babel',
-  './js/coffeescript',
-  './js/typescript',
-  './css/less',
-  './css/scss'
-], (x) => {
-  const Klass = require(x);
-  return new Klass();
-});
+export function createAllCompilers() {
+  return _.map([
+    './js/babel',
+    './js/coffeescript',
+    './js/typescript',
+    './css/less',
+    './css/scss'
+  ], (x) => {
+    const Klass = require(x);
+    return new Klass();
+  });
+}
 
 export function compile(filePath, compilers=null) {
-  if (!hasInitialized && !compilers) {
-    throw new Error("Call init first!");
-  }
-  
   compilers = compilers || availableCompilers;
+  if (!compilers) {
+    throw new Error("Call init first or pass in an array for compilers");
+  }
   
   let compiler = null;
   compiler = _.find(compilers, (x) => x.shouldCompileFile(filePath));
@@ -40,13 +42,13 @@ export function init(cacheDir=null, skipRegister=false) {
     cacheDir = path.join(tmpDir, `compileCache_${hash}`);
     mkdirp.sync(cacheDir);
   }
+  
+  availableCompilers = createAllCompilers();
 
   _.each(availableCompilers, (compiler) => {
     if (!skipRegister) compiler.register();
     compiler.setCacheDirectory(cacheDir);
   });
-  
-  hasInitialized = true;
 
   // If we're not an Electron browser process, bail
   if (!process.type || process.type !== 'browser') return;
