@@ -1,10 +1,13 @@
 require('./support.js');
 
 import _ from 'lodash';
-import {compile} from '../lib/main';
+import {compile, compileAll, createAllCompilers} from '../lib/main';
 import path from 'path';
+import rimraf from 'rimraf'
+
 import TypeScriptCompiler from '../lib/js/typescript';
 import LessCompiler from '../lib/css/less';
+import forAllFiles from '../lib/for-all-files';
 
 describe('exports for this library', function() {
   describe('the compile method', function() {
@@ -37,6 +40,34 @@ describe('exports for this library', function() {
       }
       
       expect(shouldDie).not.to.be.ok;
+    });
+  });
+  
+  describe('the compileAll method', function() {
+    it('should create a cache directory for our sources folder', function() {
+      let source = path.join(__dirname, '..', 'src');
+      let targetDir = path.join(__dirname, 'compileAllCacheTest');
+      
+      try {
+        let compilers = createAllCompilers();
+        _.each(compilers, (x) => x.setCacheDirectory(targetDir));
+        
+        expect(compilers).to.be.ok;
+        
+        compileAll(source, compilers);
+        
+        let sourceFileCount = 0;
+        forAllFiles(source, () => sourceFileCount++);
+        
+        let targetFileCount = 0;
+        forAllFiles(targetDir, () => targetFileCount++);
+        
+        //console.log(`compileAll: ${sourceFileCount} files in source, ${targetFileCount} in target`);
+        expect(sourceFileCount === targetFileCount).to.be.ok;
+        expect(sourceFileCount !== 0).to.be.ok;
+      } finally {
+        rimraf.sync(targetDir);
+      }
     });
   });
 });
