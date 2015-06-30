@@ -1,13 +1,13 @@
 require('./support.js');
 
 import _ from 'lodash';
-import {compile, compileAll, createAllCompilers} from '../lib/main';
 import path from 'path';
-import rimraf from 'rimraf'
+import rimraf from 'rimraf';
 
 import TypeScriptCompiler from '../lib/js/typescript';
 import LessCompiler from '../lib/css/less';
 import forAllFiles from '../lib/for-all-files';
+import {compile, compileAll, createAllCompilers} from '../lib/main';
 
 describe('exports for this library', function() {
   describe('the compile method', function() {
