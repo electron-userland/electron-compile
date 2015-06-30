@@ -20,11 +20,11 @@ export function rigHtmlDocumentToInitializeElectronCompile(doc) {
   }
   
   if (!replacedHead) {
-    replacement = `<html><head><script src="${magicWords}"></script></head>`;
+    replacement = `<html$1><head><script src="${magicWords}"></script></head>`;
     for (let i=0; i < lines.length; i++) {
-      if (!lines[i].match(/<html>/i)) continue;
+      if (!lines[i].match(/<html/i)) continue;
       
-      lines[i] = (lines[i]).replace(/<html>/i, replacement);
+      lines[i] = (lines[i]).replace(/<html([^>]+)>/i, replacement);
       break;
     }
   }
@@ -71,6 +71,7 @@ export default function initializeProtocolHook(availableCompilers, cacheDir) {
       
       if (filePath.match(/\.html?$/i)) {
         let contents = fs.readFileSync(filePath, 'utf8');
+
         return new protocol.RequestStringJob({
           mimeType: "text/html",
           data: rigHtmlDocumentToInitializeElectronCompile(contents, cacheDir)
