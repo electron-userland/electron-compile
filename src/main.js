@@ -5,8 +5,6 @@ import path from 'path';
 import {initializeProtocolHook} from './protocol-hook';
 import forAllFiles from './for-all-files';
 
-let availableCompilers = null;
-
 export function createAllCompilers() {
   return _.map([
     './js/babel',
@@ -19,6 +17,9 @@ export function createAllCompilers() {
     return new Klass();
   });
 }
+
+let availableCompilers = null;
+let lastCacheDir = null;
 
 export function compile(filePath, compilers=null) {
   compilers = compilers || availableCompilers;
@@ -39,6 +40,8 @@ export function compileAll(rootDirectory, compilers=null) {
 }
 
 export function init(cacheDir=null, skipRegister=false) {
+  if (lastCacheDir === cacheDir && availableCompilers) return;
+  
   if (!cacheDir) {
     let tmpDir = process.env.TEMP || process.env.TMPDIR || '/tmp';
     let hash = require('crypto').createHash('md5').update(process.execPath).digest('hex');
@@ -48,6 +51,7 @@ export function init(cacheDir=null, skipRegister=false) {
   }
   
   availableCompilers = createAllCompilers();
+  lastCacheDir = cacheDir;
 
   _.each(availableCompilers, (compiler) => {
     if (!skipRegister) compiler.register();

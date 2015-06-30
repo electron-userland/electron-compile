@@ -2,17 +2,31 @@ import _ from 'lodash';
 import url from 'url';  
 import fs from 'fs';
 
+const magicWords = "__magic__file__dont__use__this.js";
+
 let protocol = null;
 
-export function rigHtmlDocumentToInitializeElectronCompile(doc, cacheDir) {
+export function rigHtmlDocumentToInitializeElectronCompile(doc) {
   let lines = doc.split("\n");
-  let replacement = `<head><script>if (process) { require('electron-compile').init("${cacheDir}") }</script>`;
+  let replacement = `<head><script src="${magicWords}"></script>`;
+  let replacedHead = false;
   
-  for (let i=0; i < lines.length; lines++) {
+  for (let i=0; i < lines.length; i++) {
     if (!lines[i].match(/<head>/i)) continue;
     
-    lines[i] = lines[i].replace(/<head>/i, replacement);
+    lines[i] = (lines[i]).replace(/<head>/i, replacement);
+    replacedHead = true;
     break;
+  }
+  
+  if (!replacedHead) {
+    replacement = `<html><head><script src="${magicWords}"></script></head>`;
+    for (let i=0; i < lines.length; i++) {
+      if (!lines[i].match(/<html>/i)) continue;
+      
+      lines[i] = (lines[i]).replace(/<html>/i, replacement);
+      break;
+    }
   }
   
   return lines.join("\n");
@@ -23,6 +37,13 @@ export default function initializeProtocolHook(availableCompilers, cacheDir) {
   
   protocol.registerProtocol('file', (request) => {
     let uri = url.parse(request.url);
+    
+    if (request.url.indexOf(magicWords) > -1) {
+      return new protocol.RequestStringJob({
+        mimeType: 'text/javascript',
+        data: `if (window.require) { require('electron-compile').init("${cacheDir}") }`
+      });
+    }
 
     // This is a protocol-relative URL that has gone pear-shaped in Electron,
     // let's rewrite it
@@ -50,7 +71,10 @@ export default function initializeProtocolHook(availableCompilers, cacheDir) {
       
       if (filePath.match(/\.html?$/i)) {
         let contents = fs.readFileSync(filePath, 'utf8');
-        return new protocol.RequestStringJob(rigHtmlDocumentToInitializeElectronCompile(contents, cacheDir));
+        return new protocol.RequestStringJob({
+          mimeType: "text/html",
+          data: rigHtmlDocumentToInitializeElectronCompile(contents, cacheDir)
+        });
       }
       
       if (!compiler) {
