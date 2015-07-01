@@ -6,8 +6,6 @@ import CompileCache from '../compile-cache';
 
 let lessjs = null;
 
-const lessFileExtensions = /\.less$/i;
-
 export default class LessCompiler extends CompileCache {
   constructor(options={}) {
     super();
@@ -19,8 +17,7 @@ export default class LessCompiler extends CompileCache {
 
     const requiredOptions = {
       extension: 'less',
-      fileAsync: false,
-      async: false
+      fileAsync: false, async: false, syncImport: true
     };
 
     this.compilerInformation = _.extend(defaultOptions, options, requiredOptions);
