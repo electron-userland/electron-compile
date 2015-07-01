@@ -1,25 +1,83 @@
 import _ from 'lodash';
+import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
-import fs from 'fs';
-import url from 'url';
+import initializeProtocolHook from './protocol-hook';
+import forAllFiles from './for-all-files';
 
-const availableCompilers = _.map([
-  './js/babel',
-  './js/coffeescript',
-  './js/typescript',
-  './css/less',
-  './css/scss'
-], (x) => {
-  const Klass = require(x);
-  return new Klass();
-});
+// Public: Allows you to create new instances of all compilers that are 
+// supported by electron-compile and use them directly. Currently supports
+// Babel, CoffeeScript, TypeScript, LESS, and Sass/SCSS.
+//
+// Returns an {Array} of {CompileCache} objects.
+export function createAllCompilers() {
+  return _.map([
+    './js/babel',
+    './js/coffeescript',
+    './js/typescript',
+    './css/less',
+    './css/scss'
+  ], (x) => {
+    const Klass = require(x);
+    return new Klass();
+  });
+}
 
-export function init(cacheDir=null) {
-  if (process.type && process.type !== 'browser') {
-    throw new Error("Only call this method in the browser process, in app.ready");
+let availableCompilers = null;
+let lastCacheDir = null;
+
+// Public: Compiles a single file given its path.
+//
+// filePath: The path on disk to the file
+// compilers: (optional) - An {Array} of objects conforming to {CompileCache}
+//                         that will be tried in-order to compile code. You must
+//                         call init() first if this parameter is null.
+//
+// Returns a {String} with the compiled output, or will throw an {Error} 
+// representing the compiler errors encountered.
+export function compile(filePath, compilers=null) {
+  compilers = compilers || availableCompilers;
+  if (!compilers) {
+    throw new Error("Call init() first or pass in an Array to the compilers parameter");
   }
+  
+  let compiler = null;
+  compiler = _.find(compilers, (x) => x.shouldCompileFile(filePath));
+  if (!compiler) return fs.readFileSync(filePath, 'utf8');
 
+  let sourceCode = fs.readFileSync(filePath, 'utf8');
+  return compiler.loadFile(null, filePath, true, sourceCode);
+}
+
+// Public: Recursively compiles an entire directory of files.
+//
+// rootDirectory: The path on disk to the directory of files to compile.
+// compilers: (optional) - An {Array} of objects conforming to {CompileCache}
+//                         that will be tried in-order to compile code.
+//
+// Returns nothing.
+export function compileAll(rootDirectory, compilers=null) {
+  forAllFiles(rootDirectory, (f) => compile(f, compilers));
+}
+
+// Public: Initializes the electron-compile library. Once this method is called,
+//         all JavaScript and CSS that is loaded will now be first transpiled, in
+//         both the browser and renderer processes. 
+//
+//         Note that because of limitations in Electron, this does **not** apply 
+//         to WebView or Browser preload scripts - call init again at the top of
+//         these scripts to set everything up again.
+//
+// cacheDir: The directory to cache compiled JS and CSS to. If not given, one 
+//           will be generated from the Temp directory.
+//
+// skipRegister: Do not register with the node.js module system - this is used 
+// mostly for unit test purposes.
+//
+// Returns nothing.
+export function init(cacheDir=null, skipRegister=false) {
+  if (lastCacheDir === cacheDir && availableCompilers) return;
+  
   if (!cacheDir) {
     let tmpDir = process.env.TEMP || process.env.TMPDIR || '/tmp';
     let hash = require('crypto').createHash('md5').update(process.execPath).digest('hex');
@@ -27,77 +85,16 @@ export function init(cacheDir=null) {
     cacheDir = path.join(tmpDir, `compileCache_${hash}`);
     mkdirp.sync(cacheDir);
   }
+  
+  availableCompilers = createAllCompilers();
+  lastCacheDir = cacheDir;
 
   _.each(availableCompilers, (compiler) => {
-    compiler.register();
+    if (!skipRegister) compiler.register();
     compiler.setCacheDirectory(cacheDir);
   });
 
-  // If we're node.js / io.js, just bail
-  if (!process.type) return;
-
-  const protocol = require('protocol');
-  protocol.registerProtocol('file', (request) => {
-    let uri = url.parse(request.url);
-
-    // This is a protocol-relative URL that has gone pear-shaped in Electron,
-    // let's rewrite it
-    if (uri.host && uri.host.length > 1) {
-      if (!protocol.RequestHttpJob) {
-        console.log("Tried to correct protocol-relative URL, but this requires Electron 0.28.2 or higher: " + request.url);
-        return new protocol.RequestErrorJob(404);
-      }
-
-      return new protocol.RequestHttpJob({
-        url: request.url.replace(/^file:/, "https:")
-      });
-    }
-
-    let filePath = uri.pathname;
-
-    // NB: pathname has a leading '/' on Win32 for some reason
-    if (process.platform === 'win32') {
-      filePath = filePath.slice(1);
-    }
-  
-    let compiler = null;
-    try {
-      compiler = _.find(availableCompilers, (x) => x.shouldCompileFile(filePath));
-
-      if (!compiler) {
-        return new protocol.RequestFileJob(filePath);
-      }
-    } catch (e) {
-      console.log(`Failed to find compiler: ${e.message}\n${e.stack}`);
-      return new protocol.RequestErrorJob(-2); // net::FAILED
-    }
-
-    let sourceCode = null;
-    try {
-      sourceCode = fs.readFileSync(filePath, 'utf8');
-    } catch (e) {
-      // TODO: Actually come correct with these error codes
-      if (e.errno === 34) {
-        return new protocol.RequestErrorJob(6); // net::ERR_FILE_NOT_FOUND
-      }
-
-      console.log(`Failed to read file: ${e.message}\n${e.stack}`);
-      return new protocol.RequestErrorJob(2); // net::FAILED
-    }
-
-    let realSourceCode = null;
-    try {
-      realSourceCode = compiler.loadFile(null, filePath, true, sourceCode);
-    } catch (e) {
-      return new protocol.RequestStringJob({
-        mimeType: compiler.getMimeType(),
-        data: `Failed to compile ${filePath}: ${e.message}\n${e.stack}`
-      });
-    }
-
-    return new protocol.RequestStringJob({
-      mimeType: compiler.getMimeType(),
-      data: realSourceCode,
-    });
-  });
+  // If we're not an Electron browser process, bail
+  if (!process.type || process.type !== 'browser') return;
+  initializeProtocolHook(availableCompilers, cacheDir);
 }

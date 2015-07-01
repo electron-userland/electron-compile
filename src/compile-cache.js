@@ -35,6 +35,9 @@ export default class CompileCache {
   shouldCompileFile(fullPath) {
     this.ensureInitialized();
     let lowerPath = fullPath.toLowerCase();
+    
+    // If we're in node_modules, we're gonna punt
+    if (fullPath.match(/[\\\/]node_modules[\\\/]/i)) return false;
 
     // NB: require() normally does this for us, but in our protocol hook we
     // need to do this ourselves
@@ -111,7 +114,7 @@ export default class CompileCache {
       mkdirp.sync(this.jsCacheDir);
     }
 
-    return path.join(this.jsCacheDir, `${digest}.js`);
+    return path.join(this.jsCacheDir, `${digest}`);
   }
 
   getCachedJavaScript(cachePath) {
@@ -152,14 +155,20 @@ export default class CompileCache {
       this.compilerInformation.version = this.initializeCompiler();
     }
 
-    let cachePath = this.getCachePath(sourceCode);
-    let js = this.getCachedJavaScript(cachePath);
-
+    let js = null;
+    let cachePath = null;
+    if (!this.disableCache) {
+      cachePath = this.getCachePath(sourceCode);
+      js = this.disableCache ? null : this.getCachedJavaScript(cachePath);
+    } 
+    
     if (!js) {
       js = this.compile(sourceCode, filePath, cachePath);
       this.stats.misses++;
 
-      this.saveCachedJavaScript(cachePath, js);
+      if (!this.disableCache) {
+        this.saveCachedJavaScript(cachePath, js);
+      }
     }
 
     if (returnOnly) return js;
@@ -191,6 +200,7 @@ export default class CompileCache {
   }
 
   setCacheDirectory(newCacheDir) {
+    this.disableCache = (newCacheDir === null);
     if (this.cacheDir === newCacheDir) return;
 
     this.cacheDir = newCacheDir;
