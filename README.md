@@ -49,3 +49,18 @@ Add `'use nobabel';` to the top of your file to opt-out of Babel compilation.
 ### Hey, why doesn't this work in my main.js file?
 
 Unfortunately, the very first file that you set up `app.ready` in must be written in ES5. Of course, you can always make this file as small as possible, or just require in a real file once you call `init()`.
+
+### Precompiling
+
+electron-compile comes with a command-line application to pre-create a cache for you.
+
+```sh
+Usage: electron-compile --target [target-path] paths...
+
+Options:
+  -t, --target   The target directory to write a cache directory to
+  -v, --verbose  Print verbose information
+  -h, --help     Show help
+```
+
+Once you create a cache folder, pass it in as a parameter to `init()`. Ship the cache folder with your application, and you won't need to compile the app on first-run.
