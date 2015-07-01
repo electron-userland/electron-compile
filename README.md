@@ -1,6 +1,6 @@
 ## electron-compile
 
-electron-compile provides compilers for common JavaScript and CSS alternative targets.
+electron-compile compiles JS and CSS on the fly with a single call in your app's 'ready' function.
 
 For JavaScript:
 
@@ -63,7 +63,13 @@ Options:
   -h, --help     Show help
 ```
 
-Once you create a cache folder, pass it in as a parameter to `init()`. Ship the cache folder with your application, and you won't need to compile the app on first-run.
+Once you create a cache folder, pass it in as a parameter to `init()`. Ship the cache folder with your application, and you won't need to compile the app on first-run:
+
+```js
+app.on('ready', function() {
+  require('electron-compile').init('path/to/precompiled/cache/folder');
+});
+```
 
 Compilation also has its own API:
 
