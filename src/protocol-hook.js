@@ -2,7 +2,7 @@ import _ from 'lodash';
 import url from 'url';  
 import fs from 'fs';
 
-const magicWords = "__magic__file__dont__use__this.js";
+const magicWords = "__magic__file__to__help__electron__compile.js";
 
 let protocol = null;
 
