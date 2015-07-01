@@ -35,7 +35,7 @@ export default class CompileCache {
   shouldCompileFile(fullPath) {
     this.ensureInitialized();
     let lowerPath = fullPath.toLowerCase();
-
+    
     // If we're in node_modules, we're gonna punt
     if (fullPath.match(/[\\\/]node_modules[\\\/]/i)) return false;
 

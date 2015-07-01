@@ -2,7 +2,7 @@ import _ from 'lodash';
 import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
-import {initializeProtocolHook} from './protocol-hook';
+import initializeProtocolHook from './protocol-hook';
 import forAllFiles from './for-all-files';
 
 // Public: Allows you to create new instances of all compilers that are 
