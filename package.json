@@ -8,9 +8,12 @@
     "prepublish": "npm run compile",
     "test": "npm run compile && mocha test-dist/*"
   },
+  "bin": {
+    "electron-compile": "lib/cli.js"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/paulcbetts/electron-devmode"
+    "url": "https://github.com/paulcbetts/electron-compile"
   },
   "keywords": [
     "electron"
@@ -18,11 +21,11 @@
   "author": "Paul Betts <paul@paulbetts.org>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/paulcbetts/electron-devmode/issues"
+    "url": "https://github.com/paulcbetts/electron-compile/issues"
   },
-  "homepage": "https://github.com/paulcbetts/electron-devmode",
+  "homepage": "https://github.com/paulcbetts/electron-compile",
   "dependencies": {
-    "babel-core": "^5.5.4",
+    "babel-core": "^5.6.15",
     "btoa": "^1.1.2",
     "coffee-script": "^1.9.2",
     "less": "^2.5.0",
@@ -36,7 +39,7 @@
     "yargs": "^3.8.0"
   },
   "devDependencies": {
-    "babel": "^5.5.4",
+    "babel": "^5.6.14",
     "chai": "^2.3.0",
     "chai-as-promised": "^5.0.0",
     "chai-spies": "^0.6.0",

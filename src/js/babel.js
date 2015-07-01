@@ -38,7 +38,7 @@ export default class BabelCompiler extends CompileCache {
 
   shouldCompileFile(filePath) {
     let ret = super.shouldCompileFile(filePath);
-    if (!ret) return;
+    if (!ret) return false;
     
     // Read the first 4k of the file
     let fd = fs.openSync(filePath, 'r');
