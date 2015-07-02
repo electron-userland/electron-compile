@@ -91,5 +91,41 @@ describe('exports for this library', function() {
       expect(shouldDie).not.to.be.ok;
     });
   });
+  
+  describe('The createAllCompilers method', function() {
+    it('should create a bunch of compilers', function() {
+      let result = createAllCompilers();
+      _.each(result, (x) => x.setCacheDirectory(null));
+      
+      let extensions = _.map(result, (x) => x.getCompilerInformation().extensions);
+      
+      expect(_.find(extensions, (x) => x[0] === 'js')).to.be.ok;
+      expect(_.find(extensions, (x) => x[0] === 'less')).to.be.ok;
+    });
+    
+    it('should accept compile options', function() {
+      // First with comments on
+      let opts = {
+        js: { comments: true, sourceMaps: false }
+      };
+      
+      let result = createAllCompilers(opts);
+      _.each(result, (x) => x.setCacheDirectory(null));
+      
+      let output = compile(path.resolve(__dirname, '..', 'test', 'fixtures', 'valid.js'), result);
+      expect(_.find(output.split("\n"), (x) => x.match(/\/\//))).to.be.ok;
+      
+      // Run it again with comments off
+      opts = {
+        js: { comments: false, sourceMaps: false }
+      };
+      
+      result = createAllCompilers(opts);
+      _.each(result, (x) => x.setCacheDirectory(null));
+      
+      output = compile(path.resolve(__dirname, '..', 'test', 'fixtures', 'valid.js'), result);
+      expect(_.find(output.split("\n"), (x) => x.match(/\/\//))).not.to.be.ok;
+    });
+  });
 });
   
