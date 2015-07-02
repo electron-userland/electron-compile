@@ -2,17 +2,22 @@ import _ from 'lodash';
 import CompileCache from '../compile-cache';
 
 let tss = null;
+const extensions = ['ts'];
 
 export default class TypeScriptCompiler extends CompileCache {
   constructor(options={}) {
     super();
 
     this.compilerInformation = _.extend({}, {
-      extension: 'ts',
+      extensions: extensions,
       target: 1,
       module: 'commonjs',
       sourceMap: true
     }, options);
+  }
+  
+  static getExtensions() {
+    return extensions;
   }
 
   getCompilerInformation() {

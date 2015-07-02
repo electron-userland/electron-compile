@@ -22,6 +22,10 @@ export default class LessCompiler extends CompileCache {
 
     this.compilerInformation = _.extend(defaultOptions, options, requiredOptions);
   }
+  
+  static getExtensions() {
+    return extensions;
+  }
 
   getCompilerInformation() {
     return this.compilerInformation;

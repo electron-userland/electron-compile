@@ -5,20 +5,25 @@ import btoa from 'btoa';
 import CompileCache from '../compile-cache';
 
 let coffee = null;
+const extensions = ['coffee'];
 
 export default class CoffeeScriptCompiler extends CompileCache {
   constructor(options={}) {
     super();
 
     this.compilerInformation = _.extend({}, {
-      extension: 'coffee',
+      extensions: extensions,
     }, options);
+  }
+  
+  static getExtensions() {
+    return extensions;
   }
 
   getCompilerInformation() {
     return this.compilerInformation;
   }
-
+  
   compile(sourceCode, filePath) {
     let {js, v3SourceMap} = coffee.compile(sourceCode, { filename: filePath, sourceMap: true });
 
