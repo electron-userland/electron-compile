@@ -5,13 +5,14 @@ import fs from 'fs';
 let babel = require('babel-core');
 
 const validOpts = ['sourceMap', 'blacklist', 'stage', 'optional'];
+const extensions = ['js'];
 
 export default class BabelCompiler extends CompileCache {
   constructor(options={}) {
     super();
 
     this.compilerInformation = _.extend({}, {
-      extension: 'js',
+      extensions: extensions,
       sourceMap: 'inline',
       blacklist: [
         'useStrict'
@@ -23,6 +24,10 @@ export default class BabelCompiler extends CompileCache {
         'asyncToGenerator'
       ],
     }, options);
+  }
+  
+  static getExtensions() {
+    return extensions;
   }
 
   getCompilerInformation() {
