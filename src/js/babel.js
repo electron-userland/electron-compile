@@ -4,8 +4,8 @@ import fs from 'fs';
 
 let babel = require('babel-core');
 
-const validOpts = ['sourceMap', 'blacklist', 'stage', 'optional'];
-const extensions = ['js'];
+const invalidOpts = ['extension', 'extensions', 'version'];
+const extensions = ['js', 'jsx'];
 
 export default class BabelCompiler extends CompileCache {
   constructor(options={}) {
@@ -13,7 +13,7 @@ export default class BabelCompiler extends CompileCache {
 
     this.compilerInformation = _.extend({}, {
       extensions: extensions,
-      sourceMap: 'inline',
+      sourceMaps: 'inline',
       blacklist: [
         'useStrict'
       ],
@@ -35,7 +35,7 @@ export default class BabelCompiler extends CompileCache {
   }
 
   compile(sourceCode) {
-    this.babelCompilerOpts = this.babelCompilerOpts || _.pick(this.compilerInformation, validOpts);
+    this.babelCompilerOpts = this.babelCompilerOpts || _.omit(this.compilerInformation, invalidOpts);
     return babel.transform(sourceCode, this.babelCompilerOpts).code;
   }
 
