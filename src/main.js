@@ -10,7 +10,7 @@ import forAllFiles from './for-all-files';
 // Babel, CoffeeScript, TypeScript, LESS, and Sass/SCSS.
 //
 // Returns an {Array} of {CompileCache} objects.
-export function createAllCompilers() {
+export function createAllCompilers(compilerOpts={}) {
   return _.map([
     './js/babel',
     './js/coffeescript',
