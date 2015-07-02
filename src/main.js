@@ -60,6 +60,7 @@ export function compileAll(rootDirectory, compilers=null) {
   forAllFiles(rootDirectory, (f) => compile(f, compilers));
 }
 
+
 // Public: Initializes the electron-compile library. Once this method is called,
 //         all JavaScript and CSS that is loaded will now be first transpiled, in
 //         both the browser and renderer processes. 
@@ -76,6 +77,14 @@ export function compileAll(rootDirectory, compilers=null) {
 //
 // Returns nothing.
 export function init(cacheDir=null, skipRegister=false) {
+  this.initWithOptions({
+    cacheDir: cacheDir,
+    skipRegister: skipRegister
+  });
+}
+
+export function initWithOptions(options={}) {
+  let {cacheDir, skipRegister, compilers} = options;
   if (lastCacheDir === cacheDir && availableCompilers) return;
   
   if (!cacheDir) {
@@ -86,7 +95,7 @@ export function init(cacheDir=null, skipRegister=false) {
     mkdirp.sync(cacheDir);
   }
   
-  availableCompilers = createAllCompilers();
+  availableCompilers = compilers || createAllCompilers();
   lastCacheDir = cacheDir;
 
   _.each(availableCompilers, (compiler) => {
