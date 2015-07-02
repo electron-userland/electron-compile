@@ -140,5 +140,13 @@ export function initWithOptions(options={}) {
 
   // If we're not an Electron browser process, bail
   if (!process.type || process.type !== 'browser') return;
-  initializeProtocolHook(availableCompilers, cacheDir);
+  
+  const app = require('app');
+  const initProtoHook = () => initializeProtocolHook(availableCompilers, cacheDir);
+  
+  if (app.isReady()) {
+    initProtoHook();
+  } else {
+    app.on('ready', initProtoHook);
+  }
 }
