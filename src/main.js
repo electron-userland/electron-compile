@@ -10,7 +10,7 @@ import forAllFiles from './for-all-files';
 // Babel, CoffeeScript, TypeScript, LESS, and Sass/SCSS.
 //
 // Returns an {Array} of {CompileCache} objects.
-export function createAllCompilers(compilerOpts={}) {
+export function createAllCompilers(compilerOpts=null) {
   return _.map([
     './js/babel',
     './js/coffeescript',
@@ -19,7 +19,15 @@ export function createAllCompilers(compilerOpts={}) {
     './css/scss'
   ], (x) => {
     const Klass = require(x);
-    return new Klass();
+    if (!compilerOpts) return new Klass();
+    
+    let exts = Klass.getExtensions();
+    let optsForUs = _.reduce(
+      exts, 
+      (acc,x) => _.extend(acc, compilerOpts[x] || {}),
+      {});
+      
+    return new Klass(optsForUs);
   });
 }
 
@@ -95,7 +103,7 @@ export function initWithOptions(options={}) {
     mkdirp.sync(cacheDir);
   }
   
-  availableCompilers = compilers || createAllCompilers();
+  availableCompilers = compilers || createAllCompilers(options.compilerOpts);
   lastCacheDir = cacheDir;
 
   _.each(availableCompilers, (compiler) => {
