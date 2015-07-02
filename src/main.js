@@ -91,6 +91,33 @@ export function init(cacheDir=null, skipRegister=false) {
   });
 }
 
+// Public: Initializes the electron-compile library. Once this method is called,
+//         all JavaScript and CSS that is loaded will now be first transpiled, in
+//         both the browser and renderer processes. 
+//
+//         Note that because of limitations in Electron, this does **not** apply 
+//         to WebView or Browser preload scripts - call init again at the top of
+//         these scripts to set everything up again.
+//
+//  options: an options {Object} with the following keys:
+//
+//     :cacheDir - The directory to cache compiled JS and CSS to. If not given, 
+//                 one will be generated from the Temp directory.
+//
+//     :skipRegister - Do not register with the node.js module system. For testing.
+//
+//     :compilers - An {Array} of compilers conforming to {CompileCache}, usually
+//                  created via {createAllCompilers}.
+//
+//     :compilerOpts - An {Object} which will be used to initialize compilers - the
+//                     keys are the extension without a dot (i.e. 'js'), and the
+//                     values are the options object that this compiler would take.
+//
+//                     For example: {'js': { comments: false }} will disable comments
+//                     in Babel's generated output. See the compiler's associated docs
+//                     for what can be passed in as options.
+//
+// Returns nothing.
 export function initWithOptions(options={}) {
   let {cacheDir, skipRegister, compilers} = options;
   if (lastCacheDir === cacheDir && availableCompilers) return;
