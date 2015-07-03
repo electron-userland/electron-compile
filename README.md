@@ -15,12 +15,10 @@ For CSS:
 
 ### How does it work?
 
-Put this in your Electron app's `app.ready`:
+Put this at the top of your Electron app:
 
 ```js
-app.on('ready', function() {
-  require('electron-compile').init();
-});
+require('electron-compile').init();
 ```
 
 From then on, you can now simply include files directly in your HTML, no need for cross-compilation:
@@ -48,9 +46,27 @@ Add `'use nobabel';` to the top of your file to opt-out of Babel compilation.
 
 ### Hey, why doesn't this work in my main.js file?
 
-Unfortunately, the very first file that you set up `app.ready` in must be written in ES5. Of course, you can always make this file as small as possible, or just require in a real file once you call `init()`.
+Unfortunately, the very first file that you set up electron-compile in must be written in ES5. Of course, you can always make this file exactly two lines, the 'init' statement, then require your real main.js in.
 
-## Precompiling
+### How do I set up (Babel / LESS / whatever) the way I want?
+
+In order to configure individual compilers, use the `initWithOptions` method:
+
+```js
+let babelOpts = {
+  stage: 2
+};
+
+initWithOptions({
+  cacheDir: '/path/to/my/cache',
+  compilerOpts: {
+    // Compiler options are a map of extension <=> options for compiler
+    js: babelOpts
+  }
+});
+```
+
+## How can I precompile my code for release-time?
 
 electron-compile comes with a command-line application to pre-create a cache for you.
 
@@ -66,9 +82,7 @@ Options:
 Once you create a cache folder, pass it in as a parameter to `init()`. Ship the cache folder with your application, and you won't need to compile the app on first-run:
 
 ```js
-app.on('ready', function() {
-  require('electron-compile').init('path/to/precompiled/cache/folder');
-});
+require('electron-compile').init('path/to/precompiled/cache/folder');
 ```
 
 Compilation also has its own API:

@@ -4,15 +4,16 @@ import fs from 'fs';
 
 let babel = require('babel-core');
 
-const validOpts = ['sourceMap', 'blacklist', 'stage', 'optional'];
+const invalidOpts = ['extension', 'extensions', 'version'];
+const extensions = ['js', 'jsx'];
 
 export default class BabelCompiler extends CompileCache {
   constructor(options={}) {
     super();
 
     this.compilerInformation = _.extend({}, {
-      extension: 'js',
-      sourceMap: 'inline',
+      extensions: extensions,
+      sourceMaps: 'inline',
       blacklist: [
         'useStrict'
       ],
@@ -24,13 +25,17 @@ export default class BabelCompiler extends CompileCache {
       ],
     }, options);
   }
+  
+  static getExtensions() {
+    return extensions;
+  }
 
   getCompilerInformation() {
     return this.compilerInformation;
   }
 
   compile(sourceCode) {
-    this.babelCompilerOpts = this.babelCompilerOpts || _.pick(this.compilerInformation, validOpts);
+    this.babelCompilerOpts = this.babelCompilerOpts || _.omit(this.compilerInformation, invalidOpts);
     return babel.transform(sourceCode, this.babelCompilerOpts).code;
   }
 
