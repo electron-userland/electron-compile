@@ -5,6 +5,7 @@ import CompileCache from '../compile-cache';
 let scss = null;
 
 const scssFileExtensions = /\.(sass|scss)$/i;
+const extensions = ['scss', 'sass'];
 
 export default class ScssCompiler extends CompileCache {
   constructor(options={}) {
@@ -17,10 +18,14 @@ export default class ScssCompiler extends CompileCache {
     };
 
     const requiredOptions = {
-      extensions: ['scss', 'sass']
+      extensions: extensions
     };
 
     this.compilerInformation = _.extend(defaultOptions, options, requiredOptions);
+  }
+  
+  static getExtensions() {
+    return extensions;
   }
 
   getCompilerInformation() {

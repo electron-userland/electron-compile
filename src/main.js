@@ -10,7 +10,7 @@ import forAllFiles from './for-all-files';
 // Babel, CoffeeScript, TypeScript, LESS, and Sass/SCSS.
 //
 // Returns an {Array} of {CompileCache} objects.
-export function createAllCompilers() {
+export function createAllCompilers(compilerOpts=null) {
   return _.map([
     './js/babel',
     './js/coffeescript',
@@ -19,7 +19,15 @@ export function createAllCompilers() {
     './css/scss'
   ], (x) => {
     const Klass = require(x);
-    return new Klass();
+    if (!compilerOpts) return new Klass();
+    
+    let exts = Klass.getExtensions();
+    let optsForUs = _.reduce(
+      exts, 
+      (acc,x) => _.extend(acc, compilerOpts[x] || {}),
+      {});
+      
+    return new Klass(optsForUs);
   });
 }
 
@@ -60,6 +68,7 @@ export function compileAll(rootDirectory, compilers=null) {
   forAllFiles(rootDirectory, (f) => compile(f, compilers));
 }
 
+
 // Public: Initializes the electron-compile library. Once this method is called,
 //         all JavaScript and CSS that is loaded will now be first transpiled, in
 //         both the browser and renderer processes. 
@@ -76,6 +85,41 @@ export function compileAll(rootDirectory, compilers=null) {
 //
 // Returns nothing.
 export function init(cacheDir=null, skipRegister=false) {
+  this.initWithOptions({
+    cacheDir: cacheDir,
+    skipRegister: skipRegister
+  });
+}
+
+// Public: Initializes the electron-compile library. Once this method is called,
+//         all JavaScript and CSS that is loaded will now be first transpiled, in
+//         both the browser and renderer processes. 
+//
+//         Note that because of limitations in Electron, this does **not** apply 
+//         to WebView or Browser preload scripts - call init again at the top of
+//         these scripts to set everything up again.
+//
+//  options: an options {Object} with the following keys:
+//
+//     :cacheDir - The directory to cache compiled JS and CSS to. If not given, 
+//                 one will be generated from the Temp directory.
+//
+//     :skipRegister - Do not register with the node.js module system. For testing.
+//
+//     :compilers - An {Array} of compilers conforming to {CompileCache}, usually
+//                  created via {createAllCompilers}.
+//
+//     :compilerOpts - An {Object} which will be used to initialize compilers - the
+//                     keys are the extension without a dot (i.e. 'js'), and the
+//                     values are the options object that this compiler would take.
+//
+//                     For example: {'js': { comments: false }} will disable comments
+//                     in Babel's generated output. See the compiler's associated docs
+//                     for what can be passed in as options.
+//
+// Returns nothing.
+export function initWithOptions(options={}) {
+  let {cacheDir, skipRegister, compilers} = options;
   if (lastCacheDir === cacheDir && availableCompilers) return;
   
   if (!cacheDir) {
@@ -86,7 +130,7 @@ export function init(cacheDir=null, skipRegister=false) {
     mkdirp.sync(cacheDir);
   }
   
-  availableCompilers = createAllCompilers();
+  availableCompilers = compilers || createAllCompilers(options.compilerOpts);
   lastCacheDir = cacheDir;
 
   _.each(availableCompilers, (compiler) => {
@@ -96,5 +140,13 @@ export function init(cacheDir=null, skipRegister=false) {
 
   // If we're not an Electron browser process, bail
   if (!process.type || process.type !== 'browser') return;
-  initializeProtocolHook(availableCompilers, cacheDir);
+  
+  const app = require('app');
+  const initProtoHook = () => initializeProtocolHook(availableCompilers, cacheDir);
+  
+  if (app.isReady()) {
+    initProtoHook();
+  } else {
+    app.on('ready', initProtoHook);
+  }
 }
