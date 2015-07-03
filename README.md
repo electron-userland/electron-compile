@@ -48,7 +48,25 @@ Add `'use nobabel';` to the top of your file to opt-out of Babel compilation.
 
 Unfortunately, the very first file that you set up electron-compile in must be written in ES5. Of course, you can always make this file exactly two lines, the 'init' statement, then require your real main.js in.
 
-## Precompiling
+### How do I set up (Babel / LESS / whatever) the way I want?
+
+In order to configure individual compilers, use the `initWithOptions` method:
+
+```js
+let babelOpts = {
+  stage: 2
+};
+
+initWithOptions({
+  cacheDir: '/path/to/my/cache',
+  compilerOpts: {
+    // Compiler options are a map of extension <=> options for compiler
+    js: babelOpts
+  }
+});
+```
+
+## How can I precompile my code for release-time?
 
 electron-compile comes with a command-line application to pre-create a cache for you.
 
