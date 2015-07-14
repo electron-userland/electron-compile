@@ -90,6 +90,33 @@ export function init(cacheDir=null, skipRegister=false) {
   });
 }
 
+// Public: Initializes the electron-compile library using only cached / 
+// precompiled files. Since this method won't use any of the compilers in
+// electron-compilers, you can remove this package from node_modules in
+// production builds and save a _lot_ of on-disk space.
+//
+// If you used the CLI version of electron-compile,
+// all you need to pass in is the {cacheDir} parameter. If you compiled
+// your files progmatically via {compile}/{compileAll}, you also need to
+// pass in the object that was generated at the time from calling
+// {collectCompilerInformation} from your array of registered compilers.
+export function initForProduction(cacheDir, compilerInformation=null, options={}) {
+  let compilers = null;
+  
+  if (!compilerInformation) {
+    try {
+      compilerInformation = JSON.parse(
+        fs.readFileSync(path.join(cacheDir, 'settings.json')));
+    } catch (e) {
+      throw new Error("Couldn't determine compiler information, either pass it as a parameter or save it in $cacheDir/settings.json: " + e.message);
+    }
+  }
+  
+  let compilers = createProductionCompilersForInfo(compilerInformation);
+  let opts = _.extend({}, options, { cacheDir, compilers });
+  initWithOptions(opts);
+}
+
 // Public: Initializes the electron-compile library. Once this method is called,
 //         all JavaScript and CSS that is loaded will now be first transpiled, in
 //         both the browser and renderer processes.
@@ -179,4 +206,18 @@ export function collectCompilerInformation(compilers=null) {
 
     return acc;
   }, {});
+}
+
+// Public: Returns a set of compilers that will mimic the compilers whose info
+// was gathered via {collectCompilerInformation}, but will only return cached
+// versions (i.e. if a file actually needs to be compiled, the compiler will 
+// throw an exception). 
+//
+// compilerInfo: the {Object} returned from {collectCompilerInformation}.
+//
+// Returns an {Array} of objects conforming to {CompileCache}.
+export function createProductionCompilersForInfo(compilerInfo) {
+  return _.map(
+    Object.keys(compilerInfo), 
+    (x) => new ReadOnlyCompiler(compilerInfo[x].options, compilerInfo[x].mimeType));
 }
