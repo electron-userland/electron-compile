@@ -5,20 +5,19 @@ import path from 'path';
 import initializeProtocolHook from './protocol-hook';
 import forAllFiles from './for-all-files';
 
+// NB: We intentionally delay-load this so that in production, you can create
+// cache-only versions of these compilers
+let allCompilerClasses = null;
+
 // Public: Allows you to create new instances of all compilers that are 
 // supported by electron-compile and use them directly. Currently supports
 // Babel, CoffeeScript, TypeScript, LESS, and Sass/SCSS.
 //
 // Returns an {Array} of {CompileCache} objects.
 export function createAllCompilers(compilerOpts=null) {
-  return _.map([
-    './js/babel',
-    './js/coffeescript',
-    './js/typescript',
-    './css/less',
-    './css/scss'
-  ], (x) => {
-    const Klass = require(x);
+  allCompilerClasses = allCompilerClasses || require('electron-compilers');
+  
+  return _.map(allCompilerClasses, (Klass) => {
     if (!compilerOpts) return new Klass();
     
     let exts = Klass.getExtensions();
