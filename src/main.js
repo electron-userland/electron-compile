@@ -8,4 +8,4 @@ const filenames = [
   'js/typescript'
 ];
 
-export default _.map(filenames, (x) => require(x));
+export default _.map(filenames, (x) => require('./' + x));
