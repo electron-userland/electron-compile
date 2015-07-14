@@ -2,7 +2,7 @@ import _ from 'lodash';
 import CompileCache from 'electron-compile-cache';
 import fs from 'fs';
 
-let babel = require('babel-core');
+let babel = null;
 
 const invalidOpts = ['extension', 'extensions', 'version'];
 const extensions = ['js', 'jsx'];
@@ -61,7 +61,7 @@ export default class BabelCompiler extends CompileCache {
   }
 
   initializeCompiler() {
-    babel = require('babel-core');
+    babel = babel || require('babel-core');
     return babel.version;
   }
 }
