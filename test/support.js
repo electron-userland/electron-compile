@@ -1,11 +1,8 @@
 import _ from 'lodash';
 import allCompilerClasses from 'electron-compilers';
 
-global.Promise = global.Promise || require('promise');
 let chai = require("chai");
 let chaiAsPromised = require("chai-as-promised");
-
-require('babel-core/polyfill');
 
 chai.should();
 chai.use(chaiAsPromised);

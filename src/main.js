@@ -84,7 +84,7 @@ export function compileAll(rootDirectory, compilers=null) {
 //
 // Returns nothing.
 export function init(cacheDir=null, skipRegister=false) {
-  this.initWithOptions({
+  initWithOptions({
     cacheDir: cacheDir,
     skipRegister: skipRegister
   });
@@ -169,8 +169,9 @@ export function collectCompilerInformation(compilers=null) {
   }
 
   return _.reduce(compilers, (acc,x) => {
-    let key = x.getExtensions().join(',');
-    acc[key] = x.getCompilerInformation();
+    let opts = x.getCompilerInformation();
+    let key = opts.extensions.join(',');
+    acc[key] = opts;
 
     return acc;
   }, {});
