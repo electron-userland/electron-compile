@@ -3,8 +3,8 @@ require('./support.js');
 import path from 'path';
 import rimraf from 'rimraf';
 
-import BabelCompiler from '../lib/js/babel';
-import TypeScriptCompiler from '../lib/js/typescript';
+const BabelCompiler = global.importCompilerByExtension('js');
+const TypeScriptCompiler = global.importCompilerByExtension('ts');
 
 describe('The compile cache', function() {
   it('Should only call compile once for the same file', function() {
@@ -16,7 +16,7 @@ describe('The compile cache', function() {
     fixture.setCacheDirectory(cacheDir);
     
     try {
-      let input = require.resolve('../src/js/babel.js');
+      let input = path.join(__dirname, '..', 'test', 'fixtures', 'valid.js');
       let result = fixture.loadFile(module, input, true);
       
       expect(result.length > 0).to.be.ok;
