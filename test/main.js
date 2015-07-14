@@ -4,8 +4,9 @@ import _ from 'lodash';
 import path from 'path';
 import rimraf from 'rimraf';
 
-import TypeScriptCompiler from '../lib/js/typescript';
-import LessCompiler from '../lib/css/less';
+const TypeScriptCompiler = global.importCompilerByExtension('ts');
+const LessCompiler = global.importCompilerByExtension('less');
+
 import forAllFiles from '../lib/for-all-files';
 import {compile, compileAll, createAllCompilers} from '../lib/main';
 

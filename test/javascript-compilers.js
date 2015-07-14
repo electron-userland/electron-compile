@@ -4,15 +4,15 @@ import fs from 'fs';
 import path from 'path';
 
 const toTest = [
-  { require: '../lib/js/babel', extension: 'js' },
-  { require: '../lib/js/typescript', extension: 'ts' },
-  { require: '../lib/js/coffeescript', extension: 'coffee' },
+  { klass: global.importCompilerByExtension('js'), extension: 'js' },
+  { klass: global.importCompilerByExtension('ts'), extension: 'ts' },
+  { klass: global.importCompilerByExtension('coffee'), extension: 'coffee' },
 ];
 
 for (let compiler of toTest) {
-  const Klass = require(compiler.require);
+  const Klass = compiler.klass;
 
-  describe(`The ${compiler.require} compiler`, function() {
+  describe(`The ${compiler.klass.name} compiler`, function() {
     it(`should compile valid.${compiler.extension}`, function() {
       let fixture = new Klass();
 

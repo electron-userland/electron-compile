@@ -3,15 +3,15 @@ require('./support.js');
 import path from 'path';
 
 const toTest = [
-  { require: '../lib/css/less', extension: 'less' },
-  { require: '../lib/css/scss', extension: 'scss' },
-  { require: '../lib/css/scss', extension: 'sass' },
+  { klass: global.importCompilerByExtension('less'), extension: 'less' },
+  { klass: global.importCompilerByExtension('scss'), extension: 'scss' },
+  { klass: global.importCompilerByExtension('scss'), extension: 'sass' },
 ];
 
 for (let compiler of toTest) {
-  const Klass = require(compiler.require);
+  const Klass = compiler.klass;
 
-  describe(`The ${compiler.require} compiler`, function() {
+  describe(`The ${compiler.klass.name} compiler`, function() {
     it(`should compile valid.${compiler.extension}`, function() {
       let fixture = new Klass();
 
