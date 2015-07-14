@@ -79,11 +79,13 @@ Options:
   -h, --help     Show help
 ```
 
-Once you create a cache folder, pass it in as a parameter to `init()`. Ship the cache folder with your application, and you won't need to compile the app on first-run:
+Once you create a cache folder, pass it in as a parameter to `initForProduction()`. Ship the cache folder with your application, and you won't need to compile the app on first-run:
 
 ```js
-require('electron-compile').init('path/to/precompiled/cache/folder');
+require('electron-compile').initForProduction('path/to/precompiled/cache/folder');
 ```
+
+In order to save space in your application, you can also delete `node_modules/electron-compile/node_modules/electron-compilers` in production so that you're not shipping the compiler implementations themselves (~56MB uncompressed).
 
 Compilation also has its own API:
 
