@@ -1,19 +1,15 @@
 {
-  "name": "electron-compile",
+  "name": "electron-compilers",
   "version": "0.5.0",
-  "description": "Electron supporting package to compile JS and CSS in Electron applications",
+  "description": "Compiler implementations for electron-compile",
   "main": "lib/main.js",
   "scripts": {
-    "compile": "babel --stage 0 -d lib/ src/ && babel --stage 0 --ignore 'test/fixtures/*' -d test-dist/ test/",
-    "prepublish": "npm run compile",
-    "test": "npm run compile && mocha test-dist/*"
-  },
-  "bin": {
-    "electron-compile": "lib/cli.js"
+    "compile": "babel --stage 0 -d lib/ src/",
+    "prepublish": "npm run compile"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/paulcbetts/electron-compile"
+    "url": "https://github.com/paulcbetts/electron-compilers"
   },
   "keywords": [
     "electron"
@@ -21,11 +17,12 @@
   "author": "Paul Betts <paul@paulbetts.org>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/paulcbetts/electron-compile/issues"
+    "url": "https://github.com/paulcbetts/electron-compilers/issues"
   },
-  "homepage": "https://github.com/paulcbetts/electron-compile",
+  "homepage": "https://github.com/paulcbetts/electron-compilers",
   "dependencies": {
-    "babel-core": "^5.6.15",
+    "babel": "^5.6.14",
+    "babel-core": "^5.6.14",
     "btoa": "^1.1.2",
     "coffee-script": "^1.9.2",
     "less": "^2.5.0",
@@ -35,14 +32,6 @@
     "node-sass": "^3.1.1",
     "promise": "^7.0.1",
     "rimraf": "^2.3.3",
-    "typescript-simple": "^1.0.3",
-    "yargs": "^3.8.0"
-  },
-  "devDependencies": {
-    "babel": "^5.6.14",
-    "chai": "^2.3.0",
-    "chai-as-promised": "^5.0.0",
-    "chai-spies": "^0.6.0",
-    "mocha": "^2.2.4"
+    "typescript-simple": "^1.0.3"
   }
 }
