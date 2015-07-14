@@ -64,6 +64,11 @@ export default function initializeProtocolHook(availableCompilers, cacheDir) {
     if (process.platform === 'win32') {
       filePath = filePath.slice(1);
     }
+    
+    // NB: Special-case files coming from atom.asar or node_modules
+    if (filePath.match(/[\/\\]atom.asar/) || filePath.match(/[\/\\]node_modules/)) {
+        return new protocol.RequestFileJob(filePath);
+    }
   
     let compiler = null;
     try {
