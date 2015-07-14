@@ -100,9 +100,17 @@ export function init(cacheDir=null, skipRegister=false) {
 // your files progmatically via {compile}/{compileAll}, you also need to
 // pass in the object that was generated at the time from calling
 // {collectCompilerInformation} from your array of registered compilers.
+//
+// cacheDir: The path to a directory of precompiled assets
+//
+// compilerInformation (optional): The object returned by 
+// {collectCompilerInformation}, only necessary if you generated the cache
+// via {compile}/{compileAll} manually.
+//
+// options (optional): Additional options to pass to {initWithOptions}.
+//
+// Returns nothing.
 export function initForProduction(cacheDir, compilerInformation=null, options={}) {
-  let compilers = null;
-  
   if (!compilerInformation) {
     try {
       compilerInformation = JSON.parse(
