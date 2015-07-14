@@ -58,15 +58,19 @@ describe('exports for this library', function() {
 
         compileAll(source, compilers);
 
-        let sourceFileCount = 0;
-        forAllFiles(source, () => sourceFileCount++);
+        let sourceFiles = [];
+        forAllFiles(source, (x) => sourceFiles.push(x));
 
-        let targetFileCount = 0;
-        forAllFiles(targetDir, () => targetFileCount++);
+        let targetFiles = [];
+        forAllFiles(targetDir, (x) => targetFiles.push(x));
 
-        //console.log(`compileAll: ${sourceFileCount} files in source, ${targetFileCount} in target`);
-        expect(sourceFileCount === targetFileCount).to.be.ok;
-        expect(sourceFileCount !== 0).to.be.ok;
+        if (sourceFiles.length !== targetFiles.length) {
+          console.log(sourceFiles);
+          console.log(targetFiles);
+        }
+        
+        expect(sourceFiles.length === targetFiles.length).to.be.ok;
+        expect(sourceFiles.length !== 0).to.be.ok;
       } finally {
         rimraf.sync(targetDir);
       }
