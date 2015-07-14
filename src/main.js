@@ -5,6 +5,8 @@ import path from 'path';
 import initializeProtocolHook from './protocol-hook';
 import forAllFiles from './for-all-files';
 
+import ReadOnlyCompiler from './read-only-compiler';
+
 // NB: We intentionally delay-load this so that in production, you can create
 // cache-only versions of these compilers
 let allCompilerClasses = null;
