@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import CompileCache from '../compile-cache';
+import CompileCache from 'electron-compile-cache';
 import fs from 'fs';
 
 let babel = require('babel-core');

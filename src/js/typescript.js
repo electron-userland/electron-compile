@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import CompileCache from '../compile-cache';
+import CompileCache from 'electron-compile-cache';
 
 let tss = null;
 const extensions = ['ts'];

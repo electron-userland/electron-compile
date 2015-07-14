@@ -2,7 +2,7 @@
 
 import _ from 'lodash';
 import path from 'path';
-import CompileCache from '../compile-cache';
+import CompileCache from 'electron-compile-cache';
 
 let lessjs = null;
 const extensions = ['less'];

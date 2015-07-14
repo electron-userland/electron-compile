@@ -2,7 +2,7 @@ import _ from 'lodash';
 import path from 'path';
 import btoa from 'btoa';
 
-import CompileCache from '../compile-cache';
+import CompileCache from 'electron-compile-cache';
 
 let coffee = null;
 const extensions = ['coffee'];
