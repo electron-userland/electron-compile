@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
-import {compile, init} from './main';
+import {compile, init, collectCompilerInformation} from './main';
 import forAllFiles from './for-all-files';
 import _ from 'lodash';
+import fs from 'fs';
+import path from 'path';
 
 const yargs = require('yargs')
   .usage('Usage: electron-compile --target [target-path] paths...')
@@ -13,7 +15,7 @@ const yargs = require('yargs')
   .help('h')
   .alias('h', 'help')
   .epilog('Copyright 2015');
-  
+
 const argv = yargs.argv;
 
 if (!argv._ || argv._.length < 1) {
@@ -35,12 +37,16 @@ _.each(sourceDirs, (sourceDir) => {
     } catch (e) {
       console.error(`Failed to compile ${f}!`);
       console.error(e.message);
-      
+
       if (argv.v) console.error(e.stack);
       console.error("\n");
       allSucceeded = false;
     }
   });
 });
+
+fs.writeFileSync(
+  path.join(targetDir, 'settings.json'),
+  JSON.stringify(collectCompilerInformation()));
 
 process.exit(allSucceeded ? 0 : -1);
