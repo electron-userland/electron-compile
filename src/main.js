@@ -171,7 +171,11 @@ export function collectCompilerInformation(compilers=null) {
   return _.reduce(compilers, (acc,x) => {
     let opts = x.getCompilerInformation();
     let key = opts.extensions.join(',');
-    acc[key] = opts;
+
+    acc[key] = {
+      options: opts,
+      mimeType: x.getMimeType()
+    };
 
     return acc;
   }, {});
