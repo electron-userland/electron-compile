@@ -3,12 +3,13 @@ require('./support.js');
 import _ from 'lodash';
 import path from 'path';
 import rimraf from 'rimraf';
+import ReadOnlyCompiler from '../lib/read-only-compiler';
 
 const TypeScriptCompiler = global.importCompilerByExtension('ts');
 const LessCompiler = global.importCompilerByExtension('less');
 
 import forAllFiles from '../lib/for-all-files';
-import {compile, compileAll, createAllCompilers} from '../lib/main';
+import {compile, compileAll, createAllCompilers, collectCompilerInformation} from '../lib/main';
 
 describe('exports for this library', function() {
   describe('the compile method', function() {
@@ -67,7 +68,7 @@ describe('exports for this library', function() {
         expect(sourceFileCount === targetFileCount).to.be.ok;
         expect(sourceFileCount !== 0).to.be.ok;
       } finally {
-        //rimraf.sync(targetDir);
+        rimraf.sync(targetDir);
       }
     });
 
@@ -128,4 +129,43 @@ describe('exports for this library', function() {
       expect(_.find(output.split("\n"), (x) => x.match(/\/\//))).not.to.be.ok;
     });
   });
+  
+  describe('The collectCompilerInformation method', function() {
+    it('should have all of these neat fields in its result', function() {
+      let compilers = createAllCompilers();
+      _.each(compilers, (x) => x.setCacheDirectory(null));
+      
+      let result = collectCompilerInformation(compilers); 
+      
+      expect(result['less'].mimeType).to.be.ok;
+      expect(result['less'].options).to.be.ok;
+    });
+  });
 });
+
+describe('scenario tests', function() {
+  it('should be able to create a cache, then use it to resolve files solely with read-only-compiler', function() {
+    let sourceDir = path.join(__dirname, '..', 'src');
+    let targetDir = path.join(__dirname, 'readOnlyCompilerTest');
+    
+    try {
+      let realCompilers = createAllCompilers();
+      _.each(realCompilers, (x) => x.setCacheDirectory(targetDir));
+      
+      compileAll(sourceDir, realCompilers);
+      let compilerInfo = collectCompilerInformation(realCompilers);
+      
+      let fakeCompilers = _.map(
+        Object.keys(compilerInfo), 
+        (x) => new ReadOnlyCompiler(compilerInfo[x].options, compilerInfo[x].mimeType));
+        
+      // NB: Since 100% of these files are already in cache, they'll all be hits,
+      // compileAll will just pass them all. If ReadOnlyCompiler finds a file it
+      // doesn't know, it'll throw
+      _.each(fakeCompilers, (x) => x.setCacheDirectory(targetDir));
+      compileAll(sourceDir, fakeCompilers);
+    } finally {
+      rimraf.sync(targetDir);
+    }
+  });
+})
