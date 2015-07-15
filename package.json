@@ -25,8 +25,8 @@
   },
   "homepage": "https://github.com/paulcbetts/electron-compile",
   "dependencies": {
-    "electron-compile-cache": "^0.5.0",
-    "electron-compilers": "^0.5.0",
+    "electron-compile-cache": "^0.6.0",
+    "electron-compilers": "^0.6.0",
     "lodash": "^3.8.0",
     "mkdirp": "^0.5.0",
     "yargs": "^3.8.0"
