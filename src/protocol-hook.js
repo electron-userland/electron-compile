@@ -32,8 +32,16 @@ export function rigHtmlDocumentToInitializeElectronCompile(doc) {
   return lines.join("\n");
 }
 
-export default function initializeProtocolHook(availableCompilers, cacheDir) {
+export default function initializeProtocolHook(availableCompilers, initializeOpts) {
   protocol = protocol || require('protocol');
+  
+  // NB: If we were initialized with custom compilers, there is no way that we 
+  // can recreate that automatically.
+  let disableAutoRendererSetup = initializeOpts.compilers && !initializeOpts.production;
+  
+  let electronCompileSetupCode = initializeOpts.production ?
+    `if (window.require) { require('electron-compile').initForProduction("${initializeOpts.cacheDir}", ${JSON.stringify(initializeOpts.compilerInformation)}) }` :
+    `if (window.require) { require('electron-compile').initWithOptions(${JSON.stringify(initializeOpts.compilerInformation)}) }`;
   
   protocol.registerProtocol('file', (request) => {
     let uri = url.parse(request.url);
@@ -41,7 +49,7 @@ export default function initializeProtocolHook(availableCompilers, cacheDir) {
     if (request.url.indexOf(magicWords) > -1) {
       return new protocol.RequestStringJob({
         mimeType: 'text/javascript',
-        data: `if (window.require) { require('electron-compile').init("${cacheDir}") }`
+        data: electronCompileSetupCode
       });
     }
 
@@ -74,12 +82,12 @@ export default function initializeProtocolHook(availableCompilers, cacheDir) {
     try {
       compiler = _.find(availableCompilers, (x) => x.shouldCompileFile(filePath));
       
-      if (filePath.match(/\.html?$/i)) {
+      if (!disableAutoRendererSetup && filePath.match(/\.html?$/i)) {
         let contents = fs.readFileSync(filePath, 'utf8');
 
         return new protocol.RequestStringJob({
           mimeType: "text/html",
-          data: rigHtmlDocumentToInitializeElectronCompile(contents, cacheDir)
+          data: rigHtmlDocumentToInitializeElectronCompile(contents, initializeOpts.cacheDir)
         });
       }
       

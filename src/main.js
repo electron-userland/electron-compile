@@ -123,7 +123,7 @@ export function initForProduction(cacheDir, compilerInformation=null, options={}
   }
   
   let compilers = createProductionCompilersForInfo(compilerInformation);
-  let opts = _.extend({}, options, { cacheDir, compilers });
+  let opts = _.extend({}, options, { cacheDir, compilers, production: true, compilerInformation });
   initWithOptions(opts);
 }
 
@@ -178,7 +178,7 @@ export function initWithOptions(options={}) {
   if (!process.type || process.type !== 'browser') return;
 
   const app = require('app');
-  const initProtoHook = () => initializeProtocolHook(availableCompilers, cacheDir);
+  const initProtoHook = () => initializeProtocolHook(availableCompilers, options);
 
   if (app.isReady()) {
     initProtoHook();
