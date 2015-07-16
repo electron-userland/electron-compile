@@ -5,7 +5,7 @@ import fs from 'fs';
 let babel = null;
 
 const invalidOpts = ['extension', 'extensions', 'version'];
-const extensions = ['js', 'jsx'];
+const extensions = ['js'];
 
 export default class BabelCompiler extends CompileCache {
   constructor(options={}) {
@@ -34,9 +34,14 @@ export default class BabelCompiler extends CompileCache {
     return this.compilerInformation;
   }
 
-  compile(sourceCode) {
+  compile(sourceCode, filePath) {
     this.babelCompilerOpts = this.babelCompilerOpts || _.omit(this.compilerInformation, invalidOpts);
-    return babel.transform(sourceCode, this.babelCompilerOpts).code;
+    let opts = _.extend({}, this.babelCompilerOpts, {
+      filename: filePath,
+      ast: false
+    });
+
+    return babel.transform(sourceCode, opts).code;
   }
 
   getMimeType() { return 'text/javascript'; }
