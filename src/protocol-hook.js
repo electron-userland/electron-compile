@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import url from 'url';  
 import fs from 'fs';
+import btoa from 'btoa';
 
 const magicWords = "__magic__file__to__help__electron__compile.js";
 
@@ -41,9 +42,10 @@ export default function initializeProtocolHook(availableCompilers, initializeOpt
   
   // NB: Electron 0.30.0 is somehow including the script tag over and over, we 
   // need to bail if we've already set up.
+  let encodedOpts = btoa(JSON.stringify(initializeOpts));
   let electronCompileSetupCode = initializeOpts.production ?
-    `if (window.require && !window.__electron_compile_set_up) { window.__electron_compile_set_up = true; require('electron-compile').initForProduction("${initializeOpts.cacheDir}", ${JSON.stringify(initializeOpts.compilerInformation)}) }` :
-    `if (window.require && !window.__electron_compile_set_up) { window.__electron_compile_set_up = true; require('electron-compile').initWithOptions(${JSON.stringify(initializeOpts.compilerInformation)}) }`;
+    `if (window.require && !window.__electron_compile_set_up) { window.__electron_compile_set_up = true; var opts = JSON.parse(atob("${encodedOpts}")); require('electron-compile').initForProduction(opts.cacheDir, opts.compilerInformation); }` :
+    `if (window.require && !window.__electron_compile_set_up) { window.__electron_compile_set_up = true; var opts = JSON.parse(atob("${encodedOpts}")); require('electron-compile').initWithOptions(opts); }`;
   
   protocol.registerProtocol('file', (request) => {
     let uri = url.parse(request.url);

@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/paulcbetts/electron-compile",
   "dependencies": {
+    "btoa": "^1.1.2",
     "electron-compile-cache": "^0.6.0",
     "electron-compilers": "^0.6.2",
     "lodash": "^3.8.0",
