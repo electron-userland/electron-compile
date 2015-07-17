@@ -39,9 +39,11 @@ export default function initializeProtocolHook(availableCompilers, initializeOpt
   // can recreate that automatically.
   let disableAutoRendererSetup = initializeOpts.compilers && !initializeOpts.production;
   
+  // NB: Electron 0.30.0 is somehow including the script tag over and over, we 
+  // need to bail if we've already set up.
   let electronCompileSetupCode = initializeOpts.production ?
-    `if (window.require) { require('electron-compile').initForProduction("${initializeOpts.cacheDir}", ${JSON.stringify(initializeOpts.compilerInformation)}) }` :
-    `if (window.require) { require('electron-compile').initWithOptions(${JSON.stringify(initializeOpts.compilerInformation)}) }`;
+    `if (window.require && !window.__electron_compile_set_up) { window.__electron_compile_set_up = true; require('electron-compile').initForProduction("${initializeOpts.cacheDir}", ${JSON.stringify(initializeOpts.compilerInformation)}) }` :
+    `if (window.require && !window.__electron_compile_set_up) { window.__electron_compile_set_up = true; require('electron-compile').initWithOptions(${JSON.stringify(initializeOpts.compilerInformation)}) }`;
   
   protocol.registerProtocol('file', (request) => {
     let uri = url.parse(request.url);
