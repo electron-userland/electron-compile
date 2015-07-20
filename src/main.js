@@ -19,16 +19,38 @@ let allCompilerClasses = null;
 export function createAllCompilers(compilerOpts=null) {
   allCompilerClasses = allCompilerClasses || require('electron-compilers');
 
-  return _.map(allCompilerClasses, (Klass) => {
-    if (!compilerOpts) return new Klass();
-
+  let HtmlCompiler = null;
+  let ret = _.map(allCompilerClasses, (Klass) => {
     let exts = Klass.getExtensions();
+    
+    // NB: Inline HTML is a Special Snowflake
+    if (_.find(exts, (x) => x === 'html')) {
+      HtmlCompiler = Klass;
+      return null;
+    }
+    
+    if (!compilerOpts) return new Klass();
+    
     let optsForUs = _.reduce(
       exts,
       (acc,x) => _.extend(acc, compilerOpts[x] || {}),
       {});
 
     return new Klass(optsForUs);
+  });
+  
+  // Replace the slot we left in the compiler list with the inline HTML compiler
+  return _.map(ret, (x) => {
+    if (x != null) return x;
+    
+    return new HtmlCompiler((sourceCode, filePath) => {
+      let compiler = _.find(ret, (x) => x && x.shouldCompileFile(filePath, sourceCode));
+      if (!compiler) {
+        throw new Error("Couldn't find a compiler for " + filePath);
+      }
+      
+      return compiler.loadFile(null, filePath, true, sourceCode);      
+    });
   });
 }
 
