@@ -1,7 +1,5 @@
 'use babel';
 
-import _ from 'lodash';
-import path from 'path';
 import CompileCache from 'electron-compile-cache';
 import cheerio from 'cheerio';
 
@@ -20,7 +18,7 @@ export default class InlineHtmlCompiler extends CompileCache {
   constructor(compileMethod) {
     super();
     
-    this.compile = compileMethod;
+    this.innerCompile = compileMethod;
     this.compilerInformation = { extensions: extensions };
   }
   
@@ -39,7 +37,7 @@ export default class InlineHtmlCompiler extends CompileCache {
       let mimeType = $(el).attr('type');
       let path = `${filePath}:inline_${i}.${this.getExtensionFromMimeType(mimeType, 'style')}`;
       
-      $(el).text(this.compile($(el).text(), path));
+      $(el).text(this.innerCompile($(el).text(), path));
     });
     
     $('script').map((i, el) => {
@@ -49,7 +47,7 @@ export default class InlineHtmlCompiler extends CompileCache {
       let mimeType = $(el).attr('type');
       let path = `${filePath}:inline_${i}.${this.getExtensionFromMimeType(mimeType, 'script')}`;
       
-      $(el).text(this.compile($(el).text(), path));
+      $(el).text(this.innerCompile($(el).text(), path));
     });
     
     return $.html();
