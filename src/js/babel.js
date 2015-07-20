@@ -10,7 +10,7 @@ const extensions = ['js'];
 export default class BabelCompiler extends CompileCache {
   constructor(options={}) {
     super();
-
+    
     this.compilerInformation = _.extend({}, {
       extensions: extensions,
       sourceMaps: 'inline',
@@ -46,20 +46,21 @@ export default class BabelCompiler extends CompileCache {
 
   getMimeType() { return 'text/javascript'; }
 
-  shouldCompileFile(filePath) {
+  shouldCompileFile(filePath, sourceCode) {
     let ret = super.shouldCompileFile(filePath);
     if (!ret) return false;
     
     // Read the first 4k of the file
-    let fd = fs.openSync(filePath, 'r');
-    let sourceCode = '';
-    
-    try {
-      let buf = new Buffer(4*1024);
-      fs.readSync(fd, buf, 0, 4*1024, 0);
-      sourceCode = buf.toString('utf8');
-    } finally {
-      fs.closeSync(fd);
+    if (!sourceCode) {
+      let fd = fs.openSync(filePath, 'r');
+      
+      try {
+        let buf = new Buffer(4*1024);
+        fs.readSync(fd, buf, 0, 4*1024, 0);
+        sourceCode = buf.toString('utf8');
+      } finally {
+        fs.closeSync(fd);
+      }
     }
 
     return ret && !(/^("use nobabel"|'use nobabel')/.test(sourceCode));
