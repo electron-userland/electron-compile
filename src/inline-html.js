@@ -37,7 +37,7 @@ export default class InlineHtmlCompiler extends CompileCache {
       let mimeType = $(el).attr('type');
       let path = `${filePath}:inline_${i}.${this.getExtensionFromMimeType(mimeType, 'style')}`;
       
-      $(el).text(this.innerCompile($(el).text(), path));
+      $(el).text("\n" + this.innerCompile($(el).text(), path) + "\n");
     });
     
     $('script').map((i, el) => {
@@ -47,7 +47,7 @@ export default class InlineHtmlCompiler extends CompileCache {
       let mimeType = $(el).attr('type');
       let path = `${filePath}:inline_${i}.${this.getExtensionFromMimeType(mimeType, 'script')}`;
       
-      $(el).text(this.innerCompile($(el).text(), path));
+      $(el).text("\n" + this.innerCompile($(el).text(), path) + "\n");
     });
     
     return $.html();
