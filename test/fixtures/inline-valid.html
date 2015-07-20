@@ -1,0 +1,51 @@
+<dom-module id="loading-screen">
+  <style type="text/less">
+  :host {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+  </style>
+
+  <template>
+    <iron-pages id="selector" selected="{{_pageForScreen(screen)}}">
+      <div class="page">
+      </div>
+
+      <div class="page">
+      </div>
+
+      <div class="page">
+      </div>
+    </iron-pages>
+  </template>
+
+  <script>
+  global.Polymer({
+    is: 'loading-screen',
+    properties: {
+      screen: {
+        type: String,
+        reflectToAttribute: true
+      }
+    },
+    
+    _emitRetry: () => {
+      this.fire('retry');
+    },
+
+    _pageForScreen: (theScreen) => {
+      return pageMap[theScreen];
+    }
+  });
+  </script>
+
+  <script src="https://lol"></script>
+  
+  <script type="application/coffeescript">
+  f = ->
+    foo();
+  </script>
+</dom-module>

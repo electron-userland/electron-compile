@@ -82,17 +82,15 @@ export default function initializeProtocolHook(availableCompilers, initializeOpt
         return new protocol.RequestFileJob(filePath);
     }
   
+    let sourceCode = null;
     let compiler = null;
+    
     try {
       compiler = _.find(availableCompilers, (x) => x.shouldCompileFile(filePath));
       
       if (!disableAutoRendererSetup && filePath.match(/\.html?$/i)) {
         let contents = fs.readFileSync(filePath, 'utf8');
-
-        return new protocol.RequestStringJob({
-          mimeType: "text/html",
-          data: rigHtmlDocumentToInitializeElectronCompile(contents, initializeOpts.cacheDir)
-        });
+        sourceCode = rigHtmlDocumentToInitializeElectronCompile(contents, initializeOpts.cacheDir);
       }
       
       if (!compiler) {
@@ -103,9 +101,8 @@ export default function initializeProtocolHook(availableCompilers, initializeOpt
       return new protocol.RequestErrorJob(-2); // net::FAILED
     }
 
-    let sourceCode = null;
     try {
-      sourceCode = fs.readFileSync(filePath, 'utf8');
+      sourceCode = sourceCode || fs.readFileSync(filePath, 'utf8');
     } catch (e) {
       // TODO: Actually come correct with these error codes
       if (e.errno === 34) {

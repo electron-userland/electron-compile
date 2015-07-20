@@ -26,8 +26,8 @@
   "homepage": "https://github.com/paulcbetts/electron-compile",
   "dependencies": {
     "btoa": "^1.1.2",
-    "electron-compile-cache": "^0.6.0",
-    "electron-compilers": "^0.6.2",
+    "electron-compile-cache": "^0.6.2",
+    "electron-compilers": "^0.7.0",
     "lodash": "^3.8.0",
     "mkdirp": "^0.5.0",
     "yargs": "^3.8.0"
@@ -37,6 +37,7 @@
     "chai": "^2.3.0",
     "chai-as-promised": "^5.0.0",
     "chai-spies": "^0.6.0",
+    "cheerio": "^0.19.0",
     "mocha": "^2.2.4",
     "rimraf": "^2.4.1"
   }
