@@ -10,7 +10,7 @@ const mimeTypeToExtension = {
   'text/scss': 'scss',
   'text/sass': 'sass',
   'application/javascript': 'js',
-  'application/coffeescript': 'cs',
+  'application/coffeescript': 'coffee',
   'application/typescript': 'ts'
 };
 
