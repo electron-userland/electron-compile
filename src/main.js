@@ -5,7 +5,8 @@ const filenames = [
   'css/scss',
   'js/babel',
   'js/coffeescript',
-  'js/typescript'
+  'js/typescript',
+  'inline-html'
 ];
 
 export default _.map(filenames, (x) => require('./' + x));
