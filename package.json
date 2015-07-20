@@ -27,7 +27,7 @@
   "dependencies": {
     "btoa": "^1.1.2",
     "electron-compile-cache": "^0.6.2",
-    "electron-compilers": "^0.6.2",
+    "electron-compilers": "^0.7.0",
     "lodash": "^3.8.0",
     "mkdirp": "^0.5.0",
     "yargs": "^3.8.0"
