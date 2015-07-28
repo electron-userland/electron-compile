@@ -87,12 +87,7 @@ export default function initializeProtocolHook(availableCompilers, initializeOpt
     
     try {
       compiler = _.find(availableCompilers, (x) => x.shouldCompileFile(filePath));
-      
-      if (!disableAutoRendererSetup && filePath.match(/\.html?$/i)) {
-        let contents = fs.readFileSync(filePath, 'utf8');
-        sourceCode = rigHtmlDocumentToInitializeElectronCompile(contents, initializeOpts.cacheDir);
-      }
-      
+    
       if (!compiler) {
         return new protocol.RequestFileJob(filePath);
       }
@@ -121,6 +116,10 @@ export default function initializeProtocolHook(availableCompilers, initializeOpt
         mimeType: compiler.getMimeType(),
         data: `Failed to compile ${filePath}: ${e.message}\n${e.stack}`
       });
+    }
+        
+    if (!disableAutoRendererSetup && filePath.match(/\.html?$/i)) {
+      realSourceCode = rigHtmlDocumentToInitializeElectronCompile(realSourceCode, initializeOpts.cacheDir);
     }
 
     return new protocol.RequestStringJob({
