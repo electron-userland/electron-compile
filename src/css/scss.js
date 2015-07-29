@@ -45,7 +45,7 @@ export default class ScssCompiler extends CompileCache {
     });
 
     let result = scss.renderSync(opts);
-    return result.toString('utf8');
+    return result.css.toString('utf8');
   }
 
   getMimeType() { return 'text/css'; }
