@@ -21,7 +21,9 @@ for (let compiler of toTest) {
       fixture.getCachePath = () => 'cache.txt';
 
       let result = fixture.loadFile(null, input, true);
+
       expect(result.length > 0).to.be.ok;
+      expect(result.split('\n').length > 1).to.be.ok;
     });
 
     it(`should fail on invalid.${compiler.extension}`, function() {
