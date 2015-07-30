@@ -5,7 +5,7 @@ import fs from 'fs';
 let babel = null;
 
 const invalidOpts = ['extension', 'extensions', 'version'];
-const extensions = ['js'];
+const extensions = ['js', 'jsx'];
 
 export default class BabelCompiler extends CompileCache {
   constructor(options={}) {
