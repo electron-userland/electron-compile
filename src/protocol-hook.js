@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import url from 'url';  
+import url from 'url';
 import fs from 'fs';
 import btoa from 'btoa';
 
@@ -11,45 +11,45 @@ export function rigHtmlDocumentToInitializeElectronCompile(doc) {
   let lines = doc.split("\n");
   let replacement = `<head><script src="${magicWords}"></script>`;
   let replacedHead = false;
-  
+
   for (let i=0; i < lines.length; i++) {
     if (!lines[i].match(/<head>/i)) continue;
-    
+
     lines[i] = (lines[i]).replace(/<head>/i, replacement);
     replacedHead = true;
     break;
   }
-  
+
   if (!replacedHead) {
     replacement = `<html$1><head><script src="${magicWords}"></script></head>`;
     for (let i=0; i < lines.length; i++) {
       if (!lines[i].match(/<html/i)) continue;
-      
+
       lines[i] = (lines[i]).replace(/<html([^>]+)>/i, replacement);
       break;
     }
   }
-  
+
   return lines.join("\n");
 }
 
 export default function initializeProtocolHook(availableCompilers, initializeOpts) {
   protocol = protocol || require('protocol');
-  
-  // NB: If we were initialized with custom compilers, there is no way that we 
+
+  // NB: If we were initialized with custom compilers, there is no way that we
   // can recreate that automatically.
   let disableAutoRendererSetup = initializeOpts.compilers && !initializeOpts.production;
-  
-  // NB: Electron 0.30.0 is somehow including the script tag over and over, we 
+
+  // NB: Electron 0.30.0 is somehow including the script tag over and over, we
   // need to bail if we've already set up.
-  let encodedOpts = btoa(JSON.stringify(initializeOpts));
+  let encodedOpts = btoa(encodeURIComponent(JSON.stringify(initializeOpts)));
   let electronCompileSetupCode = initializeOpts.production ?
-    `if (window.require && !window.__electron_compile_set_up) { window.__electron_compile_set_up = true; var opts = JSON.parse(atob("${encodedOpts}")); require('electron-compile').initForProduction(opts.cacheDir, opts.compilerInformation); }` :
-    `if (window.require && !window.__electron_compile_set_up) { window.__electron_compile_set_up = true; var opts = JSON.parse(atob("${encodedOpts}")); require('electron-compile').initWithOptions(opts); }`;
-  
+    `if (window.require && !window.__electron_compile_set_up) { window.__electron_compile_set_up = true; var opts = JSON.parse(decodeURIComponent(atob("${encodedOpts}"))); require('electron-compile').initForProduction(opts.cacheDir, opts.compilerInformation); }` :
+    `if (window.require && !window.__electron_compile_set_up) { window.__electron_compile_set_up = true; var opts = JSON.parse(decodeURIComponent(atob("${encodedOpts}"))); require('electron-compile').initWithOptions(opts); }`;
+
   protocol.registerProtocol('file', (request) => {
     let uri = url.parse(request.url);
-    
+
     if (request.url.indexOf(magicWords) > -1) {
       return new protocol.RequestStringJob({
         mimeType: 'text/javascript',
@@ -70,24 +70,24 @@ export default function initializeProtocolHook(availableCompilers, initializeOpt
       });
     }
 
-    let filePath = uri.pathname;
+    let filePath = decodeURIComponent(uri.pathname);
 
     // NB: pathname has a leading '/' on Win32 for some reason
     if (process.platform === 'win32') {
       filePath = filePath.slice(1);
     }
-    
+
     // NB: Special-case files coming from atom.asar or node_modules
     if (filePath.match(/[\/\\]atom.asar/) || filePath.match(/[\/\\]node_modules/)) {
         return new protocol.RequestFileJob(filePath);
     }
-  
+
     let sourceCode = null;
     let compiler = null;
-    
+
     try {
       compiler = _.find(availableCompilers, (x) => x.shouldCompileFile(filePath));
-    
+
       if (!compiler) {
         return new protocol.RequestFileJob(filePath);
       }
@@ -117,7 +117,7 @@ export default function initializeProtocolHook(availableCompilers, initializeOpt
         data: `Failed to compile ${filePath}: ${e.message}\n${e.stack}`
       });
     }
-        
+
     if (!disableAutoRendererSetup && filePath.match(/\.html?$/i)) {
       realSourceCode = rigHtmlDocumentToInitializeElectronCompile(realSourceCode, initializeOpts.cacheDir);
     }
