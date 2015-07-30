@@ -5,6 +5,7 @@ import path from 'path';
 
 const toTest = [
   { klass: global.importCompilerByExtension('js'), extension: 'js' },
+  { klass: global.importCompilerByExtension('jsx'), extension: 'jsx' },
   { klass: global.importCompilerByExtension('ts'), extension: 'ts' },
   { klass: global.importCompilerByExtension('coffee'), extension: 'coffee' },
 ];
