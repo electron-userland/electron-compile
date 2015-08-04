@@ -23,7 +23,7 @@ export default class ScssCompiler extends CompileCache {
 
     this.compilerInformation = _.extend(defaultOptions, options, requiredOptions);
   }
-  
+
   static getExtensions() {
     return extensions;
   }
@@ -35,6 +35,12 @@ export default class ScssCompiler extends CompileCache {
   compile(sourceCode, filePath) {
     let paths = Object.keys(this.seenFilePaths);
     paths.unshift('.');
+
+    //concat includePaths array if specified in constructor options
+    if (this.compilerInformation.includePaths) {
+      paths = paths.concat(this.compilerInformation.includePaths);
+    }
+
 
     let opts = _.extend({}, this.compilerInformation, {
       data: sourceCode,
