@@ -1,6 +1,6 @@
 {
   "name": "electron-compile",
-  "version": "0.7.4",
+  "version": "0.8.0",
   "description": "Electron supporting package to compile JS and CSS in Electron applications",
   "main": "lib/main.js",
   "scripts": {
