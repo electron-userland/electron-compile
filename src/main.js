@@ -7,6 +7,10 @@ import forAllFiles from './for-all-files';
 
 import ReadOnlyCompiler from './read-only-compiler';
 
+// We don't actually care about the x-require constructor, we just want to 
+// register the element
+require('./x-require');
+
 // NB: We intentionally delay-load this so that in production, you can create
 // cache-only versions of these compilers
 let allCompilerClasses = null;
