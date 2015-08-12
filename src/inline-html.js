@@ -48,7 +48,7 @@ export default class InlineHtmlCompiler extends CompileCache {
       let mimeType = $(el).attr('type');
       let path = `${filePath}:inline_${i}.${this.getExtensionFromMimeType(mimeType, 'script')}`;
       
-      $(el).text("\n" + this.innerCompile($(el).text(), path) + "\n");
+      $(el).text(this.innerCompile($(el).text(), path));
       $(el).attr('type', 'application/javascript');
     });
     
