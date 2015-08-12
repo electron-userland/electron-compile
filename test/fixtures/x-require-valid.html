@@ -1,0 +1,30 @@
+<dom-module id="loading-screen">
+  <style type="text/less">
+  :host {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    
+    ul {
+      font-family: "MS Sans Serif";
+    }
+  }
+  </style>
+
+  <template>
+    <iron-pages id="selector" selected="{{_pageForScreen(screen)}}">
+      <div class="page">
+      </div>
+
+      <div class="page">
+      </div>
+
+      <div class="page">
+      </div>
+    </iron-pages>
+  </template>
+  
+  <x-require src='./valid'></x-require>
+</dom-module>
