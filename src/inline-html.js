@@ -36,6 +36,10 @@ export default class InlineHtmlCompiler extends CompileCache {
     
     $('style').map((i, el) => {
       let mimeType = $(el).attr('type');
+      if (!mimeType || mimeType.length < 2) {
+        return;
+      }
+
       let path = `${filePath}:inline_${i}.${this.getExtensionFromMimeType(mimeType, 'style')}`;
       
       $(el).text("\n" + this.innerCompile($(el).text(), path) + "\n");
