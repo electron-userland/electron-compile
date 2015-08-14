@@ -12,14 +12,10 @@ export default (() => {
       if (newVal.match(/^file:/i)) {
         let theUrl = url.parse(newVal);
         filePath = decodeURIComponent(theUrl.pathname);
+
         if (process.platform === 'win32') {
           filePath = filePath.slice(1);
         }
-      }
-      
-      // Disallow require from reaching outside the application bundle
-      if (filePath.toLowerCase().indexOf(process.resourcesPath.toLowerCase()) < 0) {
-        throw new Error(`Cannot require ${filePath} outside of app bundle`);
       }
       
       // NB: We don't do any path canonicalization here because we rely on
