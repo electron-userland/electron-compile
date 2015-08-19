@@ -47,7 +47,7 @@ export default function initializeProtocolHook(availableCompilers, initializeOpt
     `if (window.require && !window.__electron_compile_set_up) { window.__electron_compile_set_up = true; var opts = JSON.parse(decodeURIComponent(atob("${encodedOpts}"))); require('electron-compile').initForProduction(opts.cacheDir, opts.compilerInformation); }` :
     `if (window.require && !window.__electron_compile_set_up) { window.__electron_compile_set_up = true; var opts = JSON.parse(decodeURIComponent(atob("${encodedOpts}"))); require('electron-compile').initWithOptions(opts); }`;
 
-  protocol.registerProtocol('file', (request) => {
+  let handler = (request) => {
     let uri = url.parse(request.url);
 
     if (request.url.indexOf(magicWords) > -1) {
@@ -126,5 +126,16 @@ export default function initializeProtocolHook(availableCompilers, initializeOpt
       mimeType: compiler.getMimeType(),
       data: realSourceCode,
     });
-  });
+  };
+
+  // NB: Electron 0.30.4 and higher require us to call interceptProtocol, not 
+  // registerProtocol
+  let versions = _.map(process.versions['electron'].split('.'), (x) => parseInt(x));
+  let useIntercept = (versions[1] * 100 + versions[2] >= 3004);
+
+  if (useIntercept) {
+    protocol.interceptProtocol('file', handler);
+  } else {
+    protocol.registerProtocol('file', handler);
+  }
 }
