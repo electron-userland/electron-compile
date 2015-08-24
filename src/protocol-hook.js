@@ -131,11 +131,14 @@ export default function initializeProtocolHook(availableCompilers, initializeOpt
   // NB: Electron 0.30.4 and higher require us to call interceptProtocol, not 
   // registerProtocol
   let versions = _.map(process.versions['electron'].split('.'), (x) => parseInt(x));
-  let useIntercept = (versions[1] * 100 + versions[2] >= 3004);
+  let versionInteger = versions[1] * 100 + versions[2];
+  let useIntercept = versionInteger >= 3004 && versionInteger < 3100;
+  let useRegister = versionInteger < 3004;
 
   if (useIntercept) {
     protocol.interceptProtocol('file', handler);
-  } else {
+  } else if (useRegister) {
     protocol.registerProtocol('file', handler);
   }
+
 }
