@@ -87,14 +87,23 @@ export function compile(filePath, compilers=null) {
 // Public: Recursively compiles an entire directory of files.
 //
 // rootDirectory: The path on disk to the directory of files to compile.
+//
 // compilers: (optional) - An {Array} of objects conforming to {CompileCache}
 //                         that will be tried in-order to compile code.
 //
+// shouldCompile: (optional) - A {Function} that determines whether to skip a 
+//                             file given its full path as a parameter. If this
+//                             function returns 'false', the file is skipped.
+//
 // Returns nothing.
-export function compileAll(rootDirectory, compilers=null) {
-  forAllFiles(rootDirectory, (f) => compile(f, compilers));
+export function compileAll(rootDirectory, compilers=null, shouldCompile=null) {
+  let should = shouldCompile || () => true;
+  
+  forAllFiles(rootDirectory, (f) => {
+    if (!should(f)) return;
+    compile(f, compilers);
+  });
 }
-
 
 // Public: Initializes the electron-compile library. Once this method is called,
 //         all JavaScript and CSS that is loaded will now be first transpiled, in
