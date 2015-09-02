@@ -1,11 +1,11 @@
-require('./regenerator');
-
 import _ from 'lodash';
 import url from 'url';
 import fs from 'fs';
 import btoa from 'btoa';
 import mime from 'mime-types';
 import promisify from './promisify';
+
+require('./regenerator');
 
 const magicWords = "__magic__file__to__help__electron__compile.js";
 const fsp = promisify(require('fs'));
@@ -153,7 +153,7 @@ export function initializeProtocolHook(availableCompilers, initializeOpts) {
     
     finish({
       data: new Buffer(realSourceCode),
-      mimeType: compiler.getMimeType(),
+      mimeType: compiler.getMimeType()
     });
   });
 }

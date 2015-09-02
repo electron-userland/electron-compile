@@ -79,7 +79,7 @@ export function initializeProtocolHook(availableCompilers, initializeOpts) {
 
     // NB: Special-case files coming from atom.asar or node_modules
     if (filePath.match(/[\/\\]atom.asar/) || filePath.match(/[\/\\]node_modules/)) {
-        return new protocol.RequestFileJob(filePath);
+      return new protocol.RequestFileJob(filePath);
     }
 
     let sourceCode = null;
