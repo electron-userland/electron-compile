@@ -72,8 +72,6 @@ export function initializeProtocolHook(availableCompilers, initializeOpts) {
     `if (window.require && !window.__electron_compile_set_up) { window.__electron_compile_set_up = true; var opts = JSON.parse(decodeURIComponent(atob("${encodedOpts}"))); require('electron-compile').initWithOptions(opts); }`;
     
   protocol.interceptBufferProtocol('file', async function(request, finish) {
-    console.log("Intercepting!!!");
-    
     let uri = url.parse(request.url);
 
     if (request.url.indexOf(magicWords) > -1) {
