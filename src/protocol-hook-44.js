@@ -123,8 +123,8 @@ export function initializeProtocolHook(availableCompilers, initializeOpts) {
       sourceCode = sourceCode || await fsp.readFile(filePath, {encoding: 'utf8'});
     } catch (e) {
       // TODO: Actually come correct with these error codes
-      if (e.errno === 34) {
-        finish(-6);
+      if (e.errno === 34 /*ENOENT*/) {
+        finish(-6); // net::ERR_FILE_NOT_FOUND
         return;
       }
 

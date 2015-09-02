@@ -7,7 +7,6 @@ import ReadOnlyCompiler from './read-only-compiler';
 
 // NB: Chrome 44 introduces a completely different way to do protocol hooks, so
 // we need to load that version instead
-//import initializeProtocolHook from './protocol-hook';
 let initializeProtocolHook = null;
 
 if (process.versions['electron']) {
