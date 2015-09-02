@@ -2,10 +2,22 @@ import _ from 'lodash';
 import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
-import initializeProtocolHook from './protocol-hook';
 import forAllFiles from './for-all-files';
-
 import ReadOnlyCompiler from './read-only-compiler';
+
+// NB: Chrome 44 introduces a completely different way to do protocol hooks, so
+// we need to load that version instead
+let initializeProtocolHook = null;
+
+if (process.versions['electron']) {
+  let versions = _.map(process.versions['electron'].split('.'), (x) => parseInt(x));
+  
+  if (versions[1] * 100 + versions[2] > (31*100 + 0) /*0.31.0*/) {
+    initializeProtocolHook = require('./protocol-hook-44').initializeProtocolHook;
+  }
+}
+
+initializeProtocolHook = initializeProtocolHook || require('./protocol-hook').initializeProtocolHook;
 
 // We don't actually care about the x-require constructor, we just want to 
 // register the element
