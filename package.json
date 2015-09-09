@@ -29,6 +29,7 @@
     "electron-compile-cache": "^0.7.0",
     "electron-compilers": "^0.8.2",
     "lodash": "^3.10.1",
+    "mime-types": "^2.1.6",
     "mkdirp": "^0.5.1",
     "yargs": "^3.18.0"
   },
