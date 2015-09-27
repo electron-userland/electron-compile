@@ -3,9 +3,7 @@ require('./support.js');
 import path from 'path';
 
 const toTest = [
-  { klass: global.importCompilerByExtension('less'), extension: 'less' },
-  { klass: global.importCompilerByExtension('scss'), extension: 'scss' },
-  { klass: global.importCompilerByExtension('scss'), extension: 'sass' },
+  { klass: global.importCompilerByExtension('less'), extension: 'less' }
 ];
 
 for (let compiler of toTest) {
