@@ -122,7 +122,7 @@ export function createAllCompilers()
 
 First, make sure to:
 
-```js
+```sh
 npm install --save-dev electron-compilers
 ```
 
