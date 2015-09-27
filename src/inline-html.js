@@ -8,8 +8,6 @@ const extensions = ['html', 'htm'];
 
 const mimeTypeToExtension = {
   'text/less': 'less',
-  'text/scss': 'scss',
-  'text/sass': 'sass',
   'application/javascript': 'js',
   'application/coffeescript': 'coffee',
   'application/typescript': 'ts'
