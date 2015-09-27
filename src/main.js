@@ -33,8 +33,26 @@ let allCompilerClasses = null;
 //
 // Returns an {Array} of {CompileCache} objects.
 export function createAllCompilers(compilerOpts=null) {
-  allCompilerClasses = allCompilerClasses || require('electron-compilers');
-
+  if (!allCompilerClasses) {
+    // First we want to see if electron-compilers itself has been installed with
+    // devDependencies. If that's not the case, check to see if 
+    // electron-compilers is installed as a peer dependency (probably as a
+    // devDependency of the root project).
+    const locations = ['electron-compilers', '../../electron-compilers'];
+    
+    for (let location of locations) {
+      try {
+        allCompilerClasses = require(location);
+      } catch (e) { 
+        // Yolo
+      }
+    }
+    
+    if (!allCompilerClasses) {
+      throw new Error("Electron compilers not found but were requested to be loaded");
+    }
+  }
+  
   let HtmlCompiler = null;
   let ret = _.map(allCompilerClasses, (Klass) => {
     let exts = Klass.getExtensions();
