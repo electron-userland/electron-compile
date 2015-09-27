@@ -28,6 +28,11 @@ export default class InlineHtmlCompiler extends CompileCache {
   getCompilerInformation() {
     return this.compilerInformation;
   }
+  
+  fixupRelativeUrl(url) {
+    if (!url.match(/^\/\//)) return url;
+    return `https:${url}`;
+  }
 
   compile(sourceCode, filePath) {
     let $ = cheerio.load(sourceCode);
@@ -46,7 +51,10 @@ export default class InlineHtmlCompiler extends CompileCache {
     
     $('script').map((i, el) => {
       let src = $(el).attr('src');
-      if (src && src.length > 2) return;
+      if (src && src.length > 2) {
+        $(el).attr('src', this.fixupRelativeUrl(src));
+        return;
+      }
       
       let mimeType = $(el).attr('type');
       let path = `${filePath}:inline_${i}.${this.getExtensionFromMimeType(mimeType, 'script')}`;
@@ -55,6 +63,11 @@ export default class InlineHtmlCompiler extends CompileCache {
       $(el).attr('type', 'application/javascript');
     });
     
+    $('link').map((i, el) => {
+      let href = $(el).attr('href');
+      if (href && href.length > 2) { $(el).attr('href', this.fixupRelativeUrl(href)); }
+    });
+
     $('x-require').map((i, el) => {
       let src = $(el).attr('src');
       
