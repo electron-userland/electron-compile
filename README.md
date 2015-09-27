@@ -14,7 +14,13 @@ For CSS:
 
 ### How does it work?
 
-First, add `electron-compilers` as a `devDependency`. Then, put this at the top of your Electron app:
+First, add `electron-compilers` as a `devDependency`. 
+
+```sh
+npm install --save-dev electron-compilers
+```
+
+Then, put this at the top of your Electron app:
 
 ```js
 require('electron-compile').init();
