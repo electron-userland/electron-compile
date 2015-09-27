@@ -52,6 +52,35 @@ describe('The inline HTML compiler', function() {
     });
   });
   
+  it('should remove protocol-relative URLs because they are dumb', function() {
+    let compilers = _.map([LessCompiler, BabelCompiler, CoffeescriptCompiler], (Klass) => {
+      let ret = new Klass();
+      ret.setCacheDirectory(null);
+      return ret;
+    });
+    
+    let fixture = new InlineHtmlCompiler((sourceCode, filePath) => {
+      let compiler = _.find(compilers, (x) => x.shouldCompileFile(filePath, sourceCode));
+      if (!compiler) {
+        throw new Error("Couldn't find a compiler for " + filePath);
+      }
+      
+      return compiler.loadFile(null, filePath, true, sourceCode);
+    });
+    
+    fixture.setCacheDirectory(null);
+    
+    let input = path.join(__dirname, '..', 'test', 'fixtures', 'roboto.html');
+    let result = fixture.loadFile(null, input, true);
+
+    expect(result.length > 0).to.be.ok;
+    
+    let $ = cheerio.load(result);
+    let tags = $('link');
+    expect(tags.length === 1).to.be.ok;
+    expect($(tags[0]).attr('href').match(/^https/i)).to.be.ok;
+  });
+  
   it('should canonicalize x-require paths', function() {
     let compilers = _.map([LessCompiler, BabelCompiler, CoffeescriptCompiler], (Klass) => {
       let ret = new Klass();
