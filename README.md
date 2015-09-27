@@ -11,11 +11,10 @@ For JavaScript:
 For CSS:
 
 * LESS
-* Sass/SCSS
 
 ### How does it work?
 
-Put this at the top of your Electron app:
+First, add `electron-compilers` as a `devDependency`. Then, put this at the top of your Electron app:
 
 ```js
 require('electron-compile').init();
@@ -85,7 +84,7 @@ Once you create a cache folder, pass it in as a parameter to `initForProduction(
 require('electron-compile').initForProduction('path/to/precompiled/cache/folder');
 ```
 
-In order to save space in your application, you can also delete `node_modules/electron-compile/node_modules/electron-compilers` in production so that you're not shipping the compiler implementations themselves (~56MB uncompressed).
+In order to save space in your application, you can build your application with `NODE_ENV=production`, which will remove the `electron-compilers` dependency and save your app quite a bit of disk usage.
 
 Compilation also has its own API:
 
@@ -117,3 +116,14 @@ export function compileAll(rootDirectory, compilers=null)
 // Returns an {Array} of {CompileCache} objects.
 export function createAllCompilers()
 ```
+
+
+### Help! I get this message, "Electron compilers not found but were requested to be loaded"
+
+First, make sure to:
+
+```js
+npm install --save-dev electron-compilers
+```
+
+If you're seeing this message in your compiled production application, this means you needed to call `initForProduction` on startup and not `init` / `initWithOptions`.
