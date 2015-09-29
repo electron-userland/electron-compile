@@ -14,9 +14,10 @@ For CSS:
 
 ### How does it work?
 
-First, add `electron-compilers` as a `devDependency`. 
+First, add `electron-compile` and `electron-compilers` as a `devDependency`. 
 
 ```sh
+npm install --save electron-compile
 npm install --save-dev electron-compilers
 ```
 
