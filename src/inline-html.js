@@ -10,7 +10,10 @@ const mimeTypeToExtension = {
   'text/less': 'less',
   'application/javascript': 'js',
   'application/coffeescript': 'coffee',
-  'application/typescript': 'ts'
+  'application/typescript': 'ts',
+  'text/javascript': 'js',
+  'text/coffeescript': 'coffee',
+  'text/typescript': 'ts'
 };
 
 export default class InlineHtmlCompiler extends CompileCache {
