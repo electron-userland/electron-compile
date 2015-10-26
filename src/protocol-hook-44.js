@@ -8,7 +8,7 @@ import pify from 'pify';
 require('./regenerator');
 
 const magicWords = "__magic__file__to__help__electron__compile.js";
-const fsp = pify.all(require('fs'));
+const fsp = pify(require('fs'));
 
 let protocol = null;
 
