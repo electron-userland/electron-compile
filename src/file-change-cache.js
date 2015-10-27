@@ -1,21 +1,32 @@
 import pify from 'pify';
 import fs from 'fs';
+import zlib from 'zlib';
+
 const pfs = pify(fs);
+const pzlib = pify(zlib);
 
 export default class FileChangedCache {
   constructor(failOnCacheMiss) {
+    this.failOnCacheMiss = failOnCacheMiss;
+    this.changeCache = {};
   }
 
-  static loadFromFile(file) {
+  static async loadFromFile(file, failOnCacheMiss=true) {
+    let ret = new FileChangedCache(failOnCacheMiss);
+    let buf = await pfs.readFile(file);
+    
+    ret.changeCache = JSON.parse(await pzlib.gunzip(buf));
   }
 
-  getHashForPath(file) {
+  getHashForPath(filePath) {
   }
 
-  getHashForPathSync(file) {
+  getHashForPathSync(filePath) {
   }
 
-  save(file) {
+  async save(filePath) {
+    let buf = await pzlib.gzip(new Buffer(JSON.stringify(this.changeCache)));
+    await pfs.writeFile(filePath, buf);
   }
   
   static async isMinified(filePath) {
