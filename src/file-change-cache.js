@@ -1,5 +1,6 @@
 import pify from 'pify';
-const pfs = pify(require('fs'));
+import fs from 'fs';
+const pfs = pify(fs);
 
 export default class FileChangedCache {
   constructor(failOnCacheMiss) {
@@ -16,8 +17,21 @@ export default class FileChangedCache {
 
   save(file) {
   }
+  
+  static async isMinified(filePath) {
+    let fd = await pfs.open(filePath, 'r');
+    
+    try {
+      let buf = new Buffer(4096);
+      let len = await pfs.read(fd, buf, 0, 4096, null);
+      
+      return FileChangedCache.contentsAreMinified(buf.toString('utf8', 0, len));
+    } finally {
+      fs.closeSync(fd);
+    }
+  }
 
-  static isMinified(source) {
+  static contentsAreMinified(source) {
     let length = source.length;
     if (length > 1024) length = 1024;
 
