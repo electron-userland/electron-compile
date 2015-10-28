@@ -19,7 +19,8 @@
         "mocha": true
     },
     "globals": {
-      "expect": true
+      "expect": true,
+      "chai": true,
     },
     "extends": "eslint:recommended"
 }
