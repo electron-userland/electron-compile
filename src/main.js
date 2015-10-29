@@ -2,9 +2,9 @@ import _ from 'lodash';
 
 const filenames = [
   'css/less',
-  'css/scss',
   'js/babel',
   'js/coffeescript',
+  'js/coffeescript-ng',
   'js/typescript',
   'inline-html'
 ];

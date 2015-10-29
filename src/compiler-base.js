@@ -1,10 +1,6 @@
 export class CompilerBase {
-  get compilerOptions {
-    return this._compilerOptions;
-  }
-  
-  set compilerOptions(val) {
-    this._compilerOptions = val;
+  constructor() {
+    this.compilerOptions = {};
   }
 
   static getInputMimeTypes() {
@@ -18,11 +14,11 @@ export class CompilerBase {
   async determineDependentFiles(sourceCode, filePath, compilerContext) {
     throw new Error("Implement me!");
   }
-  
+
   async compile(sourceCode, filePath, compilerContext) {
     throw new Error("Implement me!");
   }
-  
+
   shouldCompileFileSync(fileName, compilerContext) {
     throw new Error("Implement me!");
   }
@@ -30,18 +26,21 @@ export class CompilerBase {
   determineDependentFilesSync(sourceCode, filePath, compilerContext) {
     throw new Error("Implement me!");
   }
-  
+
   compileSync(sourceCode, filePath, compilerContext) {
+    throw new Error("Implement me!");
+  }
+
+  getCompilerVersion() {
     throw new Error("Implement me!");
   }
 }
 
-
 export class SimpleCompilerBase extends CompilerBase {
   constructor() {
-    this.compilerOptions = {};
+    super();
   }
-  
+
   async shouldCompileFile(fileName, compilerContext) {
     return true;
   }
@@ -49,11 +48,11 @@ export class SimpleCompilerBase extends CompilerBase {
   async determineDependentFiles(sourceCode, filePath, compilerContext) {
     return [];
   }
-  
+
   async compile(sourceCode, filePath, compilerContext) {
-    return compileSync(sourceCode, filePath, compilerContext);
+    return this.compileSync(sourceCode, filePath, compilerContext);
   }
-  
+
   shouldCompileFileSync(fileName, compilerContext) {
     return true;
   }
@@ -61,7 +60,7 @@ export class SimpleCompilerBase extends CompilerBase {
   determineDependentFilesSync(sourceCode, filePath, compilerContext) {
     return [];
   }
-  
+
   compileSync(sourceCode, filePath, compilerContext) {
     throw new Error("Implement me!");
   }
