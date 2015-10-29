@@ -1,21 +1,27 @@
-import CompilerBase from '../compiler-base';
 import _ from 'lodash';
+import path from 'path';
+import btoa from 'btoa';
+import {SimpleCompilerBase} from '../compiler-base';
 
 const inputMimeTypes = ['text/coffeescript'];
+let coffee = null;
 
-export class CoffeescriptCompiler extends SimpleCompilerBase {
+export default class CoffeeScriptCompilerNext extends SimpleCompilerBase {
   constructor() {
-    super(inputMimeTypes);
+    super();
+
     this.compilerOptions.sourceMap = true;
   }
-  
-  static getCompiler() {
+
+  static getInputMimeTypes() {
     return inputMimeTypes;
   }
-  
+
   compileSync(sourceCode, filePath, compilerContext) {
+    coffee = coffee || require('coffee-script');
+
     let {js, v3SourceMap} = coffee.compile(
-      sourceCode, 
+      sourceCode,
       _.extend({ filename: filePath }, this.compilerOptions));
 
     js = `${js}\n` +
@@ -24,15 +30,19 @@ export class CoffeescriptCompiler extends SimpleCompilerBase {
 
     return {
       code: js,
-      mimeType: 'text/javascript',
+      mimeType: 'text/javascript'
     };
   }
-    
+
   convertFilePath(filePath) {
     if (process.platform === 'win32') {
       filePath = `/${path.resolve(filePath).replace(/\\/g, '/')}`;
     }
 
     return encodeURI(filePath);
+  }
+
+  getCompilerVersion() {
+    return require('coffee-script/package.json').version;
   }
 }
