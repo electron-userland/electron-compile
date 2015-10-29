@@ -18,6 +18,10 @@ require('../lib/regenerator');
 
 global.importCompilerByExtension = (ext) => {
   return _.find(allCompilerClasses, (Klass) => {
+    // This is a new-style compiler, don't look for getExtensions
+    if (!('getExtensions' in Klass)) {
+      return false;
+    }
     return _.any(Klass.getExtensions(), (x) => ext === x);
   });
 };
