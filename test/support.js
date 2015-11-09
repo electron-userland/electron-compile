@@ -1,3 +1,5 @@
+require('babel-polyfill');
+
 import _ from 'lodash';
 import allCompilerClasses from 'electron-compilers';
 
@@ -13,8 +15,6 @@ global.expect = chai.expect;
 global.AssertionError = chai.AssertionError;
 global.Assertion = chai.Assertion;
 global.assert = chai.assert;
-
-require('../lib/regenerator');
 
 global.importCompilerByExtension = (ext) => {
   return _.find(allCompilerClasses, (Klass) => {
