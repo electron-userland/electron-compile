@@ -127,7 +127,7 @@ export function compile(filePath, compilers=null) {
 //
 // Returns nothing.
 export function compileAll(rootDirectory, compilers=null, shouldCompile=null) {
-  let should = shouldCompile || () => true;
+  let should = shouldCompile || function() {return true;}
   
   forAllFiles(rootDirectory, (f) => {
     if (!should(f)) return;

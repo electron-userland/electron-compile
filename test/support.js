@@ -1,5 +1,9 @@
+import p from 'babel-polyfill';
+
 import _ from 'lodash';
-import allCompilerClasses from 'electron-compilers';
+import mimeTypes from 'mime-types';
+
+const allCompilerClasses = require('electron-compilers');
 
 let chai = require("chai");
 let chaiAsPromised = require("chai-as-promised");
@@ -14,14 +18,12 @@ global.AssertionError = chai.AssertionError;
 global.Assertion = chai.Assertion;
 global.assert = chai.assert;
 
-require('../lib/regenerator');
+mimeTypes.types.ts = 'text/typescript';
+mimeTypes.extensions['text/typescript'] = ['ts'];
 
-global.importCompilerByExtension = (ext) => {
-  return _.find(allCompilerClasses, (Klass) => {
-    // This is a new-style compiler, don't look for getExtensions
-    if (!('getExtensions' in Klass)) {
-      return false;
-    }
-    return _.any(Klass.getExtensions(), (x) => ext === x);
-  });
-};
+global.compilersByMimeType = _.reduce(allCompilerClasses, (acc,x) => {
+  acc = acc || {};
+  
+  for (let type of x.getInputMimeTypes()) { acc[type] = x; }
+  return acc;
+}, {});

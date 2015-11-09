@@ -36,4 +36,4 @@ export default (() => {
   });
 
   return document.registerElement('x-require', { prototype: proto });
-}());
+})();

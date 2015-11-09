@@ -6,7 +6,7 @@ import fs from 'fs';
 import pify from 'pify';
 const pfs = pify(fs);
 
-describe.only('The file changed cache', function() {
+describe('The file changed cache', function() {
   beforeEach(function() {
     this.fixture = new FileChangeCache();
   });
