@@ -1,7 +1,7 @@
 ## electron-compilers
 
 electron-compilers are the actual implementations of classes that power
-[electron-compile](https://github.com/paulcbetts/electron-compile)
+[electron-compile](https://github.com/electronjs/electron-compile)
 
 For JavaScript:
 

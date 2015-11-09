@@ -4,6 +4,7 @@ const filenames = [
   'css/less',
   'js/babel',
   'js/coffeescript',
+  'js/coffeescript-ng',
   'js/typescript',
   'inline-html'
 ];
