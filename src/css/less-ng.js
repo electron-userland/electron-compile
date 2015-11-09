@@ -10,9 +10,10 @@ export default class LessCompilerNext extends CompilerBase {
     super();
 
     this.compilerOptions = {
-      compress: false,
-      sourcemap: { sourcemapfileinline: true }
+      sourceMap: { sourceMapFileInline: true }
     };
+
+    this.seenFilePaths = {};
   }
 
   static getInputMimeTypes() {
@@ -35,7 +36,7 @@ export default class LessCompilerNext extends CompilerBase {
 
     this.seenFilePaths[path.dirname(filePath)] = true;
 
-    let opts = _.extend({}, this.compilerInformation, {
+    let opts = _.extend({}, this.compilerOptions, {
       paths: paths,
       filename: path.basename(filePath)
     });
@@ -64,7 +65,7 @@ export default class LessCompilerNext extends CompilerBase {
     paths.unshift('.');
     this.seenFilePaths[path.dirname(filePath)] = true;
 
-    let opts = _.extend({}, this.compilerInformation, {
+    let opts = _.extend({}, this.compilerOptions, {
       paths: paths,
       filename: path.basename(filePath),
       fileAsync: false, async: false, syncImport: true
