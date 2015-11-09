@@ -3,13 +3,15 @@ require('./support.js');
 import path from 'path';
 
 const toTest = [
-  { klass: global.importCompilerByExtension('less'), extension: 'less' }
+//  { klass: global.importCompilerByExtension('less'), extension: 'less' }
 ];
 
 for (let compiler of toTest) {
+  break;
+
   const Klass = compiler.klass;
 
-  describe(`The ${compiler.klass.name} compiler`, function() {
+  describe.skip(`The ${compiler.klass.name} compiler`, function() {
     it(`should compile valid.${compiler.extension}`, function() {
       let fixture = new Klass();
 
