@@ -4,47 +4,63 @@ import pify from 'pify';
 import fs from 'fs';
 import path from 'path';
 import _ from 'lodash';
+import mimeTypes from 'mime-types';
 
 const pfs = pify(fs);
 
-import allCompilers from 'electron-compilers';
-const CoffeeScriptCompilerNext = _.find(allCompilers, (x) => x.name === "CoffeeScriptCompilerNext");
+let allFixtureFiles = _.filter(
+  fs.readdirSync(path.join(__dirname, '..', 'test', 'fixtures')),
+  (x) => x.match(/invalid\./i));
+  
+let mimeTypesToTest = _.reduce(allFixtureFiles, (acc,x) => {
+  if (global.compilersByMimeType[mimeTypes.lookup(x) || '__nope__']) {
+    acc.push(mimeTypes.lookup(x));
+  }
+  
+  return acc;
+}, []);
 
-describe.only('The new Coffeescript compiler', function() {
-  beforeEach(function() {
-    this.fixture = new CoffeeScriptCompilerNext();
+for (let mimeType of mimeTypesToTest) {
+  let klass = global.compilersByMimeType[mimeType];
+  
+  describe(`The ${klass.name} class for ${mimeType}`, function() {
+    beforeEach(function() {
+      this.fixture = new klass();
+    });
+
+    it(`should compile the valid ${mimeType} file`, async function() {
+      let ext = mimeTypes.extension(mimeType);
+      let input = path.join(__dirname, '..', 'test', 'fixtures', `valid.${ext}`);
+
+      let ctx = {};
+      let shouldCompile = await this.fixture.shouldCompileFile(input, ctx);
+      expect(shouldCompile).to.be.ok;
+
+      let source = await pfs.readFile(input, 'utf8');
+      let dependentFiles = await this.fixture.determineDependentFiles(source, input, ctx);
+      expect(dependentFiles.length).to.equal(0);
+
+      let result = await this.fixture.compile(source, input, ctx);
+      expect(result.mimeType).to.equal('text/javascript');
+
+      let lines = result.code.split('\n');
+      expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).to.be.ok;
+    });
+
+    it(`should fail the invalid ${mimeType} file`, async function() {
+      let ext = mimeTypes.extension(mimeType);
+      let input = path.join(__dirname, '..', 'test', 'fixtures', `invalid.${ext}`);
+
+      let ctx = {};
+      let shouldCompile = await this.fixture.shouldCompileFile(input, ctx);
+      expect(shouldCompile).to.be.ok;
+
+      let source = await pfs.readFile(input, 'utf8');
+      let dependentFiles = await this.fixture.determineDependentFiles(source, input, ctx);
+      expect(dependentFiles.length).to.equal(0);
+
+      let result = this.fixture.compile(source, input, ctx);
+      expect(result).to.eventually.throw();
+    });
   });
-
-  it('should compile the valid coffeescript file', async function() {
-    let input = path.join(__dirname, '..', 'test', 'fixtures', 'valid.coffee');
-
-    let ctx = {};
-    let shouldCompile = await this.fixture.shouldCompileFile(input, ctx);
-    expect(shouldCompile).to.be.ok;
-
-    let source = await pfs.readFile(input, 'utf8');
-    let dependentFiles = await this.fixture.determineDependentFiles(source, input, ctx);
-    expect(dependentFiles.length).to.equal(0);
-
-    let result = await this.fixture.compile(source, input, ctx);
-    expect(result.mimeType).to.equal('text/javascript');
-
-    let lines = result.code.split('\n');
-    expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).to.be.ok;
-  });
-
-  it('should fail the invalid coffeescript file', async function() {
-    let input = path.join(__dirname, '..', 'test', 'fixtures', 'invalid.coffee');
-
-    let ctx = {};
-    let shouldCompile = await this.fixture.shouldCompileFile(input, ctx);
-    expect(shouldCompile).to.be.ok;
-
-    let source = await pfs.readFile(input, 'utf8');
-    let dependentFiles = await this.fixture.determineDependentFiles(source, input, ctx);
-    expect(dependentFiles.length).to.equal(0);
-
-    let result = this.fixture.compile(source, input, ctx);
-    expect(result).to.eventually.throw();
-  });
-});
+}
