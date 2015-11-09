@@ -14,7 +14,7 @@ For CSS:
 
 ### How does it work?
 
-First, add `electron-compile` and `electron-compilers` as a `devDependency`. 
+First, add `electron-compile` and `electron-compilers` as a `devDependency`.
 
 ```sh
 npm install --save electron-compile
@@ -44,7 +44,7 @@ require('./mylib')   // mylib.ts
 
 ### Does this work in node.js / io.js too?
 
-The JavaScript compilers will register with module.register, but CSS of course won't
+The JavaScript compilers will register with module.register, but CSS of course will not
 
 ### Babel keeps running on my ES5 source
 
@@ -103,7 +103,7 @@ Compilation also has its own API:
 //                         that will be tried in-order to compile code. You must
 //                         call init() first if this parameter is null.
 //
-// Returns a {String} with the compiled output, or will throw an {Error} 
+// Returns a {String} with the compiled output, or will throw an {Error}
 // representing the compiler errors encountered.
 export function compile(filePath, compilers=null)
 
@@ -116,7 +116,7 @@ export function compile(filePath, compilers=null)
 // Returns nothing.
 export function compileAll(rootDirectory, compilers=null)
 
-// Public: Allows you to create new instances of all compilers that are 
+// Public: Allows you to create new instances of all compilers that are
 // supported by electron-compile and use them directly. Currently supports
 // Babel, CoffeeScript, TypeScript, LESS, and Sass/SCSS.
 //
