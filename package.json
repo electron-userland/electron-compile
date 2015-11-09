@@ -27,7 +27,6 @@
   "dependencies": {
     "babel-polyfill": "^6.0.16",
     "btoa": "^1.1.2",
-    "electron-compile-cache": "^0.7.0",
     "lodash": "^3.10.1",
     "mime-types": "^2.1.6",
     "mkdirp": "^0.5.1",
@@ -43,7 +42,6 @@
     "chai": "^3.2.0",
     "chai-as-promised": "^5.1.0",
     "cheerio": "^0.19.0",
-    "electron-compilers": "^1.0.0",
     "eslint": "^1.5.1",
     "mocha": "^2.2.5",
     "rimraf": "^2.4.2"
