@@ -4,7 +4,7 @@ import {CompilerBase} from '../compiler-base';
 const mimeTypes = ['text/jsx', 'application/javascript', 'text/javascript'];
 let babel = null;
 
-export class BabelCompilerNext extends CompilerBase {
+export default class BabelCompilerNext extends CompilerBase {
   constructor() {
     super();
     this.compilerOptions.babelrc = true;
@@ -23,7 +23,7 @@ export class BabelCompilerNext extends CompilerBase {
   }
 
   async compile(sourceCode, filePath, compilerContext) {
-    babel = babel || require('babel');
+    babel = babel || require('babel-core');
 
     let opts = _.extend({}, this.compilerOptions, {
       filename: filePath,
@@ -59,6 +59,6 @@ export class BabelCompilerNext extends CompilerBase {
   }
 
   getCompilerVersion() {
-    return require('babel-core/').version;
+    return require('babel-core/package.json').version;
   }
 }
