@@ -9,7 +9,6 @@ export default class TypeScriptCompilerNext extends SimpleCompilerBase {
     this.compilerOptions.sourceMap = true;
 
     this.compilerOptions = {
-      target: 1,
       module: 'commonjs',
       sourceMap: true
     };
@@ -21,9 +20,10 @@ export default class TypeScriptCompilerNext extends SimpleCompilerBase {
 
   compileSync(sourceCode, filePath) {
     tss = tss || require('typescript-simple');
+    let compiler = new tss.TypeScriptSimple(this.compilerOptions);
 
     return {
-      code: tss.compile(sourceCode, filePath),
+      code: compiler.compile(sourceCode, filePath),
       mimeType: 'text/javascript'
     };
   }
