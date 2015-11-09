@@ -1,6 +1,8 @@
 import p from 'babel-polyfill';
 
 import _ from 'lodash';
+import mimeTypes from 'mime-types';
+
 const allCompilerClasses = require('electron-compilers');
 
 let chai = require("chai");
@@ -15,6 +17,9 @@ global.expect = chai.expect;
 global.AssertionError = chai.AssertionError;
 global.Assertion = chai.Assertion;
 global.assert = chai.assert;
+
+mimeTypes.types.ts = 'text/typescript';
+mimeTypes.extensions['text/typescript'] = ['ts'];
 
 global.compilersByMimeType = _.reduce(allCompilerClasses, (acc,x) => {
   acc = acc || {};
