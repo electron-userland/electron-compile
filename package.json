@@ -4,7 +4,7 @@
   "description": "Compiler implementations for electron-compile",
   "main": "lib/main.js",
   "scripts": {
-    "compile": "babel --stage 0 -d lib/ src/",
+    "compile": "git clean -xdf lib && babel --stage 0 -d lib/ src/",
     "prepublish": "npm run compile"
   },
   "repository": {
