@@ -9,7 +9,6 @@ let coffee = null;
 export default class CoffeeScriptCompilerNext extends SimpleCompilerBase {
   constructor() {
     super();
-
     this.compilerOptions.sourceMap = true;
   }
 
@@ -17,7 +16,7 @@ export default class CoffeeScriptCompilerNext extends SimpleCompilerBase {
     return inputMimeTypes;
   }
 
-  compileSync(sourceCode, filePath, compilerContext) {
+  compileSync(sourceCode, filePath) {
     coffee = coffee || require('coffee-script');
 
     let {js, v3SourceMap} = coffee.compile(
