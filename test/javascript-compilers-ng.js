@@ -41,7 +41,8 @@ for (let mimeType of mimeTypesToTest) {
       expect(dependentFiles.length).to.equal(0);
 
       let result = await this.fixture.compile(source, input, ctx);
-      expect(result.mimeType).to.equal('text/javascript');
+      let expectedMimeType = (mimeType === 'text/less' ? 'text/css' : 'text/javascript');
+      expect(result.mimeType).to.equal(expectedMimeType);
 
       let lines = result.code.split('\n');
       expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).to.be.ok;
