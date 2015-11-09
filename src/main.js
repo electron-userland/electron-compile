@@ -1,7 +1,7 @@
 import _ from 'lodash';
 
 const filenames = [
-//  'css/less',
+  'css/less-ng',
   'js/babel-ng',
   'js/coffeescript-ng',
   'js/typescript-ng',
