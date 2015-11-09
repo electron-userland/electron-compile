@@ -4,9 +4,8 @@ const filenames = [
   'css/less',
   'js/babel',
   'js/coffeescript',
-  'js/coffeescript-ng',
   'js/typescript',
-  'inline-html'
+  //'inline-html'
 ];
 
-export default _.map(filenames, (x) => require('./' + x));
+module.exports = _.map(filenames, (x) => require('./' + x).default);

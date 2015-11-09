@@ -1,44 +1,36 @@
 import _ from 'lodash';
 import path from 'path';
 import btoa from 'btoa';
+import {SimpleCompilerBase} from '../compiler-base';
 
-import CompileCache from 'electron-compile-cache';
-
+const inputMimeTypes = ['text/coffeescript'];
 let coffee = null;
-const extensions = ['coffee'];
 
-export default class CoffeeScriptCompiler extends CompileCache {
-  constructor(options={}) {
+export default class CoffeeScriptCompilerNext extends SimpleCompilerBase {
+  constructor() {
     super();
-
-    this.compilerInformation = _.extend({}, {
-      extensions: extensions,
-    }, options);
-  }
-  
-  static getExtensions() {
-    return extensions;
+    this.compilerOptions.sourceMap = true;
   }
 
-  getCompilerInformation() {
-    return this.compilerInformation;
+  static getInputMimeTypes() {
+    return inputMimeTypes;
   }
-  
-  compile(sourceCode, filePath) {
-    let {js, v3SourceMap} = coffee.compile(sourceCode, { filename: filePath, sourceMap: true });
+
+  compileSync(sourceCode, filePath) {
+    coffee = coffee || require('coffee-script');
+
+    let {js, v3SourceMap} = coffee.compile(
+      sourceCode,
+      _.extend({ filename: filePath }, this.compilerOptions));
 
     js = `${js}\n` +
       `//# sourceMappingURL=data:application/json;base64,${btoa(unescape(encodeURIComponent(v3SourceMap)))}\n` +
       `//# sourceURL=${this.convertFilePath(filePath)}`;
 
-    return js;
-  }
-
-  getMimeType() { return 'text/javascript'; }
-
-  initializeCompiler() {
-    coffee = require('coffee-script');
-    return require('coffee-script/package.json').version;
+    return {
+      code: js,
+      mimeType: 'text/javascript'
+    };
   }
 
   convertFilePath(filePath) {
@@ -47,5 +39,9 @@ export default class CoffeeScriptCompiler extends CompileCache {
     }
 
     return encodeURI(filePath);
+  }
+
+  getCompilerVersion() {
+    return require('coffee-script/package.json').version;
   }
 }
