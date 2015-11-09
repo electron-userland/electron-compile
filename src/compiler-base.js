@@ -60,8 +60,4 @@ export class SimpleCompilerBase extends CompilerBase {
   determineDependentFilesSync(sourceCode, filePath, compilerContext) {
     return [];
   }
-
-  compileSync(sourceCode, filePath, compilerContext) {
-    throw new Error("Implement me!");
-  }
 }
