@@ -4,7 +4,7 @@
   "description": "Compiler implementations for electron-compile",
   "main": "lib/main.js",
   "scripts": {
-    "compile": "git clean -xdf lib && babel --stage 0 -d lib/ src/",
+    "compile": "git clean -xdf lib && babel -d lib/ src/",
     "prepublish": "npm run compile"
   },
   "repository": {
@@ -34,8 +34,10 @@
     "typescript-simple": "^2.0.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.0.0",
+    "babel-cli": "^6.1.2",
     "babel-eslint": "^4.1.3",
+    "babel-preset-es2015": "^6.1.2",
+    "babel-preset-stage-0": "^6.1.2",
     "eslint": "^1.5.1"
   }
 }
