@@ -3,6 +3,7 @@ require('./support.js');
 import fs from 'fs';
 import path from 'path';
 import rimraf from 'rimraf';
+import mkdirp from 'mkdirp';
 import FileChangeCache from '../lib/file-change-cache';
 import CompileCache from '../lib/compile-cache';
 import pify from 'pify';
@@ -17,6 +18,7 @@ describe('The compile cache', function() {
     this.fileChangeCache = new FileChangeCache(this.appRootDir);
     
     this.tempCacheDir = path.join(__dirname, `__compile_cache_${testCount++}`);
+    mkdirp.sync(this.tempCacheDir);
     this.fixture = new CompileCache(this.tempCacheDir, this.fileChangeCache);
   });
   
