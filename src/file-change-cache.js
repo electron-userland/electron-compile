@@ -2,12 +2,13 @@ import fs from 'fs';
 import zlib from 'zlib';
 import crypto from 'crypto';
 import pify from 'pify';
+import _ from 'lodash';
 
 const pfs = pify(fs);
 const pzlib = pify(zlib);
 
 export default class FileChangedCache {
-  constructor(appRoot, failOnCacheMiss) {
+  constructor(appRoot, failOnCacheMiss=false) {
     this.appRoot = appRoot;
     this.failOnCacheMiss = failOnCacheMiss;
     this.changeCache = {};
@@ -53,7 +54,7 @@ export default class FileChangedCache {
     };
     
     this.changeCache[cacheKey] = { ctime, size, info };
-    return info;
+    return _.extend({sourceCode}, info);
   }
 
   getHashForPathSync(absoluteFilePath) {
@@ -90,7 +91,7 @@ export default class FileChangedCache {
     };
     
     this.changeCache[cacheKey] = { ctime, size, info };
-    return info;
+    return _.extend({sourceCode}, info);
   }
 
   async save(filePath) {
