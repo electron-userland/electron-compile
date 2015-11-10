@@ -30,15 +30,20 @@ export default class CompileCache {
     let hashInfo = await this.fileChangeCache.getHashForPath(path.resolve(filePath));
     
     let code = null;
+    let mimeType = null;
     try {
       let buf = await pfs.readFile(path.join(this.cachePath, hashInfo.hash));
-      code = (await pzlib.gunzip(buf)).toString('utf8');
+      let str = (await pzlib.gunzip(buf)).toString('utf8');
+    
+      let result = JSON.parse(str);
+      code = result.code;   mimeType = result.mimeType;
+      
     } catch (e) {
       // TODO: visionmedia/debug
       console.log(`Failed to read cache for ${filePath}`);
     }
     
-    return { hashInfo, code };
+    return { hashInfo, code, mimeType };
   }
 
   async save(hashInfo, code, mimeType) {
@@ -50,49 +55,57 @@ export default class CompileCache {
   }
   
   async getOrFetch(filePath, fetcher) {
-    let {hashInfo, code} = await this.get(filePath);
-    if (code) return { hashInfo, code };
+    let {hashInfo, code, mimeType} = await this.get(filePath);
+    if (code) return { hashInfo, code, mimeType};
     
-    let result = await fetcher(filePath, hashInfo);
+    let result = await fetcher(filePath, hashInfo) || { hashInfo };
     
-    if (result && result.code && result.mimeType) {
+    if (result.code && result.mimeType) {
       await this.save(hashInfo, result.code, result.mimeType);
     }
+    
+    result.hashInfo = hashInfo;
+    return result;
   }
   
   getSync(filePath) {
-    // NB: Never modify the sync methods directly! Always copy-pasta from
-    // the awaitable methods and re-port it.
     let hashInfo = this.fileChangeCache.getHashForPathSync(path.resolve(filePath));
     
     let code = null;
+    let mimeType = null;
     try {
-      let buf = fs.readFileSync(path.join(this.cachePath));
-      code = (zlib.gunzipSync(buf)).toString('utf8');
+      let buf = fs.readFileSync(path.join(this.cachePath, hashInfo.hash));
+      let str = (zlib.gunzipSync(buf)).toString('utf8');
+      let result = JSON.parse(str);
+      code = result.code;   mimeType = result.mimeType;
+      
     } catch (e) {
       // TODO: visionmedia/debug
       console.log(`Failed to read cache for ${filePath}`);
     }
     
-    return { hashInfo, code };  
+    return { hashInfo, code, mimeType };  
   }
 
   saveSync(hashInfo, code, mimeType) {
-    let buf = zlib.gzipSync(new Buffer({code, mimeType}));
+    let buf = zlib.gzipSync(new Buffer(JSON.stringify({code, mimeType})));
     
     fs.writeFileSync(
       path.join(this.cachePath, hashInfo.hash), 
-      buf);
+      buf);  
   }
   
   getOrFetchSync(filePath, fetcherSync) {
-    let {hashInfo, code} = this.getSync(filePath);
-    if (code) return { hashInfo, code };
+    let {hashInfo, code, mimeType} = this.getSync(filePath);
+    if (code) return { hashInfo, code, mimeType};
     
-    let result = fetcherSync(filePath, hashInfo);
+    let result = fetcherSync(filePath, hashInfo) || { hashInfo };
     
     if (result && result.code && result.mimeType) {
       this.saveSync(hashInfo, result.code, result.mimeType);
     }
+    
+    result.hashInfo = hashInfo;
+    return result;  
   }
 }
