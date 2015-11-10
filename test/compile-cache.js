@@ -1,98 +1,124 @@
 require('./support.js');
 
+import fs from 'fs';
 import path from 'path';
 import rimraf from 'rimraf';
-import fs from 'fs';
+import mkdirp from 'mkdirp';
+import FileChangeCache from '../lib/file-change-cache';
+import CompileCache from '../lib/compile-cache';
+import pify from 'pify';
+
+const pfs = pify(fs);
+
+let testCount=0;
 
 describe('The compile cache', function() {
-  return;
-  
-  const BabelCompiler = global.importCompilerByExtension('js');
-  const TypeScriptCompiler = global.importCompilerByExtension('ts');
-  
-  it('Should only call compile once for the same file', function() {
-    let fixture = new BabelCompiler();
+  beforeEach(function() {
+    this.appRootDir = path.join(__dirname, '..');
+    this.fileChangeCache = new FileChangeCache(this.appRootDir);
     
-    spy.on(fixture, 'compile');
-    
-    let cacheDir = path.join(__dirname, 'cache-test');
-    fixture.setCacheDirectory(cacheDir);
-    
-    try {
-      let input = path.join(__dirname, '..', 'test', 'fixtures', 'valid.js');
-      let result = fixture.loadFile(module, input, true);
-      
-      expect(result.length > 0).to.be.ok;
-      expect(fixture.compile).to.have.been.called.once;
-      
-      // Calling loadFile > 1x with same content == no compiling
-      result = fixture.loadFile(module, input, true);
-      expect(result.length > 0).to.be.ok;
-      expect(fixture.compile).to.have.been.called.once;
-    } finally {
-      rimraf.sync(cacheDir);
-    }
+    this.tempCacheDir = path.join(__dirname, `__compile_cache_${testCount++}`);
+    mkdirp.sync(this.tempCacheDir);
+    this.fixture = new CompileCache(this.tempCacheDir, this.fileChangeCache);
   });
   
-  it('should work even when filePath isnt a real file', function() {
-    let fixture = new BabelCompiler();
-    
-    spy.on(fixture, 'compile');
-    
-    let cacheDir = path.join(__dirname, 'cache-test-2');
-    fixture.setCacheDirectory(cacheDir);
-    
-    try {
-      let input = path.join(__dirname, '..', 'test', 'fixtures', 'valid.js');
-      let code = fs.readFileSync(input, 'utf8');
-      let result = fixture.loadFile(null, input + ":inline.js", true, code);
-      
-      expect(result.length > 0).to.be.ok;
-      expect(fixture.compile).to.have.been.called.once;
-      
-      // Calling loadFile > 1x with same content == no compiling
-      result = fixture.loadFile(null, input + ":inline.js", true, code);
-      expect(result.length > 0).to.be.ok;
-      expect(fixture.compile).to.have.been.called.once;
-    } finally {
-      rimraf.sync(cacheDir);
-    }
+  afterEach(function() {
+    rimraf.sync(this.tempCacheDir);
   });
   
-  it('Shouldnt cache compile failures', function() {
-    let fixture = new TypeScriptCompiler();
+  it('Should only call compile once for the same file', async function() {
+    let inputFile = path.resolve(__dirname, '..', 'lib', 'compile-cache.js');
+    let callCount = 0;
     
-    spy.on(fixture, 'compile');
+    let fetcher = async function(filePath, hashInfo) {
+      callCount++;
+      
+      let code = hashInfo.sourceCode || await pfs.readFile(filePath, 'utf8');
+      let mimeType = 'text/javascript';
+      return { code, mimeType };
+    };
     
-    let cacheDir = path.join(__dirname, 'cache-test');
-    fixture.setCacheDirectory(cacheDir);
+    let result = await this.fixture.getOrFetch(inputFile, fetcher);
+    
+    expect(result.mimeType).to.equal('text/javascript');
+    expect(result.code.length > 10).to.be.ok;
+    expect(callCount).to.equal(1);
+    
+    result = await this.fixture.getOrFetch(inputFile, fetcher);
+      
+    expect(result.mimeType).to.equal('text/javascript');
+    expect(result.code.length > 10).to.be.ok;
+    expect(callCount).to.equal(1);
+    
+    this.fixture = new CompileCache(this.tempCacheDir, this.fileChangeCache);
+        
+    result = await this.fixture.getOrFetch(inputFile, fetcher);
+      
+    expect(result.mimeType).to.equal('text/javascript');
+    expect(result.code.length > 10).to.be.ok;
+    expect(callCount).to.equal(1);
+  });
+  
+  it('Should only call compile once for the same file synchronously', function() {
+    let inputFile = path.resolve(__dirname, '..', 'lib', 'compile-cache.js');
+    let callCount = 0;
+    
+    let fetcher = function(filePath, hashInfo) {
+      callCount++;
+      
+      let code = hashInfo.sourceCode || fs.readFileSync(filePath, 'utf8');
+      let mimeType = 'text/javascript';
+      
+      return { code, mimeType };
+    };
+    
+    let result = this.fixture.getOrFetchSync(inputFile, fetcher);
+    
+    expect(result.mimeType).to.equal('text/javascript');
+    expect(result.code.length > 10).to.be.ok;
+    expect(callCount).to.equal(1);
+    
+    result = this.fixture.getOrFetchSync(inputFile, fetcher);
+      
+    expect(result.mimeType).to.equal('text/javascript');
+    expect(result.code.length > 10).to.be.ok;
+    expect(callCount).to.equal(1);
+    
+    this.fixture = new CompileCache(this.tempCacheDir, this.fileChangeCache);
+        
+    result = this.fixture.getOrFetchSync(inputFile, fetcher);
+      
+    expect(result.mimeType).to.equal('text/javascript');
+    expect(result.code.length > 10).to.be.ok;
+    expect(callCount).to.equal(1);
+  });
+
+  it('Shouldnt cache compile failures', async function() {
+    let inputFile = path.resolve(__dirname, '..', 'lib', 'compile-cache.js');
+    let callCount = 0;
+    let weBlewUpCount = 0;
+    
+    let fetcher = async function() {
+      callCount++;
+      throw new Error("Lolz");
+    };
     
     try {
-      let input = path.join(__dirname, '..', 'test', 'fixtures', 'invalid.ts');
-      let result = null;
-      let shouldDie = true;
-      
-      try {
-        result = fixture.loadFile(module, input, true);
-      } catch (e) {
-        shouldDie = false;
-      }
-      
-      expect(shouldDie).not.to.be.ok;
-      expect(fixture.compile).to.have.been.called.once;
-      
-      // Calling loadFile > 1x with same content == no compiling
-      shouldDie = true;
-      try {
-        result = fixture.loadFile(module, input, true);
-      } catch (e) {
-        shouldDie = false;
-      }
-      
-      expect(shouldDie).not.to.be.ok;
-      expect(fixture.compile).to.have.been.called.twice;
-    } finally {
-      rimraf.sync(cacheDir);
+      await this.fixture.getOrFetch(inputFile, fetcher);    
+    } catch (e) {
+      weBlewUpCount++;
     }
+
+    expect(callCount).to.equal(1);
+    expect(weBlewUpCount).to.equal(1);
+
+    try {
+      await this.fixture.getOrFetch(inputFile, fetcher);    
+    } catch (e) {
+      weBlewUpCount++;
+    }
+    
+    expect(callCount).to.equal(2);
+    expect(weBlewUpCount).to.equal(2);
   });
 });

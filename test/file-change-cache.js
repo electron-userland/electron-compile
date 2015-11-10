@@ -22,6 +22,8 @@ describe('The file changed cache', function() {
     let input = path.resolve(__dirname, '..', 'test', 'fixtures', 'valid.js');
     let result = await this.fixture.getHashForPath(input);
 
+    expect(result.sourceCode).to.be.ok;
+    delete result.sourceCode;
     expect(result).to.deep.equal(expectedInfo);
   });
   
@@ -36,6 +38,8 @@ describe('The file changed cache', function() {
     let input = path.resolve(__dirname, '..', 'test', 'fixtures', 'valid.js');
     let result = this.fixture.getHashForPathSync(input);
 
+    expect(result.sourceCode).to.be.ok;
+    delete result.sourceCode;
     expect(result).to.deep.equal(expectedInfo);
   });
 
@@ -49,12 +53,17 @@ describe('The file changed cache', function() {
 
     let input = path.join(__dirname, '..', 'test', 'fixtures', 'valid.js');
     let result = await this.fixture.getHashForPath(input);
-
+    
+    expect(result.sourceCode).to.be.ok;
+    delete result.sourceCode;
     expect(result).to.deep.equal(expectedInfo);
 
     this.fixture.calculateHashForFile = () => Promise.reject(new Error("Didn't work"));
     result = await this.fixture.getHashForPath(input);
-
+    
+    // NB: The file hash cache itself shouldn't hold onto file contents, it should
+    // only opportunistically return it if it had to read the contents anyways
+    expect(result.sourceCode).to.be.not.ok;
     expect(result).to.deep.equal(expectedInfo);
   });
 
@@ -103,8 +112,10 @@ describe('The file changed cache', function() {
     try {
       let result = await this.fixture.getHashForPath(input);
 
+      expect(result.sourceCode).to.be.ok;
+      delete result.sourceCode;      
       expect(result).to.deep.equal(expectedInfo);
-      
+        
       let fd = await pfs.open(input, 'a');
       await pfs.write(fd, '\n\n\n\n');
       await pfs.close(fd);
@@ -119,6 +130,9 @@ describe('The file changed cache', function() {
       
       result = await this.fixture.getHashForPath(input);
 
+      expect(result.sourceCode).to.be.ok;
+      delete result.sourceCode;      
+      
       expect(result).not.to.deep.equal(expectedInfo);
       expect(hasCalledCalc).to.be.ok;
     } finally {
