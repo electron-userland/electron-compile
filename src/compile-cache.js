@@ -27,7 +27,7 @@ export default class CompileCache {
   }
   
   async get(filePath) {
-    let hashInfo = this.fileChangeCache(path.resolve(filePath));
+    let hashInfo = await this.fileChangeCache.getHashForPath(path.resolve(filePath));
     
     let code = null;
     try {
@@ -41,16 +41,29 @@ export default class CompileCache {
     return { hashInfo, code };
   }
 
-  async save(hashInfo, content) {
+  async save(hashInfo, code, mimeType) {
+    let buf = await pzlib.gzip(new Buffer(JSON.stringify({code, mimeType})));
+    
     await pfs.writeFile(
       path.join(this.cachePath, hashInfo.hash), 
-      zlib.gzip(new Buffer(content)));
+      buf);
+  }
+  
+  async getOrFetch(filePath, fetcher) {
+    let {hashInfo, code} = await this.get(filePath);
+    if (code) return { hashInfo, code };
+    
+    let result = await fetcher(filePath, hashInfo);
+    
+    if (result && result.code && result.mimeType) {
+      await this.save(hashInfo, result.code, result.mimeType);
+    }
   }
   
   getSync(filePath) {
-    // NB: Never modify this method directly! Always copy-pasta from
-    // get() and re-port it.
-    let hashInfo = this.fileChangeCache(path.resolve(filePath));
+    // NB: Never modify the sync methods directly! Always copy-pasta from
+    // the awaitable methods and re-port it.
+    let hashInfo = this.fileChangeCache.getHashForPathSync(path.resolve(filePath));
     
     let code = null;
     try {
@@ -63,10 +76,23 @@ export default class CompileCache {
     
     return { hashInfo, code };  
   }
-  
-  saveSync(hashInfo, content) {
-    pfs.writeFileSync(
+
+  saveSync(hashInfo, code, mimeType) {
+    let buf = zlib.gzipSync(new Buffer({code, mimeType}));
+    
+    fs.writeFileSync(
       path.join(this.cachePath, hashInfo.hash), 
-      zlib.gzipSync(new Buffer(content)));
+      buf);
+  }
+  
+  getOrFetchSync(filePath, fetcherSync) {
+    let {hashInfo, code} = this.getSync(filePath);
+    if (code) return { hashInfo, code };
+    
+    let result = fetcherSync(filePath, hashInfo);
+    
+    if (result && result.code && result.mimeType) {
+      this.saveSync(hashInfo, result.code, result.mimeType);
+    }
   }
 }
