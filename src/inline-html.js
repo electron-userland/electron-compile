@@ -52,7 +52,7 @@ export default class InlineHtmlCompiler extends CompileCache {
       $(el).attr('type', 'text/css');
     });
     
-    $('script').map((i, el) => {
+    $('script[text="type/javascript"], script:not([type])').map((i, el) => {
       let src = $(el).attr('src');
       if (src && src.length > 2) {
         $(el).attr('src', this.fixupRelativeUrl(src));
