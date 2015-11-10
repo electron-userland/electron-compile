@@ -56,6 +56,40 @@ describe('The compile cache', function() {
     expect(result.code.length > 10).to.be.ok;
     expect(callCount).to.equal(1);
   });
+  
+  it('Should only call compile once for the same file synchronously', function() {
+    let inputFile = path.resolve(__dirname, '..', 'lib', 'compile-cache.js');
+    let callCount = 0;
+    
+    let fetcher = function(filePath, hashInfo) {
+      callCount++;
+      
+      let code = hashInfo.sourceCode || fs.readFileSync(filePath, 'utf8');
+      let mimeType = 'text/javascript';
+      
+      return { code, mimeType };
+    };
+    
+    let result = this.fixture.getOrFetchSync(inputFile, fetcher);
+    
+    expect(result.mimeType).to.equal('text/javascript');
+    expect(result.code.length > 10).to.be.ok;
+    expect(callCount).to.equal(1);
+    
+    result = this.fixture.getOrFetchSync(inputFile, fetcher);
+      
+    expect(result.mimeType).to.equal('text/javascript');
+    expect(result.code.length > 10).to.be.ok;
+    expect(callCount).to.equal(1);
+    
+    this.fixture = new CompileCache(this.tempCacheDir, this.fileChangeCache);
+        
+    result = this.fixture.getOrFetchSync(inputFile, fetcher);
+      
+    expect(result.mimeType).to.equal('text/javascript');
+    expect(result.code.length > 10).to.be.ok;
+    expect(callCount).to.equal(1);
+  });
 
   it('Shouldnt cache compile failures', async function() {
     let inputFile = path.resolve(__dirname, '..', 'lib', 'compile-cache.js');
