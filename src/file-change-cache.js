@@ -62,34 +62,34 @@ export default class FileChangedCache {
     // (i.e. every 'await', remove the await and add 'Sync' to the method call name)
     let cacheKey = this.appRoot ? absoluteFilePath.replace(this.appRoot, '') : absoluteFilePath;
     let cacheEntry = this.changeCache[cacheKey];
-    
+
     if (this.failOnCacheMiss) {
       if (!cacheEntry) throw new Error(`Asked for ${absoluteFilePath} but it was not precompiled!`);
       return cacheEntry.info;
     }
-        
-    let stat = pfs.statSync(absoluteFilePath);
+
+    let stat = fs.statSync(absoluteFilePath);
     let ctime = stat.ctime.getTime();
     let size = stat.size;
     if (!stat || !stat.isFile()) throw new Error(`Can't stat ${absoluteFilePath}`);
-    
+
     if (cacheEntry) {
       if (cacheEntry.ctime >= ctime && cacheEntry.size === size) {
         return cacheEntry.info;
       }
-      
+
       delete this.changeCache.cacheEntry;
     }
-    
+
     let {digest, sourceCode} = this.calculateHashForFileSync(absoluteFilePath);
-    
+
     let info = {
       hash: digest,
       isMinified: FileChangedCache.contentsAreMinified(sourceCode),
       isInNodeModules: FileChangedCache.isInNodeModules(absoluteFilePath),
       hasSourceMap: FileChangedCache.hasSourceMap(sourceCode)
     };
-    
+
     this.changeCache[cacheKey] = { ctime, size, info };
     return _.extend({sourceCode}, info);
   }
