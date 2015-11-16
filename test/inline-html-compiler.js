@@ -90,6 +90,32 @@ describe.only('The inline HTML compiler', function() {
         expect(_.find(text.split('\n'), (l) => l.match(/sourceMappingURL/))).to.be.ok;
       });
     });
+
+    it('should compile the valid fixture ' + inputFile + ' synchronously', function() {
+      let input = path.join(__dirname, '..', 'test', 'fixtures', inputFile);
+
+      let cc = {};
+      expect(this.fixture.shouldCompileFileSync(input, cc)).to.be.ok;
+
+      let code = fs.readFileSync(input, 'utf8');
+      let df = this.fixture.determineDependentFilesSync(input, code, cc);
+
+      expect(df.length).to.equal(0);
+
+      let result = this.fixture.compileSync(code, input, cc);
+      expect(result.mimeType).to.equal('text/html');
+
+      let $ = cheerio.load(result.code);
+      let tags = $('script');
+      expect(tags.length > 0).to.be.ok;
+
+      $('script').map((__, el) => {
+        let text = $(el).text();
+        if (!text || text.length < 2) return;
+
+        expect(_.find(text.split('\n'), (l) => l.match(/sourceMappingURL/))).to.be.ok;
+      });
+    });
   });
 
   it('should remove protocol-relative URLs because they are dumb', async function() {
