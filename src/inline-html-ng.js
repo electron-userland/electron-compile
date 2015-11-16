@@ -1,19 +1,18 @@
 import _ from 'lodash';
-import mimeTypes from 'mime-types';
 import path from 'path';
-import {CompilerBase} from '../compiler-base';
+import {CompilerBase} from './compiler-base';
 
-const mimeTypes = ['text/html'];
+const inputMimeTypes = ['text/html'];
 let cheerio = null;
 
-export class InlineHtmlCompiler extends CompilerBase {
+export default class InlineHtmlCompiler extends CompilerBase {
   constructor(compileBlockSync) {
-    this.compilerOptions = {};
+    super();
     this.compileBlockSync = compileBlockSync;
   }
 
   static getInputMimeTypes() {
-    return mimeTypes;
+    return inputMimeTypes;
   }
 
   async shouldCompileFile(fileName, compilerContext) {
@@ -29,37 +28,28 @@ export class InlineHtmlCompiler extends CompilerBase {
     let $ = cheerio.load(sourceCode);
 
     $('style').map((i, el) => {
-      let mimeType = $(el).attr('type') || 'text/css';
-      if (!mimeType || mimeType.length < 2) {
-        return;
-      }
+      let mimeType = $(el).attr('type');
 
-      let path = `${filePath}:inline_${i}.${mimeTypes.extension(mimeType)}`;
-      let originalCode = $(el).text();
-
-      $(el).text(this.compileBlockSync(originalCode, path) || originalCode);
+      $(el).text(this.compileBlockSync($(el).text(), filePath, mimeType, 'style'));
       $(el).attr('type', 'text/css');
     });
 
     $('script').map((i, el) => {
       let src = $(el).attr('src');
       if (src && src.length > 2) {
-        $(el).attr('src', this.fixupRelativeUrl(src));
+        $(el).attr('src', InlineHtmlCompiler.fixupRelativeUrl(src));
         return;
       }
 
-      let mimeType = $(el).attr('type') || 'application/javascript';
-      let path = `${filePath}:inline_${i}.${mimeTypes.extension(mimeType)}`;
+      let mimeType = $(el).attr('type');
 
-      let originalCode = $(el).text();
-
-      $(el).text(this.compileBlockSync(originalCode, path) || originalCode);
+      $(el).text(this.compileBlockSync($(el).text(), filePath, mimeType, 'script'));
       $(el).attr('type', 'application/javascript');
     });
 
     $('link').map((i, el) => {
       let href = $(el).attr('href');
-      if (href && href.length > 2) { $(el).attr('href', this.fixupRelativeUrl(href)); }
+      if (href && href.length > 2) { $(el).attr('href', InlineHtmlCompiler.fixupRelativeUrl(href)); }
     });
 
     $('x-require').map((i, el) => {
@@ -78,7 +68,10 @@ export class InlineHtmlCompiler extends CompilerBase {
       }
     });
 
-    return $.html();
+    return {
+      code: $.html(),
+      mimeType: 'text/html'
+    };
   }
 
   shouldCompileFileSync(fileName, compilerContext) {
