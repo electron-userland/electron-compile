@@ -15,7 +15,7 @@ const validInputs = [
 const pfs = pify(fs);
 const InlineHtmlCompiler = global.compilersByMimeType['text/html'];
 
-describe('The inline HTML compiler', function() {
+describe.only('The inline HTML compiler', function() {
   beforeEach(function() {
     let compileCount = 0;
 
@@ -26,10 +26,12 @@ describe('The inline HTML compiler', function() {
       if (!realType) return sourceCode;
 
       let Klass = global.compilersByMimeType[realType];
+      if (!Klass) {
+        console.log(`No compiler for ${realType}/${tag}`);
+        return sourceCode;
+      }
+
       let compiler = new Klass();
-
-      if (!compiler) return sourceCode;
-
       let ext = mimeTypes.extension(realType);
       let fakeFile = `${filePath}:inline_${compileCount++}.${ext}`;
 
@@ -52,6 +54,7 @@ describe('The inline HTML compiler', function() {
       expect(df.length).to.equal(0);
 
       let result = await this.fixture.compile(code, input, cc);
+      expect(result.mimeType).to.equal('text/html');
 
       let $ = cheerio.load(result.code);
       let tags = $('script');
@@ -66,59 +69,45 @@ describe('The inline HTML compiler', function() {
     });
   });
 
-  it('should remove protocol-relative URLs because they are dumb', function() {
-    let compilers = _.map([LessCompiler, BabelCompiler, CoffeescriptCompiler], (Klass) => {
-      let ret = new Klass();
-      ret.setCacheDirectory(null);
-      return ret;
-    });
-
-    let fixture = new InlineHtmlCompiler((sourceCode, filePath) => {
-      let compiler = _.find(compilers, (x) => x.shouldCompileFile(filePath, sourceCode));
-      if (!compiler) {
-        throw new Error("Couldn't find a compiler for " + filePath);
-      }
-
-      return compiler.loadFile(null, filePath, true, sourceCode);
-    });
-
-    fixture.setCacheDirectory(null);
-
+  it('should remove protocol-relative URLs because they are dumb', async function() {
     let input = path.join(__dirname, '..', 'test', 'fixtures', 'roboto.html');
-    let result = fixture.loadFile(null, input, true);
 
-    expect(result.length > 0).to.be.ok;
+    let cc = {};
+    expect(await this.fixture.shouldCompileFile(input, cc)).to.be.ok;
 
-    let $ = cheerio.load(result);
+    let code = await pfs.readFile(input, 'utf8');
+    let df = await this.fixture.determineDependentFiles(input, code, cc);
+
+    expect(df.length).to.equal(0);
+
+    let result = await this.fixture.compile(code, input, cc);
+
+    expect(result.code.length > 0).to.be.ok;
+    expect(result.mimeType).to.equal('text/html');
+
+    let $ = cheerio.load(result.code);
     let tags = $('link');
     expect(tags.length === 1).to.be.ok;
     expect($(tags[0]).attr('href').match(/^https/i)).to.be.ok;
   });
 
-  it('should canonicalize x-require paths', function() {
-    let compilers = _.map([LessCompiler, BabelCompiler, CoffeescriptCompiler], (Klass) => {
-      let ret = new Klass();
-      ret.setCacheDirectory(null);
-      return ret;
-    });
-
-    let fixture = new InlineHtmlCompiler((sourceCode, filePath) => {
-      let compiler = _.find(compilers, (x) => x.shouldCompileFile(filePath, sourceCode));
-      if (!compiler) {
-        throw new Error("Couldn't find a compiler for " + filePath);
-      }
-
-      return compiler.loadFile(null, filePath, true, sourceCode);
-    });
-
-    fixture.setCacheDirectory(null);
-
+  it('should canonicalize x-require paths', async function() {
     let input = path.join(__dirname, '..', 'test', 'fixtures', 'x-require-valid.html');
-    let result = fixture.loadFile(null, input, true);
 
-    expect(result.length > 0).to.be.ok;
+    let cc = {};
+    expect(await this.fixture.shouldCompileFile(input, cc)).to.be.ok;
 
-    let $ = cheerio.load(result);
+    let code = await pfs.readFile(input, 'utf8');
+    let df = await this.fixture.determineDependentFiles(input, code, cc);
+
+    expect(df.length).to.equal(0);
+
+    let result = await this.fixture.compile(code, input, cc);
+
+    expect(result.code.length > 0).to.be.ok;
+    expect(result.mimeType).to.equal('text/html');
+
+    let $ = cheerio.load(result.code);
     let tags = $('x-require');
     expect(tags.length === 1).to.be.ok;
 
