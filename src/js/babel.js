@@ -45,7 +45,7 @@ export default class BabelCompilerNext extends CompilerBase {
   }
 
   compileSync(sourceCode, filePath, compilerContext) {
-    babel = babel || require('babel');
+    babel = babel || require('babel-core');
 
     let opts = _.extend({}, this.compilerOptions, {
       filename: filePath,
