@@ -1,47 +1,59 @@
 require('./support.js');
 
-import _ from 'lodash';
+import fs from 'fs';
 import path from 'path';
 import cheerio from 'cheerio';
+import pify from 'pify';
+import _ from 'lodash';
+import mimeTypes from 'mime-types';
 
 const validInputs = [
   'inline-valid.html',
   'inline-valid-2.html'
 ];
 
+const pfs = pify(fs);
+const InlineHtmlCompiler = global.compilersByMimeType['text/html'];
+
 describe('The inline HTML compiler', function() {
-  return;
-    
-  const LessCompiler = global.importCompilerByExtension('less');
-  const BabelCompiler = global.importCompilerByExtension('js');
-  const CoffeescriptCompiler = global.importCompilerByExtension('coffee');
-  const InlineHtmlCompiler = global.importCompilerByExtension('html');
+  beforeEach(function() {
+    let compileCount = 0;
+
+    this.fixture = new InlineHtmlCompiler((sourceCode, filePath, mimeType, tag) => {
+      let realType = mimeType;
+      if (!mimeType && tag === 'script') realType = 'text/javascript';
+
+      if (!realType) return sourceCode;
+
+      let Klass = global.compilersByMimeType[realType];
+      let compiler = new Klass();
+
+      if (!compiler) return sourceCode;
+
+      let ext = mimeTypes.extension(realType);
+      let fakeFile = `${filePath}:inline_${compileCount++}.${ext}`;
+
+      let cc = {};
+      if (!compiler.shouldCompileFileSync(fakeFile, cc)) return sourceCode;
+      return compiler.compileSync(sourceCode, fakeFile, cc).code;
+    });
+  });
 
   _.each(validInputs, (inputFile) => {
-    it('should compile the valid fixture ' + inputFile, function() {
-      let compilers = _.map([LessCompiler, BabelCompiler, CoffeescriptCompiler], (Klass) => {
-        let ret = new Klass();
-        ret.setCacheDirectory(null);
-        return ret;
-      });
-
-      let fixture = new InlineHtmlCompiler((sourceCode, filePath) => {
-        let compiler = _.find(compilers, (x) => x.shouldCompileFile(filePath, sourceCode));
-        if (!compiler) {
-          throw new Error("Couldn't find a compiler for " + filePath);
-        }
-
-        return compiler.loadFile(null, filePath, true, sourceCode);
-      });
-
-      fixture.setCacheDirectory(null);
-
+    it('should compile the valid fixture ' + inputFile, async function() {
       let input = path.join(__dirname, '..', 'test', 'fixtures', inputFile);
-      let result = fixture.loadFile(null, input, true);
 
-      expect(result.length > 0).to.be.ok;
+      let cc = {};
+      expect(await this.fixture.shouldCompileFile(input, cc)).to.be.ok;
 
-      let $ = cheerio.load(result);
+      let code = await pfs.readFile(input, 'utf8');
+      let df = await this.fixture.determineDependentFiles(input, code, cc);
+
+      expect(df.length).to.equal(0);
+
+      let result = await this.fixture.compile(code, input, cc);
+
+      let $ = cheerio.load(result.code);
       let tags = $('script');
       expect(tags.length > 0).to.be.ok;
 
