@@ -1,47 +1,66 @@
 require('./support.js');
 
-import _ from 'lodash';
+import fs from 'fs';
 import path from 'path';
 import cheerio from 'cheerio';
+import pify from 'pify';
+import _ from 'lodash';
 
 const validInputs = [
   'inline-valid.html',
   'inline-valid-2.html'
 ];
 
-describe('The inline HTML compiler', function() {
-  return;
-    
-  const LessCompiler = global.importCompilerByExtension('less');
-  const BabelCompiler = global.importCompilerByExtension('js');
-  const CoffeescriptCompiler = global.importCompilerByExtension('coffee');
-  const InlineHtmlCompiler = global.importCompilerByExtension('html');
+const pfs = pify(fs);
+const InlineHtmlCompiler = global.compilersByMimeType['text/html'];
+
+describe.only('The inline HTML compiler', function() {
+  beforeEach(function() {
+    this.fixture = InlineHtmlCompiler.createFromCompilers(global.compilersByMimeType);
+  });
 
   _.each(validInputs, (inputFile) => {
-    it('should compile the valid fixture ' + inputFile, function() {
-      let compilers = _.map([LessCompiler, BabelCompiler, CoffeescriptCompiler], (Klass) => {
-        let ret = new Klass();
-        ret.setCacheDirectory(null);
-        return ret;
-      });
-
-      let fixture = new InlineHtmlCompiler((sourceCode, filePath) => {
-        let compiler = _.find(compilers, (x) => x.shouldCompileFile(filePath, sourceCode));
-        if (!compiler) {
-          throw new Error("Couldn't find a compiler for " + filePath);
-        }
-
-        return compiler.loadFile(null, filePath, true, sourceCode);
-      });
-
-      fixture.setCacheDirectory(null);
-
+    it('should compile the valid fixture ' + inputFile, async function() {
       let input = path.join(__dirname, '..', 'test', 'fixtures', inputFile);
-      let result = fixture.loadFile(null, input, true);
 
-      expect(result.length > 0).to.be.ok;
+      let cc = {};
+      expect(await this.fixture.shouldCompileFile(input, cc)).to.be.ok;
 
-      let $ = cheerio.load(result);
+      let code = await pfs.readFile(input, 'utf8');
+      let df = await this.fixture.determineDependentFiles(input, code, cc);
+
+      expect(df.length).to.equal(0);
+
+      let result = await this.fixture.compile(code, input, cc);
+      expect(result.mimeType).to.equal('text/html');
+
+      let $ = cheerio.load(result.code);
+      let tags = $('script');
+      expect(tags.length > 0).to.be.ok;
+
+      $('script').map((__, el) => {
+        let text = $(el).text();
+        if (!text || text.length < 2) return;
+
+        expect(_.find(text.split('\n'), (l) => l.match(/sourceMappingURL/))).to.be.ok;
+      });
+    });
+
+    it('should compile the valid fixture ' + inputFile + ' synchronously', function() {
+      let input = path.join(__dirname, '..', 'test', 'fixtures', inputFile);
+
+      let cc = {};
+      expect(this.fixture.shouldCompileFileSync(input, cc)).to.be.ok;
+
+      let code = fs.readFileSync(input, 'utf8');
+      let df = this.fixture.determineDependentFilesSync(input, code, cc);
+
+      expect(df.length).to.equal(0);
+
+      let result = this.fixture.compileSync(code, input, cc);
+      expect(result.mimeType).to.equal('text/html');
+
+      let $ = cheerio.load(result.code);
       let tags = $('script');
       expect(tags.length > 0).to.be.ok;
 
@@ -54,59 +73,45 @@ describe('The inline HTML compiler', function() {
     });
   });
 
-  it('should remove protocol-relative URLs because they are dumb', function() {
-    let compilers = _.map([LessCompiler, BabelCompiler, CoffeescriptCompiler], (Klass) => {
-      let ret = new Klass();
-      ret.setCacheDirectory(null);
-      return ret;
-    });
-
-    let fixture = new InlineHtmlCompiler((sourceCode, filePath) => {
-      let compiler = _.find(compilers, (x) => x.shouldCompileFile(filePath, sourceCode));
-      if (!compiler) {
-        throw new Error("Couldn't find a compiler for " + filePath);
-      }
-
-      return compiler.loadFile(null, filePath, true, sourceCode);
-    });
-
-    fixture.setCacheDirectory(null);
-
+  it('should remove protocol-relative URLs because they are dumb', async function() {
     let input = path.join(__dirname, '..', 'test', 'fixtures', 'roboto.html');
-    let result = fixture.loadFile(null, input, true);
 
-    expect(result.length > 0).to.be.ok;
+    let cc = {};
+    expect(await this.fixture.shouldCompileFile(input, cc)).to.be.ok;
 
-    let $ = cheerio.load(result);
+    let code = await pfs.readFile(input, 'utf8');
+    let df = await this.fixture.determineDependentFiles(input, code, cc);
+
+    expect(df.length).to.equal(0);
+
+    let result = await this.fixture.compile(code, input, cc);
+
+    expect(result.code.length > 0).to.be.ok;
+    expect(result.mimeType).to.equal('text/html');
+
+    let $ = cheerio.load(result.code);
     let tags = $('link');
     expect(tags.length === 1).to.be.ok;
     expect($(tags[0]).attr('href').match(/^https/i)).to.be.ok;
   });
 
-  it('should canonicalize x-require paths', function() {
-    let compilers = _.map([LessCompiler, BabelCompiler, CoffeescriptCompiler], (Klass) => {
-      let ret = new Klass();
-      ret.setCacheDirectory(null);
-      return ret;
-    });
-
-    let fixture = new InlineHtmlCompiler((sourceCode, filePath) => {
-      let compiler = _.find(compilers, (x) => x.shouldCompileFile(filePath, sourceCode));
-      if (!compiler) {
-        throw new Error("Couldn't find a compiler for " + filePath);
-      }
-
-      return compiler.loadFile(null, filePath, true, sourceCode);
-    });
-
-    fixture.setCacheDirectory(null);
-
+  it('should canonicalize x-require paths', async function() {
     let input = path.join(__dirname, '..', 'test', 'fixtures', 'x-require-valid.html');
-    let result = fixture.loadFile(null, input, true);
 
-    expect(result.length > 0).to.be.ok;
+    let cc = {};
+    expect(await this.fixture.shouldCompileFile(input, cc)).to.be.ok;
 
-    let $ = cheerio.load(result);
+    let code = await pfs.readFile(input, 'utf8');
+    let df = await this.fixture.determineDependentFiles(input, code, cc);
+
+    expect(df.length).to.equal(0);
+
+    let result = await this.fixture.compile(code, input, cc);
+
+    expect(result.code.length > 0).to.be.ok;
+    expect(result.mimeType).to.equal('text/html');
+
+    let $ = cheerio.load(result.code);
     let tags = $('x-require');
     expect(tags.length === 1).to.be.ok;
 

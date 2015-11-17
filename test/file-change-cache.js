@@ -119,10 +119,12 @@ describe('The file changed cache', function() {
       let fd = await pfs.open(input, 'a');
       await pfs.write(fd, '\n\n\n\n');
       await pfs.close(fd);
-      
-      let realCalc = this.fixture.calculateHashForFile;
-      let hasCalledCalc = false;
-      
+
+      // NB: Declaring these as 'var' works around a BabelJS compilation bug
+      // where it can't deal with let + closure scoping
+      var realCalc = this.fixture.calculateHashForFile;
+      var hasCalledCalc = false;
+
       this.fixture.calculateHashForFile = function(...args) {
         hasCalledCalc = true;
         return realCalc(...args);
