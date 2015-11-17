@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import path from 'path';
+import mimeTypes from 'mime-types';
 import {CompilerBase} from './compiler-base';
 
 const inputMimeTypes = ['text/html'];
@@ -11,6 +12,46 @@ export default class InlineHtmlCompiler extends CompilerBase {
 
     this.compileBlock = compileBlock;
     this.compileBlockSync = compileBlockSync;
+  }
+
+  static createFromCompilers(compilersByMimeType) {
+    let compileBlock = async (sourceCode, filePath, mimeType, ctx) => {
+      let realType = mimeType;
+      if (!mimeType && ctx.tag === 'script') realType = 'text/javascript';
+
+      if (!realType) return sourceCode;
+
+      let Klass = compilersByMimeType[realType];
+      if (!Klass) return sourceCode;
+      if (Klass === InlineHtmlCompiler) return sourceCode;
+
+      let compiler = new Klass();
+      let ext = mimeTypes.extension(realType);
+      let fakeFile = `${filePath}:inline_${ctx.count}.${ext}`;
+
+      if (!(await compiler.shouldCompileFile(fakeFile, ctx))) return sourceCode;
+      return (await compiler.compileSync(sourceCode, fakeFile, ctx)).code;
+    };
+
+    let compileBlockSync = (sourceCode, filePath, mimeType, ctx) => {
+      let realType = mimeType;
+      if (!mimeType && ctx.tag === 'script') realType = 'text/javascript';
+
+      if (!realType) return sourceCode;
+
+      let Klass = global.compilersByMimeType[realType];
+      if (!Klass) return sourceCode;
+      if (Klass === InlineHtmlCompiler) return sourceCode;
+
+      let compiler = new Klass();
+      let ext = mimeTypes.extension(realType);
+      let fakeFile = `${filePath}:inline_${ctx.count}.${ext}`;
+
+      if (!compiler.shouldCompileFileSync(fakeFile, ctx)) return sourceCode;
+      return compiler.compileSync(sourceCode, fakeFile, ctx).code;
+    };
+
+    return new InlineHtmlCompiler(compileBlock, compileBlockSync);
   }
 
   static getInputMimeTypes() {
