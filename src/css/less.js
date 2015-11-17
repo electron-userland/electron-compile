@@ -58,6 +58,8 @@ export default class LessCompilerNext extends CompilerBase {
   }
 
   compileSync(sourceCode, filePath, compilerContext) {
+    lessjs = lessjs || require('less');
+
     let source = '';
     let error = null;
 
