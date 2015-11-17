@@ -94,13 +94,20 @@ export default class InlineHtmlCompiler extends CompilerBase {
     let toWait = [];
 
     let that = this;
+    let styleCount = 0;
     toWait.push(this.each($('style'), async (i, el) => {
       let mimeType = $(el).attr('type');
 
-      $(el).text(await that.compileBlock($(el).text(), filePath, mimeType, 'style'));
+      let thisCtx = _.assign({
+        count: styleCount++,
+        tag: 'style'
+      }, compilerContext);
+
+      $(el).text(await that.compileBlock($(el).text(), filePath, mimeType, thisCtx));
       $(el).attr('type', 'text/css');
     }));
 
+    let scriptCount = 0;
     toWait.push(this.each($('script'), async (i, el) => {
       let src = $(el).attr('src');
       if (src && src.length > 2) {
@@ -108,9 +115,14 @@ export default class InlineHtmlCompiler extends CompilerBase {
         return;
       }
 
+      let thisCtx = _.assign({
+        count: scriptCount++,
+        tag: 'script'
+      }, compilerContext);
+
       let mimeType = $(el).attr('type');
 
-      $(el).text(await that.compileBlock($(el).text(), filePath, mimeType, 'script'));
+      $(el).text(await that.compileBlock($(el).text(), filePath, mimeType, thisCtx));
       $(el).attr('type', 'application/javascript');
     }));
 
@@ -156,23 +168,35 @@ export default class InlineHtmlCompiler extends CompilerBase {
     let $ = cheerio.load(sourceCode);
 
     let that = this;
-    this.eachSync($('style'), (i, el) => {
+    let styleCount = 0;
+    this.eachSync($('style'), async (i, el) => {
       let mimeType = $(el).attr('type');
 
-      $(el).text(that.compileBlockSync($(el).text(), filePath, mimeType, 'style'));
+      let thisCtx = _.assign({
+        count: styleCount++,
+        tag: 'style'
+      }, compilerContext);
+
+      $(el).text(that.compileBlockSync($(el).text(), filePath, mimeType, thisCtx));
       $(el).attr('type', 'text/css');
     });
 
-    this.eachSync($('script'), (i, el) => {
+    let scriptCount = 0;
+    this.eachSync($('script'), async (i, el) => {
       let src = $(el).attr('src');
       if (src && src.length > 2) {
         $(el).attr('src', InlineHtmlCompiler.fixupRelativeUrl(src));
         return;
       }
 
+      let thisCtx = _.assign({
+        count: scriptCount++,
+        tag: 'script'
+      }, compilerContext);
+
       let mimeType = $(el).attr('type');
 
-      $(el).text(that.compileBlockSync($(el).text(), filePath, mimeType, 'script'));
+      $(el).text(that.compileBlockSync($(el).text(), filePath, mimeType, thisCtx));
       $(el).attr('type', 'application/javascript');
     });
 
