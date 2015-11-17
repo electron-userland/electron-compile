@@ -5,7 +5,6 @@ import path from 'path';
 import cheerio from 'cheerio';
 import pify from 'pify';
 import _ from 'lodash';
-import mimeTypes from 'mime-types';
 
 const validInputs = [
   'inline-valid.html',
@@ -17,51 +16,7 @@ const InlineHtmlCompiler = global.compilersByMimeType['text/html'];
 
 describe.only('The inline HTML compiler', function() {
   beforeEach(function() {
-    let compileCount = 0;
-
-    let compileBlock = async (sourceCode, filePath, mimeType, tag) => {
-      let realType = mimeType;
-      if (!mimeType && tag === 'script') realType = 'text/javascript';
-
-      if (!realType) return sourceCode;
-
-      let Klass = global.compilersByMimeType[realType];
-      if (!Klass) {
-        console.log(`No compiler for ${realType}/${tag}`);
-        return sourceCode;
-      }
-
-      let compiler = new Klass();
-      let ext = mimeTypes.extension(realType);
-      let fakeFile = `${filePath}:inline_${compileCount++}.${ext}`;
-
-      let cc = {};
-      if (!(await compiler.shouldCompileFile(fakeFile, cc))) return sourceCode;
-      return (await compiler.compileSync(sourceCode, fakeFile, cc)).code;
-    };
-
-    let compileBlockSync = (sourceCode, filePath, mimeType, tag) => {
-      let realType = mimeType;
-      if (!mimeType && tag === 'script') realType = 'text/javascript';
-
-      if (!realType) return sourceCode;
-
-      let Klass = global.compilersByMimeType[realType];
-      if (!Klass) {
-        console.log(`No compiler for ${realType}/${tag}`);
-        return sourceCode;
-      }
-
-      let compiler = new Klass();
-      let ext = mimeTypes.extension(realType);
-      let fakeFile = `${filePath}:inline_${compileCount++}.${ext}`;
-
-      let cc = {};
-      if (!compiler.shouldCompileFileSync(fakeFile, cc)) return sourceCode;
-      return compiler.compileSync(sourceCode, fakeFile, cc).code;
-    };
-
-    this.fixture = new InlineHtmlCompiler(compileBlock, compileBlockSync);
+    this.fixture = InlineHtmlCompiler.createFromCompilers(global.compilersByMimeType);
   });
 
   _.each(validInputs, (inputFile) => {
