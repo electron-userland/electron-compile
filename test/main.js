@@ -7,7 +7,7 @@ import rimraf from 'rimraf';
 import {forAllFiles} from '../lib/for-all-files';
 import {createCompilers} from '../lib/main-ng';
 
-describe.only('exports for this library', function() {
+describe('exports for this library', function() {
   describe('the createCompilers method', function() {
     it('should return compilers', function() {
       let result = createCompilers();
