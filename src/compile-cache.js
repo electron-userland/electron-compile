@@ -15,15 +15,24 @@ export default class CompileCache {
   }
   
   static createFromCompiler(cachePath, compiler, fileChangeCache) {
-    const digestObj = {
-      version: compiler.getCompilerVersion,
-      options: compiler.compilerOptions
+    let newCachePath = null;
+    let getCachePath = () => {
+      if (newCachePath) return newCachePath;
+
+      const digestObj = {
+        version: compiler.getCompilerVersion,
+        options: compiler.compilerOptions
+      };
+
+      newCachePath = path.join(cachePath, createDigestForObject(digestObj));
+      mkdirp.sync(newCachePath);
+      return newCachePath;
     };
     
-    let newCachePath = path.join(cachePath, createDigestForObject(digestObj));
-    mkdirp.sync(newCachePath);
+    let ret = new CompileCache('', fileChangeCache);
+    ret.getCachePath = getCachePath;
     
-    return new CompileCache(newCachePath, fileChangeCache);
+    return ret;
   }
   
   async get(filePath) {
@@ -34,7 +43,7 @@ export default class CompileCache {
     let binaryData = null;
     
     try {
-      let cacheFile = path.join(this.cachePath, hashInfo.hash);
+      let cacheFile = path.join(this.getCachePath(), hashInfo.hash);
       
       let result = null;
       if (hashInfo.isFileBinary) {
@@ -64,7 +73,7 @@ export default class CompileCache {
 
   async save(hashInfo, codeOrBinaryData, mimeType) {
     let buf = null;
-    let target = path.join(this.cachePath, hashInfo.hash);
+    let target = path.join(this.getCachePath(), hashInfo.hash);
     
     if (hashInfo.isFileBinary) {
       buf = await pzlib.gzip(codeOrBinaryData);
@@ -98,7 +107,7 @@ export default class CompileCache {
     let binaryData = null;
     
     try {
-      let cacheFile = path.join(this.cachePath, hashInfo.hash);
+      let cacheFile = path.join(this.getCachePath(), hashInfo.hash);
       
       let result = null;
       if (hashInfo.isFileBinary) {
@@ -128,7 +137,7 @@ export default class CompileCache {
 
   saveSync(hashInfo, codeOrBinaryData, mimeType) {
     let buf = null;
-    let target = path.join(this.cachePath, hashInfo.hash);
+    let target = path.join(this.getCachePath(), hashInfo.hash);
     
     if (hashInfo.isFileBinary) {
       buf = zlib.gzipSync(codeOrBinaryData);
@@ -152,5 +161,11 @@ export default class CompileCache {
     
     result.hashInfo = cacheResult.hashInfo;
     return result;
+  }
+
+  getCachePath() {
+    // NB: This is an evil hack so that createFromCompiler can stomp it
+    // at will
+    return this.cachePath;
   }
 }
