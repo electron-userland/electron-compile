@@ -140,4 +140,31 @@ export default class FileChangedCache {
   static hasSourceMap(sourceCode) {
     return sourceCode.lastIndexOf('//# sourceMap') > sourceCode.lastIndexOf('\n');
   }
+  
+  static detectFileEncoding(buffer) {
+    if (buffer.length < 1) return true;
+    let buf = (buffer.length < 4096 ? buffer : buffer.slice(0, 4096));
+    
+    const encodings = ['utf8', 'utf16le'];
+    
+    let encoding = _.find(
+      encodings, 
+      (x) => !FileChangedCache.containsControlCharacters(buf.toString(x)));
+    
+    return encoding;
+  }
+  
+  static containsControlCharacters(str) {
+    let controlCount = 0;
+    
+    for (let i=0; i < str.length; i++) {
+      let c = str.charCodeAt(i);
+      if (c === 65536 || c < 8) controlCount++;
+      
+      if (controlCount > 16) return true;
+    }
+    
+    if (controlCount === 0) return false;
+    return (controlCount / str.length) < 0.02;
+  }
 }
