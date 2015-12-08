@@ -5,7 +5,8 @@ const filenames = [
   'js/babel',
   'js/coffeescript',
   'js/typescript',
-  'inline-html'
+  'inline-html',
+  'passthrough'
 ];
 
 module.exports = _.map(filenames, (x) => require('./' + x).default);
