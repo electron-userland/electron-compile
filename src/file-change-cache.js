@@ -44,18 +44,22 @@ export default class FileChangedCache {
       delete this.changeCache.cacheEntry;
     }
     
-    let {digest, sourceCode, isFileBinary} = await this.calculateHashForFile(absoluteFilePath);
+    let {digest, sourceCode, binaryData} = await this.calculateHashForFile(absoluteFilePath);
     
     let info = {
       hash: digest,
       isMinified: FileChangedCache.contentsAreMinified(sourceCode || ''),
       isInNodeModules: FileChangedCache.isInNodeModules(absoluteFilePath),
       hasSourceMap: FileChangedCache.hasSourceMap(sourceCode || ''),
-      isFileBinary: isFileBinary
+      isFileBinary: !!binaryData
     };
     
     this.changeCache[cacheKey] = { ctime, size, info };
-    return _.extend({sourceCode}, info);
+    if (binaryData) {
+      return _.extend({binaryData}, info);
+    } else {
+      return _.extend({sourceCode}, info);
+    }
   }
 
   getHashForPathSync(absoluteFilePath) {
@@ -80,18 +84,22 @@ export default class FileChangedCache {
       delete this.changeCache.cacheEntry;
     }
     
-    let {digest, sourceCode, isFileBinary} = this.calculateHashForFileSync(absoluteFilePath);
+    let {digest, sourceCode, binaryData} = this.calculateHashForFileSync(absoluteFilePath);
     
     let info = {
       hash: digest,
       isMinified: FileChangedCache.contentsAreMinified(sourceCode || ''),
       isInNodeModules: FileChangedCache.isInNodeModules(absoluteFilePath),
       hasSourceMap: FileChangedCache.hasSourceMap(sourceCode || ''),
-      isFileBinary: isFileBinary
+      isFileBinary: !!binaryData
     };
     
     this.changeCache[cacheKey] = { ctime, size, info };
-    return _.extend({sourceCode}, info);
+    if (binaryData) {
+      return _.extend({binaryData}, info);
+    } else {
+      return _.extend({sourceCode}, info);
+    }
   }
 
   async save(filePath) {
@@ -105,13 +113,13 @@ export default class FileChangedCache {
     
     if (!encoding) {
       let digest = crypto.createHash('sha1').update(buf).digest('hex');
-      return { sourceCode: null, digest, isFileBinary: true };
+      return { sourceCode: null, digest, binaryData: buf };
     }
     
     let sourceCode = await pfs.readFile(absoluteFilePath, encoding);
     let digest = crypto.createHash('sha1').update(sourceCode, 'utf8').digest('hex');
     
-    return {sourceCode, digest, isFileBinary: false};
+    return {sourceCode, digest, binaryData: null };
   }
     
   calculateHashForFileSync(absoluteFilePath) {
@@ -120,13 +128,13 @@ export default class FileChangedCache {
     
     if (!encoding) {
       let digest = crypto.createHash('sha1').update(buf).digest('hex');
-      return { sourceCode: null, digest, isFileBinary: true };
+      return { sourceCode: null, digest, binaryData: buf};
     }
     
     let sourceCode = fs.readFileSync(absoluteFilePath, encoding);
     let digest = crypto.createHash('sha1').update(sourceCode, 'utf8').digest('hex');
     
-    return {sourceCode, digest, isFileBinary: false};  
+    return {sourceCode, digest, binaryData: null};  
   }
   
   static contentsAreMinified(source) {
