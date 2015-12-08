@@ -16,7 +16,8 @@ describe('The file changed cache', function() {
       hash: '4a92e95074156e8b46869519c43ddf10b59299a4',
       hasSourceMap: false,
       isInNodeModules: false,
-      isMinified: false
+      isMinified: false,
+      isFileBinary: false
     };
 
     let input = path.resolve(__dirname, '..', 'test', 'fixtures', 'valid.js');
@@ -32,7 +33,8 @@ describe('The file changed cache', function() {
       hash: '4a92e95074156e8b46869519c43ddf10b59299a4',
       hasSourceMap: false,
       isInNodeModules: false,
-      isMinified: false
+      isMinified: false,
+      isFileBinary: false
     };
 
     let input = path.resolve(__dirname, '..', 'test', 'fixtures', 'valid.js');
@@ -48,7 +50,8 @@ describe('The file changed cache', function() {
       hash: '4a92e95074156e8b46869519c43ddf10b59299a4',
       hasSourceMap: false,
       isInNodeModules: false,
-      isMinified: false
+      isMinified: false,
+      isFileBinary: false
     };
 
     let input = path.join(__dirname, '..', 'test', 'fixtures', 'valid.js');
@@ -97,7 +100,8 @@ describe('The file changed cache', function() {
       hash: '4a92e95074156e8b46869519c43ddf10b59299a4',
       hasSourceMap: false,
       isInNodeModules: false,
-      isMinified: false
+      isMinified: false,
+      isFileBinary: false
     };
 
     let realInput = path.join(__dirname, '..', 'test', 'fixtures', 'valid.js');
