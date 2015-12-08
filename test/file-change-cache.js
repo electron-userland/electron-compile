@@ -28,6 +28,24 @@ describe('The file changed cache', function() {
     expect(result).to.deep.equal(expectedInfo);
   });
   
+  it("Correctly handles binary files", async function() {
+    const expectedInfo = {
+      hash: '83af4f2b5a3e2dda1a322ac75799eee337d569a5',
+      hasSourceMap: false,
+      isInNodeModules: false,
+      isMinified: false,
+      isFileBinary: true
+    };
+
+    let input = path.resolve(__dirname, '..', 'test', 'fixtures', 'binaryfile.zip');
+    let result = await this.fixture.getHashForPath(input);
+    expect(result.binaryData).to.be.ok;
+    expect(result.binaryData.length > 16).to.be.ok;
+    delete result.binaryData;
+    expect(result).to.deep.equal(expectedInfo);
+  });
+  
+  
   it("Correctly computes a file hash for a canned file syncronously", function() {
     const expectedInfo = {
       hash: '4a92e95074156e8b46869519c43ddf10b59299a4',
