@@ -1,5 +1,6 @@
 import path from 'path';
 import {SimpleCompilerBase} from '../compiler-base';
+import mimeTypes from 'mime-types';
 
 const inputMimeTypes = ['text/plain'];
 
@@ -12,10 +13,10 @@ export default class PassthroughCompiler extends SimpleCompilerBase {
     return inputMimeTypes;
   }
 
-  compileSync(sourceCode) {
+  compileSync(sourceCode, filePath) {
     return {
       code: sourceCode,
-      mimeType: 'text/plain'
+      mimeType: mimeTypes.lookup(filePath)
     };
   }
   
