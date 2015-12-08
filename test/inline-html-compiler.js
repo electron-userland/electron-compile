@@ -14,7 +14,7 @@ const validInputs = [
 const pfs = pify(fs);
 const InlineHtmlCompiler = global.compilersByMimeType['text/html'];
 
-describe.only('The inline HTML compiler', function() {
+describe('The inline HTML compiler', function() {
   beforeEach(function() {
     this.fixture = InlineHtmlCompiler.createFromCompilers(global.compilersByMimeType);
   });
