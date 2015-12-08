@@ -41,14 +41,16 @@ export default class CompileCache {
     let code = null;
     let mimeType = null;
     let binaryData = null;
+    let dependentFiles = null;
     
     try {
       let cacheFile = path.join(this.getCachePath(), hashInfo.hash);
       
       let result = null;
       if (hashInfo.isFileBinary) {
-        let infoJson = await pfs.readFile(cacheFile + '.info');
-        mimeType = JSON.parse(infoJson).mimeType;
+        let info = JSON.parse(await pfs.readFile(cacheFile + '.info'));
+        mimeType = info.mimeType;
+        dependentFiles = info.dependentFiles;
         
         binaryData = hashInfo.binaryData;
         if (!binaryData) {
@@ -62,24 +64,25 @@ export default class CompileCache {
         result = JSON.parse(str);
         code = result.code;
         mimeType = result.mimeType;
+        dependentFiles = result.dependentFiles;
       }
     } catch (e) {
       // TODO: visionmedia/debug
       console.log(`Failed to read cache for ${filePath}`);
     }
     
-    return { hashInfo, code, mimeType, binaryData };
+    return { hashInfo, code, mimeType, binaryData, dependentFiles };
   }
 
-  async save(hashInfo, codeOrBinaryData, mimeType) {
+  async save(hashInfo, codeOrBinaryData, mimeType, dependentFiles) {
     let buf = null;
     let target = path.join(this.getCachePath(), hashInfo.hash);
     
     if (hashInfo.isFileBinary) {
       buf = await pzlib.gzip(codeOrBinaryData);
-      await pfs.writeFile(target + '.info', JSON.stringify({mimeType}), 'utf8');
+      await pfs.writeFile(target + '.info', JSON.stringify({mimeType, dependentFiles}), 'utf8');
     } else {
-      buf = await pzlib.gzip(new Buffer(JSON.stringify({code: codeOrBinaryData, mimeType})));
+      buf = await pzlib.gzip(new Buffer(JSON.stringify({code: codeOrBinaryData, mimeType, dependentFiles})));
     }
     
     await pfs.writeFile(target, buf);
@@ -92,7 +95,7 @@ export default class CompileCache {
     let result = await fetcher(filePath, cacheResult.hashInfo) || { hashInfo: cacheResult.hashInfo };
     
     if (result.mimeType) {
-      await this.save(cacheResult.hashInfo, result.code || result.binaryData, result.mimeType);
+      await this.save(cacheResult.hashInfo, result.code || result.binaryData, result.mimeType, result.dependentFiles);
     }
     
     result.hashInfo = cacheResult.hashInfo;
@@ -105,14 +108,16 @@ export default class CompileCache {
     let code = null;
     let mimeType = null;
     let binaryData = null;
+    let dependentFiles = null;
     
     try {
       let cacheFile = path.join(this.getCachePath(), hashInfo.hash);
       
       let result = null;
       if (hashInfo.isFileBinary) {
-        let infoJson = fs.readFileSync(cacheFile + '.info');
-        mimeType = JSON.parse(infoJson).mimeType;
+        let info = JSON.parse(fs.readFileSync(cacheFile + '.info'));
+        mimeType = info.mimeType;
+        dependentFiles = info.dependentFiles;
         
         binaryData = hashInfo.binaryData;
         if (!binaryData) {
@@ -121,29 +126,30 @@ export default class CompileCache {
         }
       } else {
         let buf = fs.readFileSync(cacheFile);
-        let str = zlib.gunzipSync(buf).toString('utf8');
+        let str = (zlib.gunzipSync(buf)).toString('utf8');
 
         result = JSON.parse(str);
         code = result.code;
         mimeType = result.mimeType;
+        dependentFiles = result.dependentFiles;
       }
     } catch (e) {
       // TODO: visionmedia/debug
       console.log(`Failed to read cache for ${filePath}`);
     }
     
-    return { hashInfo, code, mimeType, binaryData };
+    return { hashInfo, code, mimeType, binaryData, dependentFiles };
   }
 
-  saveSync(hashInfo, codeOrBinaryData, mimeType) {
+  saveSync(hashInfo, codeOrBinaryData, mimeType, dependentFiles) {
     let buf = null;
     let target = path.join(this.getCachePath(), hashInfo.hash);
     
     if (hashInfo.isFileBinary) {
       buf = zlib.gzipSync(codeOrBinaryData);
-      fs.writeFileSync(target + '.info', JSON.stringify({mimeType}), 'utf8');
+      fs.writeFileSync(target + '.info', JSON.stringify({mimeType, dependentFiles}), 'utf8');
     } else {
-      buf = zlib.gzipSync(new Buffer(JSON.stringify({code: codeOrBinaryData, mimeType})));
+      buf = zlib.gzipSync(new Buffer(JSON.stringify({code: codeOrBinaryData, mimeType, dependentFiles})));
     }
     
     fs.writeFileSync(target, buf);
@@ -156,7 +162,7 @@ export default class CompileCache {
     let result = fetcherSync(filePath, cacheResult.hashInfo) || { hashInfo: cacheResult.hashInfo };
     
     if (result.mimeType) {
-      this.saveSync(cacheResult.hashInfo, result.code || result.binaryData, result.mimeType);
+      this.saveSync(cacheResult.hashInfo, result.code || result.binaryData, result.mimeType, result.dependentFiles);
     }
     
     result.hashInfo = cacheResult.hashInfo;

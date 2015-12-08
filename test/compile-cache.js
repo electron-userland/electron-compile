@@ -73,7 +73,6 @@ describe('The compile cache', function() {
     expect(result.mimeType).to.equal('application/zip');
     expect(result.binaryData.length).to.equal(hashInfo.binaryData.length);
   
-    console.log("We did it!");
     this.fixture = new CompileCache(this.tempCacheDir, this.fileChangeCache);
         
     result = await this.fixture.getOrFetch(inputFile, fetcher);
@@ -95,7 +94,6 @@ describe('The compile cache', function() {
     expect(result.mimeType).to.equal('application/zip');
     expect(result.binaryData.length).to.equal(hashInfo.binaryData.length);
   
-    console.log("We did it!");
     this.fixture = new CompileCache(this.tempCacheDir, this.fileChangeCache);
         
     result = this.fixture.getOrFetchSync(inputFile, fetcher);
