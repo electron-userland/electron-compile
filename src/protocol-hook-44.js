@@ -112,6 +112,7 @@ export function initializeProtocolHook(availableCompilers, initializeOpts) {
 
       if (!compiler) {
         requestFileJob(filePath, finish);
+        return;
       }
     } catch (e) {
       console.log(`Failed to find compiler: ${e.message}\n${e.stack}`);
