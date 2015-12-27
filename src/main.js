@@ -5,7 +5,7 @@ const filenames = [
   'js/babel',
   'js/coffeescript',
   'js/typescript',
-  'inline-html',
+  'html/inline-html',
   'passthrough'
 ];
 
