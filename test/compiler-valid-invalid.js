@@ -1,4 +1,4 @@
-require('./support');
+import './support';
 
 import pify from 'pify';
 import fs from 'fs';
