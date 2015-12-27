@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import path from 'path';
 import mimeTypes from 'mime-types';
-import {CompilerBase} from './compiler-base';
+import {CompilerBase} from '../compiler-base';
 
 const inputMimeTypes = ['text/html'];
 let cheerio = null;

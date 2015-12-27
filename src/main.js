@@ -6,6 +6,7 @@ const filenames = [
   'js/coffeescript',
   'js/typescript',
   'html/inline-html',
+  'html/jade',
   'passthrough'
 ];
 
