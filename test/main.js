@@ -1,4 +1,4 @@
-require('./support.js');
+import './support.js';
 
 import _ from 'lodash';
 import path from 'path';

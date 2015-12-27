@@ -1,4 +1,4 @@
-require('./support');
+import './support';
 
 import pify from 'pify';
 import fs from 'fs';
@@ -19,6 +19,11 @@ let mimeTypesToTest = _.reduce(allFixtureFiles, (acc,x) => {
   
   return acc;
 }, []);
+
+const expectedMimeTypeSpecialCases = {
+  'text/less': 'text/css',
+  'text/jade': 'text/html'
+};
 
 for (let mimeType of mimeTypesToTest) {
   let klass = global.compilersByMimeType[mimeType];
@@ -41,11 +46,15 @@ for (let mimeType of mimeTypesToTest) {
       expect(dependentFiles.length).to.equal(0);
 
       let result = await this.fixture.compile(source, input, ctx);
-      let expectedMimeType = (mimeType === 'text/less' ? 'text/css' : 'text/javascript');
+      let expectedMimeType = expectedMimeTypeSpecialCases[mimeType] || 'text/javascript';
+      
       expect(result.mimeType).to.equal(expectedMimeType);
 
-      let lines = result.code.split('\n');
-      expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).to.be.ok;
+      // NB: Jade doesn't do source maps
+      if (mimeType !== 'text/jade') {
+        let lines = result.code.split('\n');
+        expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).to.be.ok;
+      }
     });
 
     it(`should fail the invalid ${mimeType} file`, async function() {

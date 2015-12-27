@@ -1,4 +1,4 @@
-require('./support.js');
+import './support.js';
 
 import FileChangeCache from '../lib/file-change-cache';
 import path from 'path';

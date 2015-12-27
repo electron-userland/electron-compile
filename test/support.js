@@ -1,4 +1,4 @@
-import p from 'babel-polyfill';
+import 'babel-polyfill';
 
 import _ from 'lodash';
 import mimeTypes from 'mime-types';

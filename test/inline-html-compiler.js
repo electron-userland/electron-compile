@@ -1,4 +1,4 @@
-require('./support.js');
+import './support.js';
 
 import fs from 'fs';
 import path from 'path';
