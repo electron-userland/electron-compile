@@ -1,7 +1,11 @@
 import _ from 'lodash';
 import fs from 'fs';
 import path from 'path';
+import mkdirp from 'mkdirp';
 import pify from 'pify';
+
+import FileChangedCache from './file-change-cache';
+import CompilerHost from './compiler-host';
 
 const pfs = pify(fs);
 const d = require('debug')('electron-compile:config-parser');
@@ -10,16 +14,98 @@ const d = require('debug')('electron-compile:config-parser');
 // cache-only versions of these compilers
 let allCompilerClasses = null;
 
-export async function createCompilerHostFromConfiguration(info) {
+export function createCompilerHostFromConfiguration(info) {
+  let compilers = createCompilers();
+  let rootCacheDir = info.rootCacheDir || calculateDefaultCompileCacheDirectory();
+  
+  let fileChangeCache = new FileChangedCache(info.appRoot);
+  let ret = CompilerHost(rootCacheDir, compilers, fileChangeCache, false, compilers['text/plain']);
+  
+  _.each(Object.keys(info.options || {}), (x) => {
+    let opts = info.options[x];
+    if (!(x in compilers)) {
+      throw new Error(`Found compiler settings for missing compiler: ${x}`);
+    }
+    
+    d(`Setting options for ${x}: ${JSON.stringify(opts)}`);
+    compilers[x].compilerOptions = opts;
+  });
+  
+  return ret;
 }
 
-export function createCompilerHostFromBabelRc(file) {
+export async function createCompilerHostFromBabelRc(file) {
+  let info = JSON.parse(await fs.readFile(file, 'utf8'));
+  
+  // project.json
+  if ('babel' in info) {
+    info = info.babel;
+  }
+  
+  if ('env' in info) {
+    let ourEnv = process.env.BABEL_ENV || process.env.NODE_ENV || 'development';
+    info = info.env[ourEnv];
+  }
+  
+  // Are we still project.json (i.e. is there no babel info whatsoever?)
+  if ('name' in info && 'version' in info) {
+    return createCompilerHostFromConfiguration({
+      appRoot: path.dirname(file),
+      options: getDefaultConfiguration()
+    });
+  }
+  
+  return createCompilerHostFromConfiguration({
+    appRoot: path.dirname(file),
+    options: {
+      'text/javascript': info
+    }
+  });
 }
 
-export function createCompilerHostFromConfigFile(file) {
+export async function createCompilerHostFromConfigFile(file) {
+  let info = JSON.parse(await fs.readFile(file, 'utf8'));
+  
+  if ('env' in info) {
+    let ourEnv = process.env.ELECTRON_COMPILE_ENV || process.env.NODE_ENV || 'development';
+    info = info.env[ourEnv];
+  }
+  
+  return createCompilerHostFromConfiguration({
+    appRoot: path.dirname(file),
+    options: info
+  });
 }
 
-export function createCompilerHostFromProjectRoot(rootDir) {
+export async function createCompilerHostFromProjectRoot(rootDir) {
+  let compilerc = path.join(rootDir, '.compilerc');
+  if (await pfs.exists(compilerc)) {
+    return createCompilerHostFromConfigFile(compilerc);
+  }
+  
+  let babelrc = path.join(rootDir, '.babelrc');
+  if (await pfs.exists(compilerc)) {
+    return createCompilerHostFromBabelRc(babelrc);
+  }
+    
+  return createCompilerHostFromBabelRc(path.join(rootDir, 'project.json'));
+}
+
+export function calculateDefaultCompileCacheDirectory() {
+  let tmpDir = process.env.TEMP || process.env.TMPDIR || '/tmp';
+  let hash = require('crypto').createHash('md5').update(process.execPath).digest('hex');
+
+  let cacheDir = path.join(tmpDir, `compileCache_${hash}`);
+  mkdirp.sync(cacheDir);
+}
+
+export function getDefaultConfiguration() {
+  return {
+    'text/javascript': {
+      "presets": ["stage-0", "es2015"],
+      "sourceMaps": "inline"
+    }
+  };
 }
 
 // Public: Allows you to create new instances of all compilers that are

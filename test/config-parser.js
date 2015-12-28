@@ -1,4 +1,4 @@
-import {createCompilers} from '../lib/config-parser'
+import {createCompilers} from '../lib/config-parser';
 
 describe('the configuration parser module', function() {
   describe('the createCompilers method', function() {
