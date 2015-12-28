@@ -14,14 +14,19 @@ export default class FileChangedCache {
     this.failOnCacheMiss = failOnCacheMiss;
     this.changeCache = {};
   }
+  
+  static loadFromData(data, failOnCacheMiss=true) {
+    let ret = new FileChangedCache(data.appRoot, failOnCacheMiss);
+    ret.changeCache = data.changeCache;
+
+    return ret;
+  }
 
   static async loadFromFile(file, failOnCacheMiss=true) {
-    let ret = new FileChangedCache(failOnCacheMiss);
-    let buf = await pfs.readFile(file);
-    
     d(`Loading canned FileChangedCache from ${file}`);
-    ret.changeCache = JSON.parse(await pzlib.gunzip(buf));
-    return ret;
+  
+    let buf = await pfs.readFile(file);
+    return FileChangedCache.loadFromData(JSON.parse(await pzlib.gunzip(buf)), failOnCacheMiss);
   }
   
   async getHashForPath(absoluteFilePath) {
@@ -71,8 +76,14 @@ export default class FileChangedCache {
     }
   }
   
+  getSavedData() {
+    return { changeCache: this.changeCache, appRoot: this.appRoot };
+  }
+  
   async save(filePath) {
-    let buf = await pzlib.gzip(new Buffer(JSON.stringify(this.changeCache)));
+    let toSave = this.getSavedData();
+    
+    let buf = await pzlib.gzip(new Buffer(JSON.stringify(toSave)));
     await pfs.writeFile(filePath, buf);
   }
   
@@ -139,7 +150,9 @@ export default class FileChangedCache {
   }
     
   saveSync(filePath) {
-    let buf = zlib.gzipSync(new Buffer(JSON.stringify(this.changeCache)));
+    let toSave = this.getSavedData();
+
+    let buf = zlib.gzipSync(new Buffer(JSON.stringify(toSave)));
     fs.writeFileSync(filePath, buf);
   }
     
