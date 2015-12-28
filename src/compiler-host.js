@@ -157,6 +157,7 @@ export default class CompilerHost {
 
     let dependentFiles = await compiler.determineDependentFiles(code, filePath, ctx);
 
+    d(`Using compiler options: ${JSON.stringify(compiler.compilerOptions)}`);
     let result = await compiler.compile(code, filePath, ctx);
 
     let shouldInlineHtmlify = 

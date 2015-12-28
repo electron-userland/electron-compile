@@ -8,7 +8,7 @@ import mkdirp from 'mkdirp';
 import FileChangeCache from '../lib/file-change-cache';
 import CompilerHost from '../lib/compiler-host';
 
-const d = require('debug')('electron-test:compiler-host');
+const d = require('debug')('test:compiler-host');
 
 let testCount=0;
 

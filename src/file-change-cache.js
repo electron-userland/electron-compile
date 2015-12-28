@@ -67,7 +67,7 @@ export default class FileChangedCache {
     };
     
     this.changeCache[cacheKey] = { ctime, size, info };
-    d(`Cache entry for ${cacheKey}: ${this.changeCache[cacheKey]}`);
+    d(`Cache entry for ${cacheKey}: ${JSON.stringify(this.changeCache[cacheKey])}`);
 
     if (binaryData) {
       return _.extend({binaryData}, info);
