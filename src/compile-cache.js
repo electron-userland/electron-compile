@@ -20,7 +20,8 @@ export default class CompileCache {
       if (newCachePath) return newCachePath;
 
       const digestObj = {
-        version: compiler.getCompilerVersion,
+        name: Object.getPrototypeOf(compiler).constructor.name,
+        version: compiler.getCompilerVersion(),
         options: compiler.compilerOptions
       };
 
