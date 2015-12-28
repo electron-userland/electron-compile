@@ -18,9 +18,10 @@ const finalForms = {
 };
 
 export default class CompilerHost {
-  constructor(rootCacheDir, compilersByMimeType, fileChangeCache, readOnlyMode, fallbackCompiler = null) {
+  constructor(rootCacheDir, compilers, fileChangeCache, readOnlyMode, fallbackCompiler = null) {
+    let compilersByMimeType = _.assign({}, compilers);
     _.assign(this, {rootCacheDir, compilersByMimeType, fileChangeCache, readOnlyMode, fallbackCompiler});
-
+    
     this.cachesForCompilers = _.reduce(Object.keys(compilersByMimeType), (acc, x) => {
       let compiler = compilersByMimeType[x];
       if (acc.has(compiler)) return acc;
@@ -44,6 +45,8 @@ export default class CompilerHost {
     let hashInfo = await this.fileChangeCache.getHashForPath(filePath);
     let type = mimeTypes.lookup(filePath);
 
+    // NB: Here, we're basically only using the compiler here to find
+    // the appropriate CompileCache
     let compiler = CompilerHost.shouldPassthrough(hashInfo) ?
       this.getPassthroughCompiler() :
       this.compilersByMimeType(type || '__lolnothere');
@@ -87,6 +90,7 @@ export default class CompilerHost {
 
   async compileUncached(filePath, hashInfo, compiler) {
     let ctx = {};
+    let inputMimeType = mimeTypes.lookup(filePath);
     let code = hashInfo.sourceCode || await pfs.readFile(filePath, 'utf8');
 
     if (!(await compiler.shouldCompileFile(code, ctx))) {
@@ -99,11 +103,14 @@ export default class CompilerHost {
     let result = await compiler.compile(code, filePath, ctx);
 
     let shouldInlineHtmlify = 
-      hashInfo.mimeType !== 'text/html' &&
+      inputMimeType !== 'text/html' &&
       result.mimeType === 'text/html';
       
-    if (!finalForms[result.mimeType] || shouldInlineHtmlify) {
-      d(`Recursively compiling result of ${filePath} with non-final MIME type ${result.mimeType}`);
+    if (finalForms[result.mimeType] && !shouldInlineHtmlify) {
+      // Got something we can use in-browser, let's return it
+      return _.assign(result, {dependentFiles});
+    } else {
+      d(`Recursively compiling result of ${filePath} with non-final MIME type ${result.mimeType}, input was ${inputMimeType}`);
 
       hashInfo = _.assign({ sourceCode: result.code, mimeType: result.mimeType }, hashInfo);
       compiler = this.compilersByMimeType[result.mimeType || '__lolnothere'];
@@ -114,10 +121,10 @@ export default class CompilerHost {
         throw new Error(`Compiling ${filePath} resulted in a MIME type of ${result.mimeType}, which we don't know how to handle`);
       }
 
-      return await this.compileUncached(filePath, hashInfo, compiler);
+      return await this.compileUncached(
+        `${filePath}.${mimeTypes.extension(result.mimeType || 'txt')}`, 
+        hashInfo, compiler);
     }
-
-    return _.assign(result, {dependentFiles});
   }
 
   // Public: Compiles a single file given its path.
