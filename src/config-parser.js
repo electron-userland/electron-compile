@@ -92,6 +92,63 @@ export async function createCompilerHostFromProjectRoot(rootDir) {
   return createCompilerHostFromBabelRc(path.join(rootDir, 'project.json'));
 }
 
+export function createCompilerHostFromBabelRcSync(file) {
+  let info = JSON.parse(fs.readFileSync(file, 'utf8'));
+  
+  // project.json
+  if ('babel' in info) {
+    info = info.babel;
+  }
+  
+  if ('env' in info) {
+    let ourEnv = process.env.BABEL_ENV || process.env.NODE_ENV || 'development';
+    info = info.env[ourEnv];
+  }
+  
+  // Are we still project.json (i.e. is there no babel info whatsoever?)
+  if ('name' in info && 'version' in info) {
+    return createCompilerHostFromConfiguration({
+      appRoot: path.dirname(file),
+      options: getDefaultConfiguration()
+    });
+  }
+  
+  return createCompilerHostFromConfiguration({
+    appRoot: path.dirname(file),
+    options: {
+      'text/javascript': info
+    }
+  });
+}
+
+export function createCompilerHostFromConfigFileSync(file) {
+  let info = JSON.parse(fs.readFileSync(file, 'utf8'));
+  
+  if ('env' in info) {
+    let ourEnv = process.env.ELECTRON_COMPILE_ENV || process.env.NODE_ENV || 'development';
+    info = info.env[ourEnv];
+  }
+  
+  return createCompilerHostFromConfiguration({
+    appRoot: path.dirname(file),
+    options: info
+  });
+}
+
+export function createCompilerHostFromProjectRootSync(rootDir) {
+  let compilerc = path.join(rootDir, '.compilerc');
+  if (fs.existsSync(compilerc)) {
+    return createCompilerHostFromConfigFile(compilerc);
+  }
+  
+  let babelrc = path.join(rootDir, '.babelrc');
+  if (fs.existsSync(compilerc)) {
+    return createCompilerHostFromBabelRc(babelrc);
+  }
+    
+  return createCompilerHostFromBabelRc(path.join(rootDir, 'project.json'));
+}
+
 export function calculateDefaultCompileCacheDirectory() {
   let tmpDir = process.env.TEMP || process.env.TMPDIR || '/tmp';
   let hash = require('crypto').createHash('md5').update(process.execPath).digest('hex');
