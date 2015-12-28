@@ -1,19 +1,15 @@
 import './support.js';
 
 import _ from 'lodash';
-import fs from 'fs';
 import path from 'path';
 import rimraf from 'rimraf';
 import mkdirp from 'mkdirp';
 import FileChangeCache from '../lib/file-change-cache';
 import CompilerHost from '../lib/compiler-host';
-import pify from 'pify';
-
-const pfs = pify(fs);
 
 let testCount=0;
 
-describe('The compiler host', function() {
+describe.only('The compiler host', function() {
   this.timeout(15*1000);
 
   beforeEach(function() {
@@ -39,10 +35,23 @@ describe('The compiler host', function() {
     rimraf.sync(this.tempCacheDir);
   });
   
-  it.only('Should compile everything in the fixtures directory', async function() {
+  it('Should compile everything in the fixtures directory', async function() {
     let input = path.join(__dirname, '..', 'test', 'fixtures');
 
     await this.fixture.compileAll(input, (filePath) => {
+      if (filePath.match(/invalid/)) return false;
+      if (filePath.match(/binaryfile/)) return false;
+      if (filePath.match(/minified/)) return false;
+      if (filePath.match(/source_map/)) return false;
+      
+      return true;
+    });
+  });
+  
+  it('Should compile everything in the fixtures directory sync', function() {
+    let input = path.join(__dirname, '..', 'test', 'fixtures');
+
+    this.fixture.compileAllSync(input, (filePath) => {
       if (filePath.match(/invalid/)) return false;
       if (filePath.match(/binaryfile/)) return false;
       if (filePath.match(/minified/)) return false;
