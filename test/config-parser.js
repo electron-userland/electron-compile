@@ -1,7 +1,5 @@
 import _ from 'lodash';
-import fs from 'fs';
 import path from 'path';
-import pify from 'pify';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 
@@ -13,7 +11,6 @@ import {
 } from '../lib/config-parser';
 
 const d = require('debug')('test:config-parser');
-const pfs = pify(fs);
 
 let testCount = 0;
 
