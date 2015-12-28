@@ -1,13 +1,17 @@
 import _ from 'lodash';
 import mimeTypes from 'mime-types';
 import fs from 'fs';
+import path from 'path';
+import zlib from 'zlib';
 import pify from 'pify';
 
 import {forAllFiles, forAllFilesSync} from './for-all-files';
 import CompileCache from './compile-cache';
+import FileChangedCache from './file-change-cache';
 
 const d = require('debug')('electron-compile:compiler-host');
 const pfs = pify(fs);
+const pzlib = pify(zlib);
 
 // This isn't even my
 const finalForms = {
@@ -31,6 +35,31 @@ export default class CompilerHost {
     }, new Map());
   }
 
+  async saveConfiguration() {
+    let serializedCompilerOpts = _.reduce(Object.keys(this.compilersByMimeType), (acc, x) => {
+      let compiler = this.compilersByMimeType[x];
+      let Klass = Object.getPrototypeOf(compiler).constructor;
+      
+      let val = {
+        inputMimeTypes: Klass.getInputMimeTypes(),
+        compilerOptions: compiler.compilerOptions,
+        compilerVersion: compiler.getCompilerVersion()
+      };
+      
+      acc[x] = val;
+      return acc;
+    }, {});
+    
+    let info = {
+      fileChangeCache: this.fileChangeCache.getSavedData(),
+      compilers: serializedCompilerOpts
+    };
+    
+    let target = path.join(this.rootCacheDir, 'compiler-info.json.gz');
+    let buf = await pzlib.gzip(new Buffer(JSON.stringify(info)));
+    await pfs.writeFile(target, buf);
+  }
+  
   // Public: Compiles a single file given its path.
   //
   // filePath: The path on disk to the file
