@@ -9,7 +9,7 @@ import CompilerHost from '../lib/compiler-host';
 
 let testCount=0;
 
-describe.only('The compiler host', function() {
+describe('The compiler host', function() {
   this.timeout(15*1000);
 
   beforeEach(function() {

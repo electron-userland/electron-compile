@@ -29,6 +29,7 @@ export default class CompileCache {
       newCachePath = path.join(cachePath, createDigestForObject(digestObj));
 
       d(`Path for ${digestObj.name}: ${newCachePath}`);
+      d(`Set up with parameters: ${JSON.stringify(digestObj)}`);
       mkdirp.sync(newCachePath);
       return newCachePath;
     };
@@ -73,7 +74,7 @@ export default class CompileCache {
         dependentFiles = result.dependentFiles;
       }
     } catch (e) {
-      d(`Failed to read cache for ${filePath}`);
+      d(`Failed to read cache for ${filePath}: ${e.message}`);
     }
     
     return { hashInfo, code, mimeType, binaryData, dependentFiles };
