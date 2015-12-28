@@ -4,20 +4,30 @@ import fs from 'fs';
 import pify from 'pify';
 
 import {forAllFiles, forAllFilesSync} from './for-all-files';
-import {CompileCache} from './compile-cache';
+import CompileCache from './compile-cache';
 
+const d = require('debug')('electron-compile:compiler-host');
 const pfs = pify(fs);
 
+// This isn't even my
+const finalForms = {
+  'text/javascript': true,
+  'application/javascript': true,
+  'text/html': true,
+  'text/css': true
+};
+
 export default class CompilerHost {
-  constructor(rootCacheDir, compilersByMimeType, fileChangeCache, readOnlyMode) {
-    _.assign(this, {rootCacheDir, compilersByMimeType, fileChangeCache, readOnlyMode});
+  constructor(rootCacheDir, compilersByMimeType, fileChangeCache, readOnlyMode, fallbackCompiler = null) {
+    _.assign(this, {rootCacheDir, compilersByMimeType, fileChangeCache, readOnlyMode, fallbackCompiler});
 
     this.cachesForCompilers = _.reduce(Object.keys(compilersByMimeType), (acc, x) => {
       let compiler = compilersByMimeType[x];
-      acc[compiler] = acc[compiler] || CompileCache.createFromCompiler(rootCacheDir, compiler, fileChangeCache);
+      if (acc.has(compiler)) return acc;
 
+      acc.set(compiler, CompileCache.createFromCompiler(rootCacheDir, compiler, fileChangeCache));
       return acc;
-    }, {});
+    }, new Map());
   }
 
   // Public: Compiles a single file given its path.
@@ -38,12 +48,9 @@ export default class CompilerHost {
       this.getPassthroughCompiler() :
       this.compilersByMimeType(type || '__lolnothere');
 
-    if (!compiler) {
-      // XXX: Debug print that we're falling back
-      compiler = this.getPassthroughCompiler();
-    }
+    if (!compiler) compiler = this.fallbackCompiler;
 
-    let cache = this.cachesForCompilers[compiler];
+    let cache = this.cachesForCompilers.get(compiler);
     let {code, mimeType} = await cache.get(filePath);
 
     if (!code || !mimeType) {
@@ -53,7 +60,60 @@ export default class CompilerHost {
     return { code, mimeType };
   }
 
-  fullCompile(filePath) {
+  async fullCompile(filePath) {
+    d(`Compiling ${filePath}`);
+
+    let hashInfo = await this.fileChangeCache.getHashForPath(filePath);
+    let type = mimeTypes.lookup(filePath);
+
+    let compiler = CompilerHost.shouldPassthrough(hashInfo) ?
+      this.getPassthroughCompiler() :
+      this.compilersByMimeType[type || '__lolnothere'];
+
+    if (!compiler) {
+      d(`Falling back to passthrough compiler for ${filePath}`);
+      compiler = this.fallbackCompiler;
+    }
+
+    if (!compiler) {
+      throw new Error(`Couldn't find a compiler for ${filePath}`);
+    }
+
+    let cache = this.cachesForCompilers.get(compiler);
+    return await cache.getOrFetch(
+      filePath,
+      (filePath, hashInfo) => this.compileUncached(filePath, hashInfo, compiler));
+  }
+
+  async compileUncached(filePath, hashInfo, compiler) {
+    let ctx = {};
+    let code = hashInfo.sourceCode || await pfs.readFile(filePath, 'utf8');
+
+    if (!(await compiler.shouldCompileFile(code, ctx))) {
+      d(`Compiler returned false for shouldCompileFile: ${filePath}`);
+      return { code, mimeType: mimeTypes.lookup(filePath), dependentFiles: [] };
+    }
+
+    let dependentFiles = await compiler.determineDependentFiles(code, filePath, ctx);
+
+    let result = await compiler.compile(code, filePath, ctx);
+
+    if (!finalForms[result.mimeType]) {
+      d(`Recursively compiling result of ${filePath} with non-final MIME type ${result.mimeType}`);
+
+      hashInfo = _.assign({ sourceCode: result.code, mimeType: result.mimeType }, hashInfo);
+      compiler = this.compilersByMimeType[result.mimeType || '__lolnothere'];
+
+      if (!compiler) {
+        d(`Recursive compile failed - intermediate result: ${JSON.stringify(result)}`);
+
+        throw new Error(`Compiling ${filePath} resulted in a MIME type of ${result.mimeType}, which we don't know how to handle`);
+      }
+
+      return await this.compileUncached(filePath, hashInfo, compiler);
+    }
+
+    return _.assign(result, {dependentFiles});
   }
 
   // Public: Compiles a single file given its path.
@@ -80,6 +140,8 @@ export default class CompilerHost {
 
     await forAllFiles(rootDirectory, (f) => {
       if (!should(f)) return;
+      
+      d(`Compiling ${f}`);
       return this.compile(f, this.compilersByMimeType);
     });
   }
@@ -107,6 +169,6 @@ export default class CompilerHost {
   }
 
   static shouldPassthrough(hashInfo) {
-    return hashInfo.isMinified || hashInfo.isInNodeModules || hashInfo.hasSourceMap;
+    return hashInfo.isMinified || hashInfo.isInNodeModules || hashInfo.hasSourceMap || hashInfo.isFileBinary;
   }
 }
