@@ -29,12 +29,14 @@ describe('The compiler host', function() {
       return acc;
     }, {});
     
+    let InlineHtmlCompiler = Object.getPrototypeOf(this.compilersByMimeType['text/html']).constructor;
+    this.compilersByMimeType['text/html'] = InlineHtmlCompiler.createFromCompilers(this.compilersByMimeType);
+    
     this.fixture = new CompilerHost(this.tempCacheDir, this.compilersByMimeType, this.fileChangeCache, false);
   });
   
   afterEach(function() {
-    console.log(this.tempCacheDir);
-    //rimraf.sync(this.tempCacheDir);
+    rimraf.sync(this.tempCacheDir);
   });
   
   it.only('Should compile everything in the fixtures directory', async function() {
