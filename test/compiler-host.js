@@ -2,12 +2,13 @@ import './support.js';
 
 import _ from 'lodash';
 import path from 'path';
+import fs from 'fs';
 import rimraf from 'rimraf';
 import mkdirp from 'mkdirp';
 import FileChangeCache from '../lib/file-change-cache';
 import CompilerHost from '../lib/compiler-host';
 
-const d = require('debug')('electron-test:compiler-host');
+const d = require('debug')('test:compiler-host');
 
 let testCount=0;
 
@@ -36,7 +37,18 @@ describe('The compiler host', function() {
   afterEach(function() {
     rimraf.sync(this.tempCacheDir);
   });
-  
+
+  it('should compile basic HTML and not blow up', function() {
+    let input = '<html><style type="text/less">body { font-family: "lol"; }</style></html>';
+    let inFile = path.join(this.tempCacheDir, 'input.html');
+    fs.writeFileSync(inFile, input);
+    
+    let result = this.fixture.compileSync(inFile);
+
+    expect(result.mimeType).to.equal('text/html');
+    expect(result.code.length > input.length).to.be.ok;
+  });
+
   it('Should compile everything in the fixtures directory', async function() {
     let input = path.join(__dirname, '..', 'test', 'fixtures');
 
