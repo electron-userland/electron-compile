@@ -149,30 +149,3 @@ describe('exports for this library', function() {
     });
   });
 });
-
-describe('scenario tests', function() {
-  it('should be able to create a cache, then use it to resolve files solely with read-only-compiler', function() {
-    let sourceDir = path.join(__dirname, '..', 'src');
-    let targetDir = path.join(__dirname, 'readOnlyCompilerTest');
-    
-    try {
-      let realCompilers = createAllCompilers();
-      _.each(realCompilers, (x) => x.setCacheDirectory(targetDir));
-      
-      compileAll(sourceDir, realCompilers);
-      let compilerInfo = collectCompilerInformation(realCompilers);
-      
-      let fakeCompilers = _.map(
-        Object.keys(compilerInfo), 
-        (x) => new ReadOnlyCompiler(compilerInfo[x].options, compilerInfo[x].mimeType));
-        
-      // NB: Since 100% of these files are already in cache, they'll all be hits,
-      // compileAll will just pass them all. If ReadOnlyCompiler finds a file it
-      // doesn't know, it'll throw
-      _.each(fakeCompilers, (x) => x.setCacheDirectory(targetDir));
-      compileAll(sourceDir, fakeCompilers);
-    } finally {
-      rimraf.sync(targetDir);
-    }
-  });
-})
