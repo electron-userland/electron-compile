@@ -143,4 +143,35 @@ describe('The compiler host', function() {
       return true;
     });
   });
+  
+  it('Should read files from serialized compiler information synchronously', function() {
+    let input = path.join(__dirname, '..', 'test', 'fixtures');
+
+    d("Attempting to run initial compile");
+    this.fixture.compileAllSync(input, (filePath) => {
+      if (filePath.match(/invalid/)) return false;
+      if (filePath.match(/binaryfile/)) return false;
+      if (filePath.match(/minified/)) return false;
+      if (filePath.match(/source_map/)) return false;
+      
+      return true;
+    });
+    
+    d("Saving configuration");
+    this.fixture.saveConfigurationSync();
+    
+    d("Recreating from said configuration");
+    this.fixture = CompilerHost.createReadonlyFromConfigurationSync(this.tempCacheDir);
+    this.fixture.compileUncached = () => Promise.reject(new Error("Fail!"));
+
+    d("Recompiling everything from cached data");
+    this.fixture.compileAllSync(input, (filePath) => {
+      if (filePath.match(/invalid/)) return false;
+      if (filePath.match(/binaryfile/)) return false;
+      if (filePath.match(/minified/)) return false;
+      if (filePath.match(/source_map/)) return false;
+      
+      return true;
+    });
+  });
 });
