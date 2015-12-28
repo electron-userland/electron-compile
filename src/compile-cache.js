@@ -7,6 +7,7 @@ import mkdirp from 'mkdirp';
 
 const pfs = pify(fs);
 const pzlib = pify(zlib);
+const d = require('debug')('electron-compile:compile-cache');
 
 export default class CompileCache {
   constructor(cachePath, fileChangeCache) {
@@ -26,6 +27,8 @@ export default class CompileCache {
       };
 
       newCachePath = path.join(cachePath, createDigestForObject(digestObj));
+
+      d(`Path for ${digestObj.name}: ${newCachePath}`);
       mkdirp.sync(newCachePath);
       return newCachePath;
     };
@@ -37,6 +40,7 @@ export default class CompileCache {
   }
   
   async get(filePath) {
+    d(`Fetching ${filePath} from cache`);
     let hashInfo = await this.fileChangeCache.getHashForPath(path.resolve(filePath));
   
     let code = null;
@@ -49,6 +53,7 @@ export default class CompileCache {
       
       let result = null;
       if (hashInfo.isFileBinary) {
+        d("File is binary, reading out info");
         let info = JSON.parse(await pfs.readFile(cacheFile + '.info'));
         mimeType = info.mimeType;
         dependentFiles = info.dependentFiles;
@@ -68,8 +73,7 @@ export default class CompileCache {
         dependentFiles = result.dependentFiles;
       }
     } catch (e) {
-      // TODO: visionmedia/debug
-      console.log(`Failed to read cache for ${filePath}`);
+      d(`Failed to read cache for ${filePath}`);
     }
     
     return { hashInfo, code, mimeType, binaryData, dependentFiles };
@@ -78,6 +82,7 @@ export default class CompileCache {
   async save(hashInfo, codeOrBinaryData, mimeType, dependentFiles) {
     let buf = null;
     let target = path.join(this.getCachePath(), hashInfo.hash);
+    d(`Saving to ${target}`);
     
     if (hashInfo.isFileBinary) {
       buf = await pzlib.gzip(codeOrBinaryData);
@@ -96,6 +101,7 @@ export default class CompileCache {
     let result = await fetcher(filePath, cacheResult.hashInfo) || { hashInfo: cacheResult.hashInfo };
     
     if (result.mimeType) {
+      d(`Cache miss: saving out info for ${filePath}`);
       await this.save(cacheResult.hashInfo, result.code || result.binaryData, result.mimeType, result.dependentFiles);
     }
     
@@ -104,6 +110,7 @@ export default class CompileCache {
   }
   
   getSync(filePath) {
+    d(`Fetching ${filePath} from cache`);
     let hashInfo = this.fileChangeCache.getHashForPathSync(path.resolve(filePath));
   
     let code = null;
@@ -116,6 +123,7 @@ export default class CompileCache {
       
       let result = null;
       if (hashInfo.isFileBinary) {
+        d("File is binary, reading out info");
         let info = JSON.parse(fs.readFileSync(cacheFile + '.info'));
         mimeType = info.mimeType;
         dependentFiles = info.dependentFiles;
@@ -135,8 +143,7 @@ export default class CompileCache {
         dependentFiles = result.dependentFiles;
       }
     } catch (e) {
-      // TODO: visionmedia/debug
-      console.log(`Failed to read cache for ${filePath}`);
+      d(`Failed to read cache for ${filePath}`);
     }
     
     return { hashInfo, code, mimeType, binaryData, dependentFiles };
@@ -145,6 +152,7 @@ export default class CompileCache {
   saveSync(hashInfo, codeOrBinaryData, mimeType, dependentFiles) {
     let buf = null;
     let target = path.join(this.getCachePath(), hashInfo.hash);
+    d(`Saving to ${target}`);
     
     if (hashInfo.isFileBinary) {
       buf = zlib.gzipSync(codeOrBinaryData);
@@ -163,13 +171,14 @@ export default class CompileCache {
     let result = fetcherSync(filePath, cacheResult.hashInfo) || { hashInfo: cacheResult.hashInfo };
     
     if (result.mimeType) {
+      d(`Cache miss: saving out info for ${filePath}`);
       this.saveSync(cacheResult.hashInfo, result.code || result.binaryData, result.mimeType, result.dependentFiles);
     }
     
     result.hashInfo = cacheResult.hashInfo;
     return result;
   }
-
+  
   getCachePath() {
     // NB: This is an evil hack so that createFromCompiler can stomp it
     // at will
