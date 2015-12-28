@@ -5,7 +5,12 @@ import pify from 'pify';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 
-import {createCompilers, createCompilerHostFromConfiguration} from '../lib/config-parser';
+import {
+  createCompilers, 
+  createCompilerHostFromConfiguration, 
+  createCompilerHostFromConfigFile,
+  createCompilerHostFromBabelRc
+} from '../lib/config-parser';
 
 const d = require('debug')('test:config-parser');
 const pfs = pify(fs);
@@ -37,7 +42,7 @@ describe('the configuration parser module', function() {
       rimraf.sync(this.tempCacheDir);
     });
       
-    it.only('respects suppressing source maps (scenario test)', async function() {
+    it('respects suppressing source maps (scenario test)', async function() {
       let fixtureDir = path.join(__dirname, '..', 'test', 'fixtures');
       
       let result = createCompilerHostFromConfiguration({
@@ -60,5 +65,125 @@ describe('the configuration parser module', function() {
       expect(lines.length > 5).to.be.ok;
       expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).not.to.be.ok;
     });
+  });
+
+  describe('the createCompilerHostFromBabelRc method', function() {
+    beforeEach(function() {
+      this.tempCacheDir = path.join(__dirname, `__create_compiler_host_${testCount++}`);
+      mkdirp.sync(this.tempCacheDir);
+    });
+    
+    afterEach(function() {
+      rimraf.sync(this.tempCacheDir);
+      if ('BABEL_ENV' in process.env) {
+        delete process.env.ELECTRON_COMPILE_ENV;
+      }
+    });
+      
+    it('reads from an environment-free file', async function() {
+      let fixtureDir = path.join(__dirname, '..', 'test', 'fixtures');
+      
+      let result = await createCompilerHostFromBabelRc(path.join(fixtureDir, 'babelrc-noenv'));
+      
+      let compileInfo = await result.compile(path.join(fixtureDir, 'valid.js'));
+      d(JSON.stringify(compileInfo));
+      
+      expect(compileInfo.mimeType).to.equal('text/javascript');
+      
+      let lines = compileInfo.code.split('\n');
+      expect(lines.length > 5).to.be.ok;
+      expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).to.be.ok;
+    });
+    
+    it('uses the development env when env is unset', async function() {
+      let fixtureDir = path.join(__dirname, '..', 'test', 'fixtures');
+      
+      let result = await createCompilerHostFromBabelRc(path.join(fixtureDir, 'babelrc-production'));
+      
+      let compileInfo = await result.compile(path.join(fixtureDir, 'valid.js'));
+      d(JSON.stringify(compileInfo));
+      
+      expect(compileInfo.mimeType).to.equal('text/javascript');
+      
+      let lines = compileInfo.code.split('\n');
+      expect(lines.length > 5).to.be.ok;
+      expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).to.be.ok;
+    });
+    
+    it('uses the production env when env is set', async function() {
+      process.env.BABEL_ENV = 'production';
+      let fixtureDir = path.join(__dirname, '..', 'test', 'fixtures');
+      
+      let result = await createCompilerHostFromBabelRc(path.join(fixtureDir, 'babelrc-production'));
+      
+      let compileInfo = await result.compile(path.join(fixtureDir, 'valid.js'));
+      d(JSON.stringify(compileInfo));
+      
+      expect(compileInfo.mimeType).to.equal('text/javascript');
+      
+      let lines = compileInfo.code.split('\n');
+      expect(lines.length > 5).to.be.ok;
+      expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).not.to.be.ok;
+    });  
+  });
+  
+  describe('the createCompilerHostFromConfigFile method', function() {
+    beforeEach(function() {
+      this.tempCacheDir = path.join(__dirname, `__create_compiler_host_${testCount++}`);
+      mkdirp.sync(this.tempCacheDir);
+    });
+    
+    afterEach(function() {
+      rimraf.sync(this.tempCacheDir);
+      if ('ELECTRON_COMPILE_ENV' in process.env) {
+        delete process.env.ELECTRON_COMPILE_ENV;
+      }
+    });
+      
+    it('reads from an environment-free file', async function() {
+      let fixtureDir = path.join(__dirname, '..', 'test', 'fixtures');
+      
+      let result = await createCompilerHostFromConfigFile(path.join(fixtureDir, 'compilerc-noenv'));
+      
+      let compileInfo = await result.compile(path.join(fixtureDir, 'valid.js'));
+      d(JSON.stringify(compileInfo));
+      
+      expect(compileInfo.mimeType).to.equal('text/javascript');
+      
+      let lines = compileInfo.code.split('\n');
+      expect(lines.length > 5).to.be.ok;
+      expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).to.be.ok;
+    });
+    
+    it('uses the development env when env is unset', async function() {
+      let fixtureDir = path.join(__dirname, '..', 'test', 'fixtures');
+      
+      let result = await createCompilerHostFromConfigFile(path.join(fixtureDir, 'compilerc-production'));
+      
+      let compileInfo = await result.compile(path.join(fixtureDir, 'valid.js'));
+      d(JSON.stringify(compileInfo));
+      
+      expect(compileInfo.mimeType).to.equal('text/javascript');
+      
+      let lines = compileInfo.code.split('\n');
+      expect(lines.length > 5).to.be.ok;
+      expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).to.be.ok;
+    });
+    
+    it('uses the production env when env is set', async function() {
+      process.env.ELECTRON_COMPILE_ENV = 'production';
+      let fixtureDir = path.join(__dirname, '..', 'test', 'fixtures');
+      
+      let result = await createCompilerHostFromConfigFile(path.join(fixtureDir, 'compilerc-production'));
+      
+      let compileInfo = await result.compile(path.join(fixtureDir, 'valid.js'));
+      d(JSON.stringify(compileInfo));
+      
+      expect(compileInfo.mimeType).to.equal('text/javascript');
+      
+      let lines = compileInfo.code.split('\n');
+      expect(lines.length > 5).to.be.ok;
+      expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).not.to.be.ok;
+    });  
   });
 });
