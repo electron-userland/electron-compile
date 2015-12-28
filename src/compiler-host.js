@@ -98,7 +98,11 @@ export default class CompilerHost {
 
     let result = await compiler.compile(code, filePath, ctx);
 
-    if (!finalForms[result.mimeType]) {
+    let shouldInlineHtmlify = 
+      hashInfo.mimeType !== 'text/html' &&
+      result.mimeType === 'text/html';
+      
+    if (!finalForms[result.mimeType] || shouldInlineHtmlify) {
       d(`Recursively compiling result of ${filePath} with non-final MIME type ${result.mimeType}`);
 
       hashInfo = _.assign({ sourceCode: result.code, mimeType: result.mimeType }, hashInfo);
@@ -140,7 +144,7 @@ export default class CompilerHost {
 
     await forAllFiles(rootDirectory, (f) => {
       if (!should(f)) return;
-      
+
       d(`Compiling ${f}`);
       return this.compile(f, this.compilersByMimeType);
     });
