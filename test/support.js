@@ -21,6 +21,9 @@ global.assert = chai.assert;
 mimeTypes.types.ts = 'text/typescript';
 mimeTypes.extensions['text/typescript'] = ['ts'];
 
+mimeTypes.types.jade = 'text/jade';
+mimeTypes.extensions['text/jade'] = ['jade'];
+
 global.compilersByMimeType = _.reduce(allCompilerClasses, (acc,x) => {
   acc = acc || {};
   
