@@ -8,6 +8,7 @@ import pify from 'pify';
 import {forAllFiles, forAllFilesSync} from './for-all-files';
 import CompileCache from './compile-cache';
 import FileChangedCache from './file-change-cache';
+import ReadOnlyCompiler from './read-only-compiler';
 
 const d = require('debug')('electron-compile:compiler-host');
 const pfs = pify(fs);
@@ -34,7 +35,23 @@ export default class CompilerHost {
       return acc;
     }, new Map());
   }
-
+  
+  static async createReadonlyFromConfiguration(rootCacheDir, fallbackCompiler=null) {
+    let target = path.join(rootCacheDir, 'compiler-info.json.gz');
+    let buf = await pfs.readFile(target);
+    let info = JSON.parse(await pzlib.gunzip(buf));
+    
+    let fileChangeCache = FileChangedCache.loadFromData(info.fileChangeCache);
+    let compilers = _.reduce(Object.keys(info.compilers), (acc, x) => {
+      let cur = info.compilers[x];
+      acc[x] = new ReadOnlyCompiler(cur.compilerVersion, cur.compilerOptions, cur.inputMimeTypes);
+      
+      return acc;
+    }, {});
+    
+    return new CompilerHost(rootCacheDir, compilers, fileChangeCache, true, fallbackCompiler);
+  }
+  
   async saveConfiguration() {
     let serializedCompilerOpts = _.reduce(Object.keys(this.compilersByMimeType), (acc, x) => {
       let compiler = this.compilersByMimeType[x];
