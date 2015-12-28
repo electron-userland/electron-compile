@@ -21,11 +21,7 @@ export default class InlineHtmlCompiler extends CompilerBase {
 
       if (!realType) return sourceCode;
 
-      let Klass = compilersByMimeType[realType];
-      if (!Klass) return sourceCode;
-      if (Klass === InlineHtmlCompiler) return sourceCode;
-
-      let compiler = new Klass();
+      let compiler = compilersByMimeType[realType];
       let ext = mimeTypes.extension(realType);
       let fakeFile = `${filePath}:inline_${ctx.count}.${ext}`;
 
@@ -39,11 +35,7 @@ export default class InlineHtmlCompiler extends CompilerBase {
 
       if (!realType) return sourceCode;
 
-      let Klass = global.compilersByMimeType[realType];
-      if (!Klass) return sourceCode;
-      if (Klass === InlineHtmlCompiler) return sourceCode;
-
-      let compiler = new Klass();
+      let compiler = compilersByMimeType[realType];
       let ext = mimeTypes.extension(realType);
       let fakeFile = `${filePath}:inline_${ctx.count}.${ext}`;
 
