@@ -1,13 +1,18 @@
 import _ from 'lodash';
 import mimeTypes from 'mime-types';
 import fs from 'fs';
+import path from 'path';
+import zlib from 'zlib';
 import pify from 'pify';
 
 import {forAllFiles, forAllFilesSync} from './for-all-files';
 import CompileCache from './compile-cache';
+import FileChangedCache from './file-change-cache';
+import ReadOnlyCompiler from './read-only-compiler';
 
 const d = require('debug')('electron-compile:compiler-host');
 const pfs = pify(fs);
+const pzlib = pify(zlib);
 
 // This isn't even my
 const finalForms = {
@@ -30,7 +35,49 @@ export default class CompilerHost {
       return acc;
     }, new Map());
   }
-
+  
+  static async createReadonlyFromConfiguration(rootCacheDir, fallbackCompiler=null) {
+    let target = path.join(rootCacheDir, 'compiler-info.json.gz');
+    let buf = await pfs.readFile(target);
+    let info = JSON.parse(await pzlib.gunzip(buf));
+    
+    let fileChangeCache = FileChangedCache.loadFromData(info.fileChangeCache);
+    let compilers = _.reduce(Object.keys(info.compilers), (acc, x) => {
+      let cur = info.compilers[x];
+      acc[x] = new ReadOnlyCompiler(cur.name, cur.compilerVersion, cur.compilerOptions, cur.inputMimeTypes);
+      
+      return acc;
+    }, {});
+    
+    return new CompilerHost(rootCacheDir, compilers, fileChangeCache, true, fallbackCompiler);
+  }
+  
+  async saveConfiguration() {
+    let serializedCompilerOpts = _.reduce(Object.keys(this.compilersByMimeType), (acc, x) => {
+      let compiler = this.compilersByMimeType[x];
+      let Klass = Object.getPrototypeOf(compiler).constructor;
+      
+      let val = {
+        name: Klass.name,
+        inputMimeTypes: Klass.getInputMimeTypes(),
+        compilerOptions: compiler.compilerOptions,
+        compilerVersion: compiler.getCompilerVersion()
+      };
+      
+      acc[x] = val;
+      return acc;
+    }, {});
+    
+    let info = {
+      fileChangeCache: this.fileChangeCache.getSavedData(),
+      compilers: serializedCompilerOpts
+    };
+    
+    let target = path.join(this.rootCacheDir, 'compiler-info.json.gz');
+    let buf = await pzlib.gzip(new Buffer(JSON.stringify(info)));
+    await pfs.writeFile(target, buf);
+  }
+  
   // Public: Compiles a single file given its path.
   //
   // filePath: The path on disk to the file
@@ -160,6 +207,48 @@ export default class CompilerHost {
   /*
    * Sync Methods
    */
+   
+  static createReadonlyFromConfigurationSync(rootCacheDir, fallbackCompiler=null) {
+    let target = path.join(rootCacheDir, 'compiler-info.json.gz');
+    let buf = fs.readFileSync(target);
+    let info = JSON.parse(zlib.gunzipSync(buf));
+    
+    let fileChangeCache = FileChangedCache.loadFromData(info.fileChangeCache);
+    let compilers = _.reduce(Object.keys(info.compilers), (acc, x) => {
+      let cur = info.compilers[x];
+      acc[x] = new ReadOnlyCompiler(cur.name, cur.compilerVersion, cur.compilerOptions, cur.inputMimeTypes);
+      
+      return acc;
+    }, {});
+    
+    return new CompilerHost(rootCacheDir, compilers, fileChangeCache, true, fallbackCompiler);
+  }
+   
+  saveConfigurationSync() {
+    let serializedCompilerOpts = _.reduce(Object.keys(this.compilersByMimeType), (acc, x) => {
+      let compiler = this.compilersByMimeType[x];
+      let Klass = Object.getPrototypeOf(compiler).constructor;
+      
+      let val = {
+        name: Klass.name,
+        inputMimeTypes: Klass.getInputMimeTypes(),
+        compilerOptions: compiler.compilerOptions,
+        compilerVersion: compiler.getCompilerVersion()
+      };
+      
+      acc[x] = val;
+      return acc;
+    }, {});
+    
+    let info = {
+      fileChangeCache: this.fileChangeCache.getSavedData(),
+      compilers: serializedCompilerOpts
+    };
+    
+    let target = path.join(this.rootCacheDir, 'compiler-info.json.gz');
+    let buf = zlib.gzipSync(new Buffer(JSON.stringify(info)));
+    fs.writeFileSync(target, buf);
+  }
   
   compileReadOnlySync(filePath) {
     let hashInfo = this.fileChangeCache.getHashForPathSync(filePath);

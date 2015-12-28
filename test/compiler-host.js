@@ -7,6 +7,8 @@ import mkdirp from 'mkdirp';
 import FileChangeCache from '../lib/file-change-cache';
 import CompilerHost from '../lib/compiler-host';
 
+const d = require('debug')('electron-test:compiler-host');
+
 let testCount=0;
 
 describe('The compiler host', function() {
@@ -101,6 +103,68 @@ describe('The compiler host', function() {
     this.fixture = new CompilerHost(this.tempCacheDir, this.compilersByMimeType, this.fileChangeCache, true);
     this.fixture.compileUncached = () => { throw new Error("Fail!"); };
 
+    this.fixture.compileAllSync(input, (filePath) => {
+      if (filePath.match(/invalid/)) return false;
+      if (filePath.match(/binaryfile/)) return false;
+      if (filePath.match(/minified/)) return false;
+      if (filePath.match(/source_map/)) return false;
+      
+      return true;
+    });
+  });
+  
+  it('Should read files from serialized compiler information', async function() {
+    let input = path.join(__dirname, '..', 'test', 'fixtures');
+
+    d("Attempting to run initial compile");
+    await this.fixture.compileAll(input, (filePath) => {
+      if (filePath.match(/invalid/)) return false;
+      if (filePath.match(/binaryfile/)) return false;
+      if (filePath.match(/minified/)) return false;
+      if (filePath.match(/source_map/)) return false;
+      
+      return true;
+    });
+    
+    d("Saving configuration");
+    await this.fixture.saveConfiguration();
+    
+    d("Recreating from said configuration");
+    this.fixture = await CompilerHost.createReadonlyFromConfiguration(this.tempCacheDir);
+    this.fixture.compileUncached = () => Promise.reject(new Error("Fail!"));
+
+    d("Recompiling everything from cached data");
+    await this.fixture.compileAll(input, (filePath) => {
+      if (filePath.match(/invalid/)) return false;
+      if (filePath.match(/binaryfile/)) return false;
+      if (filePath.match(/minified/)) return false;
+      if (filePath.match(/source_map/)) return false;
+      
+      return true;
+    });
+  });
+  
+  it('Should read files from serialized compiler information synchronously', function() {
+    let input = path.join(__dirname, '..', 'test', 'fixtures');
+
+    d("Attempting to run initial compile");
+    this.fixture.compileAllSync(input, (filePath) => {
+      if (filePath.match(/invalid/)) return false;
+      if (filePath.match(/binaryfile/)) return false;
+      if (filePath.match(/minified/)) return false;
+      if (filePath.match(/source_map/)) return false;
+      
+      return true;
+    });
+    
+    d("Saving configuration");
+    this.fixture.saveConfigurationSync();
+    
+    d("Recreating from said configuration");
+    this.fixture = CompilerHost.createReadonlyFromConfigurationSync(this.tempCacheDir);
+    this.fixture.compileUncached = () => Promise.reject(new Error("Fail!"));
+
+    d("Recompiling everything from cached data");
     this.fixture.compileAllSync(input, (filePath) => {
       if (filePath.match(/invalid/)) return false;
       if (filePath.match(/binaryfile/)) return false;
