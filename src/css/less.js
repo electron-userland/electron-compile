@@ -5,7 +5,7 @@ import {CompilerBase} from '../compiler-base';
 const mimeTypes = ['text/less'];
 let lessjs = null;
 
-export default class LessCompilerNext extends CompilerBase {
+export default class LessCompiler extends CompilerBase {
   constructor() {
     super();
 

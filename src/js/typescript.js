@@ -3,7 +3,7 @@ import {SimpleCompilerBase} from '../compiler-base';
 const inputMimeTypes = ['text/typescript'];
 let tss = null;
 
-export default class TypeScriptCompilerNext extends SimpleCompilerBase {
+export default class TypeScriptCompiler extends SimpleCompilerBase {
   constructor() {
     super();
     this.compilerOptions.sourceMap = true;

@@ -4,7 +4,7 @@ import {CompilerBase} from '../compiler-base';
 const mimeTypes = ['text/jsx', 'application/javascript', 'text/javascript'];
 let babel = null;
 
-export default class BabelCompilerNext extends CompilerBase {
+export default class BabelCompiler extends CompilerBase {
   constructor() {
     super();
     this.compilerOptions.babelrc = true;

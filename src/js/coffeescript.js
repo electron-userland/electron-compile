@@ -6,7 +6,7 @@ import {SimpleCompilerBase} from '../compiler-base';
 const inputMimeTypes = ['text/coffeescript', 'application/coffeescript'];
 let coffee = null;
 
-export default class CoffeeScriptCompilerNext extends SimpleCompilerBase {
+export default class CoffeeScriptCompiler extends SimpleCompilerBase {
   constructor() {
     super();
     this.compilerOptions.sourceMap = true;
