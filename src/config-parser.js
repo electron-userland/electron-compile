@@ -31,11 +31,12 @@ export function createCompilerHostFromConfiguration(info) {
     compilers[x].compilerOptions = opts;
   });
   
+  d(`Created compiler host with options: ${JSON.stringify(info)}`);
   return ret;
 }
 
 export async function createCompilerHostFromBabelRc(file) {
-  let info = JSON.parse(await fs.readFile(file, 'utf8'));
+  let info = JSON.parse(await pfs.readFile(file, 'utf8'));
   
   // project.json
   if ('babel' in info) {
@@ -64,7 +65,7 @@ export async function createCompilerHostFromBabelRc(file) {
 }
 
 export async function createCompilerHostFromConfigFile(file) {
-  let info = JSON.parse(await fs.readFile(file, 'utf8'));
+  let info = JSON.parse(await pfs.readFile(file, 'utf8'));
   
   if ('env' in info) {
     let ourEnv = process.env.ELECTRON_COMPILE_ENV || process.env.NODE_ENV || 'development';
@@ -97,6 +98,9 @@ export function calculateDefaultCompileCacheDirectory() {
 
   let cacheDir = path.join(tmpDir, `compileCache_${hash}`);
   mkdirp.sync(cacheDir);
+  
+  d(`Using default cache directory: ${cacheDir}`);
+  return cacheDir;
 }
 
 export function getDefaultConfiguration() {
