@@ -44,7 +44,7 @@ export default class CompilerHost {
     let fileChangeCache = FileChangedCache.loadFromData(info.fileChangeCache);
     let compilers = _.reduce(Object.keys(info.compilers), (acc, x) => {
       let cur = info.compilers[x];
-      acc[x] = new ReadOnlyCompiler(cur.compilerVersion, cur.compilerOptions, cur.inputMimeTypes);
+      acc[x] = new ReadOnlyCompiler(cur.name, cur.compilerVersion, cur.compilerOptions, cur.inputMimeTypes);
       
       return acc;
     }, {});
@@ -58,6 +58,7 @@ export default class CompilerHost {
       let Klass = Object.getPrototypeOf(compiler).constructor;
       
       let val = {
+        name: Klass.name,
         inputMimeTypes: Klass.getInputMimeTypes(),
         compilerOptions: compiler.compilerOptions,
         compilerVersion: compiler.getCompilerVersion()

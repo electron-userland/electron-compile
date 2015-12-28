@@ -113,7 +113,7 @@ describe('The compiler host', function() {
     });
   });
   
-  it.only('Should read files from serialized compiler information', async function() {
+  it('Should read files from serialized compiler information', async function() {
     let input = path.join(__dirname, '..', 'test', 'fixtures');
 
     d("Attempting to run initial compile");

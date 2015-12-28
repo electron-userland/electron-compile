@@ -1,8 +1,8 @@
 import _ from 'lodash';
 
 export default class ReadOnlyCompiler {
-  constructor(compilerVersion, compilerOptions, inputMimeTypes) {
-    _.assign(this, { compilerVersion, compilerOptions, inputMimeTypes });
+  constructor(name, compilerVersion, compilerOptions, inputMimeTypes) {
+    _.assign(this, { name, compilerVersion, compilerOptions, inputMimeTypes });
   }
   
   async shouldCompileFile() { return true; }
