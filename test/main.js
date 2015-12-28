@@ -4,9 +4,35 @@ import _ from 'lodash';
 import path from 'path';
 import rimraf from 'rimraf';
 
-import forAllFiles from '../lib/for-all-files';
+import {forAllFiles} from '../lib/for-all-files';
+import {createCompilers} from '../lib/main-ng';
 
 describe('exports for this library', function() {
+  describe('the createCompilers method', function() {
+    it('should return compilers', function() {
+      let result = createCompilers();
+      expect(Object.keys(result).length > 0).to.be.ok;
+    });
+
+    it('should definitely have these compilers', function() {
+      let result = createCompilers();
+
+      expect(result['application/javascript']).to.be.ok;
+      expect(result['text/less']).to.be.ok;
+    });
+
+    it('should compile basic HTML and not blow up', function() {
+      let fixture = createCompilers();
+      let compiler = fixture['text/html'];
+
+      let input = '<html><style type="text/less">body { font-family: "lol"; }</style></html>';
+      let result = compiler.compileSync(input, 'foo.html', {});
+
+      expect(result.mimeType).to.equal('text/html');
+      expect(result.code.length > input.length).to.be.ok;
+    });
+  });
+
   return;
   
   const {compile, compileAll, createAllCompilers, collectCompilerInformation} = require('../lib/main');

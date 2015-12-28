@@ -27,7 +27,7 @@ function updateDigestForJsonValue(shasum, value) {
   if (Array.isArray(value)) {
     shasum.update('[', 'utf8');
     for (let i=0; i < value.length; i++) {
-      this.updateDigestForJsonValue(shasum, value[i]);
+      updateDigestForJsonValue(shasum, value[i]);
       shasum.update(',', 'utf8');
     }
     shasum.update(']', 'utf8');
@@ -41,9 +41,9 @@ function updateDigestForJsonValue(shasum, value) {
   shasum.update('{', 'utf8');
 
   for (let i=0; i < keys.length; i++) {
-    this.updateDigestForJsonValue(shasum, keys[i]);
+    updateDigestForJsonValue(shasum, keys[i]);
     shasum.update(': ', 'utf8');
-    this.updateDigestForJsonValue(shasum, value[keys[i]]);
+    updateDigestForJsonValue(shasum, value[keys[i]]);
     shasum.update(',', 'utf8');
   }
 

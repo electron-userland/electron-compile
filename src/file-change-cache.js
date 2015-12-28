@@ -6,6 +6,7 @@ import _ from 'lodash';
 
 const pfs = pify(fs);
 const pzlib = pify(zlib);
+const d = require('debug')('electron-compile:file-change-cache');
 
 export default class FileChangedCache {
   constructor(appRoot, failOnCacheMiss=false) {
@@ -18,6 +19,7 @@ export default class FileChangedCache {
     let ret = new FileChangedCache(failOnCacheMiss);
     let buf = await pfs.readFile(file);
     
+    d(`Loading canned FileChangedCache from ${file}`);
     ret.changeCache = JSON.parse(await pzlib.gunzip(buf));
     return ret;
   }
@@ -27,7 +29,11 @@ export default class FileChangedCache {
     let cacheEntry = this.changeCache[cacheKey];
     
     if (this.failOnCacheMiss) {
-      if (!cacheEntry) throw new Error(`Asked for ${absoluteFilePath} but it was not precompiled!`);
+      if (!cacheEntry) {
+        d(`Tried to read file cache entry for ${absoluteFilePath}`);
+        throw new Error(`Asked for ${absoluteFilePath} but it was not precompiled!`);
+      }
+
       return cacheEntry.info;
     }
         
@@ -41,6 +47,7 @@ export default class FileChangedCache {
         return cacheEntry.info;
       }
       
+      d(`Invalidating cache entry: ${cacheEntry.ctime} === ${ctime} && ${cacheEntry.size} === ${size}`);
       delete this.changeCache.cacheEntry;
     }
     
@@ -55,53 +62,15 @@ export default class FileChangedCache {
     };
     
     this.changeCache[cacheKey] = { ctime, size, info };
+    d(`Cache entry for ${cacheKey}: ${this.changeCache[cacheKey]}`);
+
     if (binaryData) {
       return _.extend({binaryData}, info);
     } else {
       return _.extend({sourceCode}, info);
     }
   }
-
-  getHashForPathSync(absoluteFilePath) {
-    let cacheKey = this.appRoot ? absoluteFilePath.replace(this.appRoot, '') : absoluteFilePath;
-    let cacheEntry = this.changeCache[cacheKey];
-    
-    if (this.failOnCacheMiss) {
-      if (!cacheEntry) throw new Error(`Asked for ${absoluteFilePath} but it was not precompiled!`);
-      return cacheEntry.info;
-    }
-        
-    let stat = fs.statSync(absoluteFilePath);
-    let ctime = stat.ctime.getTime();
-    let size = stat.size;
-    if (!stat || !stat.isFile()) throw new Error(`Can't stat ${absoluteFilePath}`);
-    
-    if (cacheEntry) {
-      if (cacheEntry.ctime >= ctime && cacheEntry.size === size) {
-        return cacheEntry.info;
-      }
-      
-      delete this.changeCache.cacheEntry;
-    }
-    
-    let {digest, sourceCode, binaryData} = this.calculateHashForFileSync(absoluteFilePath);
-    
-    let info = {
-      hash: digest,
-      isMinified: FileChangedCache.contentsAreMinified(sourceCode || ''),
-      isInNodeModules: FileChangedCache.isInNodeModules(absoluteFilePath),
-      hasSourceMap: FileChangedCache.hasSourceMap(sourceCode || ''),
-      isFileBinary: !!binaryData
-    };
-    
-    this.changeCache[cacheKey] = { ctime, size, info };
-    if (binaryData) {
-      return _.extend({binaryData}, info);
-    } else {
-      return _.extend({sourceCode}, info);
-    }
-  }
-
+  
   async save(filePath) {
     let buf = await pzlib.gzip(new Buffer(JSON.stringify(this.changeCache)));
     await pfs.writeFile(filePath, buf);
@@ -120,6 +89,58 @@ export default class FileChangedCache {
     let digest = crypto.createHash('sha1').update(sourceCode, 'utf8').digest('hex');
     
     return {sourceCode, digest, binaryData: null };
+  }
+  
+  getHashForPathSync(absoluteFilePath) {
+    let cacheKey = this.appRoot ? absoluteFilePath.replace(this.appRoot, '') : absoluteFilePath;
+    let cacheEntry = this.changeCache[cacheKey];
+    
+    if (this.failOnCacheMiss) {
+      if (!cacheEntry) {
+        d(`Tried to read file cache entry for ${absoluteFilePath}`);
+        throw new Error(`Asked for ${absoluteFilePath} but it was not precompiled!`);
+      }
+
+      return cacheEntry.info;
+    }
+        
+    let stat = fs.statSync(absoluteFilePath);
+    let ctime = stat.ctime.getTime();
+    let size = stat.size;
+    if (!stat || !stat.isFile()) throw new Error(`Can't stat ${absoluteFilePath}`);
+    
+    if (cacheEntry) {
+      if (cacheEntry.ctime >= ctime && cacheEntry.size === size) {
+        return cacheEntry.info;
+      }
+      
+      d(`Invalidating cache entry: ${cacheEntry.ctime} === ${ctime} && ${cacheEntry.size} === ${size}`);
+      delete this.changeCache.cacheEntry;
+    }
+    
+    let {digest, sourceCode, binaryData} = this.calculateHashForFileSync(absoluteFilePath);
+    
+    let info = {
+      hash: digest,
+      isMinified: FileChangedCache.contentsAreMinified(sourceCode || ''),
+      isInNodeModules: FileChangedCache.isInNodeModules(absoluteFilePath),
+      hasSourceMap: FileChangedCache.hasSourceMap(sourceCode || ''),
+      isFileBinary: !!binaryData
+    };
+    
+    this.changeCache[cacheKey] = { ctime, size, info };
+    d(`Cache entry for ${cacheKey}: ${JSON.stringify(this.changeCache[cacheKey])}`);
+
+    if (binaryData) {
+      return _.extend({binaryData}, info);
+    } else {
+      return _.extend({sourceCode}, info);
+    }  
+  }
+    
+  saveSync(filePath) {
+    let buf = zlib.gzipSync(new Buffer(JSON.stringify(this.changeCache)));
+    fs.writeFileSync(filePath, buf);
   }
     
   calculateHashForFileSync(absoluteFilePath) {

@@ -16,7 +16,14 @@ const InlineHtmlCompiler = global.compilersByMimeType['text/html'];
 
 describe('The inline HTML compiler', function() {
   beforeEach(function() {
-    this.fixture = InlineHtmlCompiler.createFromCompilers(global.compilersByMimeType);
+    let compilers = _.reduce(Object.keys(global.compilersByMimeType), (acc, x) => {
+      let Klass = global.compilersByMimeType[x];
+      acc[x] = new Klass();
+      
+      return acc;
+    }, {});
+    
+    this.fixture = InlineHtmlCompiler.createFromCompilers(compilers);
   });
 
   _.each(validInputs, (inputFile) => {
