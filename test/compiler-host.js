@@ -60,4 +60,29 @@ describe.only('The compiler host', function() {
       return true;
     });
   });
+  
+  it('Should read files from cache once we compile them', async function() {
+    let input = path.join(__dirname, '..', 'test', 'fixtures');
+
+    await this.fixture.compileAll(input, (filePath) => {
+      if (filePath.match(/invalid/)) return false;
+      if (filePath.match(/binaryfile/)) return false;
+      if (filePath.match(/minified/)) return false;
+      if (filePath.match(/source_map/)) return false;
+      
+      return true;
+    });
+    
+    this.fixture = new CompilerHost(this.tempCacheDir, this.compilersByMimeType, this.fileChangeCache, true);
+    this.fixture.compileUncached = () => Promise.reject(new Error("Fail!"));
+
+    await this.fixture.compileAll(input, (filePath) => {
+      if (filePath.match(/invalid/)) return false;
+      if (filePath.match(/binaryfile/)) return false;
+      if (filePath.match(/minified/)) return false;
+      if (filePath.match(/source_map/)) return false;
+      
+      return true;
+    });
+  });
 });

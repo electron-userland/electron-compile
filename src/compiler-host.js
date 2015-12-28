@@ -59,7 +59,7 @@ export default class CompilerHost {
     // the appropriate CompileCache
     let compiler = CompilerHost.shouldPassthrough(hashInfo) ?
       this.getPassthroughCompiler() :
-      this.compilersByMimeType(type || '__lolnothere');
+      this.compilersByMimeType[type || '__lolnothere'];
 
     if (!compiler) compiler = this.fallbackCompiler;
 
@@ -169,7 +169,7 @@ export default class CompilerHost {
     // the appropriate CompileCache
     let compiler = CompilerHost.shouldPassthrough(hashInfo) ?
       this.getPassthroughCompiler() :
-      this.compilersByMimeType(type || '__lolnothere');
+      this.compilersByMimeType[type || '__lolnothere'];
 
     if (!compiler) compiler = this.fallbackCompiler;
 
