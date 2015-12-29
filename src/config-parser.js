@@ -66,7 +66,7 @@ export function createCompilerHostFromConfiguration(info) {
   return ret;
 }
 
-export async function createCompilerHostFromBabelRc(file) {
+export async function createCompilerHostFromBabelRc(file, rootCacheDir=null) {
   let info = JSON.parse(await pfs.readFile(file, 'utf8'));
   
   // package.json
@@ -83,7 +83,8 @@ export async function createCompilerHostFromBabelRc(file) {
   if ('name' in info && 'version' in info) {
     return createCompilerHostFromConfiguration({
       appRoot: path.dirname(file),
-      options: getDefaultConfiguration()
+      options: getDefaultConfiguration(),
+      rootCacheDir
     });
   }
   
@@ -91,11 +92,12 @@ export async function createCompilerHostFromBabelRc(file) {
     appRoot: path.dirname(file),
     options: {
       'application/javascript': info
-    }
+    },
+    rootCacheDir
   });
 }
 
-export async function createCompilerHostFromConfigFile(file) {
+export async function createCompilerHostFromConfigFile(file, rootCacheDir=null) {
   let info = JSON.parse(await pfs.readFile(file, 'utf8'));
   
   if ('env' in info) {
@@ -105,25 +107,26 @@ export async function createCompilerHostFromConfigFile(file) {
   
   return createCompilerHostFromConfiguration({
     appRoot: path.dirname(file),
-    options: info
+    options: info,
+    rootCacheDir
   });
 }
 
-export async function createCompilerHostFromProjectRoot(rootDir) {
+export async function createCompilerHostFromProjectRoot(rootDir, rootCacheDir=null) {
   let compilerc = path.join(rootDir, '.compilerc');
   if (await pfs.exists(compilerc)) {
-    return createCompilerHostFromConfigFile(compilerc);
+    return createCompilerHostFromConfigFile(compilerc, rootCacheDir);
   }
   
   let babelrc = path.join(rootDir, '.babelrc');
   if (await pfs.exists(compilerc)) {
-    return createCompilerHostFromBabelRc(babelrc);
+    return createCompilerHostFromBabelRc(babelrc, rootCacheDir);
   }
     
-  return createCompilerHostFromBabelRc(path.join(rootDir, 'package.json'));
+  return createCompilerHostFromBabelRc(path.join(rootDir, 'package.json'), rootCacheDir);
 }
 
-export function createCompilerHostFromBabelRcSync(file) {
+export function createCompilerHostFromBabelRcSync(file, rootCacheDir=null) {
   let info = JSON.parse(fs.readFileSync(file, 'utf8'));
   
   // package.json
@@ -140,7 +143,8 @@ export function createCompilerHostFromBabelRcSync(file) {
   if ('name' in info && 'version' in info) {
     return createCompilerHostFromConfiguration({
       appRoot: path.dirname(file),
-      options: getDefaultConfiguration()
+      options: getDefaultConfiguration(),
+      rootCacheDir
     });
   }
   
@@ -148,11 +152,12 @@ export function createCompilerHostFromBabelRcSync(file) {
     appRoot: path.dirname(file),
     options: {
       'text/javascript': info
-    }
+    },
+    rootCacheDir
   });
 }
 
-export function createCompilerHostFromConfigFileSync(file) {
+export function createCompilerHostFromConfigFileSync(file, rootCacheDir=null) {
   let info = JSON.parse(fs.readFileSync(file, 'utf8'));
   
   if ('env' in info) {
@@ -162,22 +167,23 @@ export function createCompilerHostFromConfigFileSync(file) {
   
   return createCompilerHostFromConfiguration({
     appRoot: path.dirname(file),
-    options: info
+    options: info,
+    rootCacheDir
   });
 }
 
-export function createCompilerHostFromProjectRootSync(rootDir) {
+export function createCompilerHostFromProjectRootSync(rootDir, rootCacheDir=null) {
   let compilerc = path.join(rootDir, '.compilerc');
   if (fs.existsSync(compilerc)) {
-    return createCompilerHostFromConfigFileSync(compilerc);
+    return createCompilerHostFromConfigFileSync(compilerc, rootCacheDir);
   }
   
   let babelrc = path.join(rootDir, '.babelrc');
   if (fs.existsSync(compilerc)) {
-    return createCompilerHostFromBabelRcSync(babelrc);
+    return createCompilerHostFromBabelRcSync(babelrc, rootCacheDir);
   }
     
-  return createCompilerHostFromBabelRcSync(path.join(rootDir, 'package.json'));
+  return createCompilerHostFromBabelRcSync(path.join(rootDir, 'package.json'), rootCacheDir);
 }
 
 export function calculateDefaultCompileCacheDirectory() {
