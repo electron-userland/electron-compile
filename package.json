@@ -1,6 +1,6 @@
 {
   "name": "electron-compile",
-  "version": "2.0.0-beta2",
+  "version": "2.0.0-beta3",
   "description": "Electron supporting package to compile JS and CSS in Electron applications",
   "scripts": {
     "compile": "git clean -xdf lib && git clean -xdf test-dist && babel -d lib/ src/ && babel --ignore './test/fixtures/**' -d test-dist/ test/",
