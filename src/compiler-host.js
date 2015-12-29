@@ -88,16 +88,6 @@ export default class CompilerHost {
     return (this.readOnlyMode ? this.compileReadOnly(filePath) : this.fullCompile(filePath));
   }
   
-  // Public: Compiles a single file given its path.
-  //
-  // filePath: The path on disk to the file
-  //
-  // Returns a {String} with the compiled output, or will throw an {Error}
-  // representing the compiler errors encountered.
-  compileSync(filePath) {
-    return (this.readOnlyMode ? this.compileReadOnlySync(filePath) : this.fullCompileSync(filePath));
-  }
-
   async compileReadOnly(filePath) {
     let hashInfo = await this.fileChangeCache.getHashForPath(filePath);
     let type = mimeTypes.lookup(filePath);
@@ -208,6 +198,16 @@ export default class CompilerHost {
   /*
    * Sync Methods
    */
+   
+  // Public: Compiles a single file given its path.
+  //
+  // filePath: The path on disk to the file
+  //
+  // Returns a {String} with the compiled output, or will throw an {Error}
+  // representing the compiler errors encountered.
+  compileSync(filePath) {
+    return (this.readOnlyMode ? this.compileReadOnlySync(filePath) : this.fullCompileSync(filePath));
+  }
    
   static createReadonlyFromConfigurationSync(rootCacheDir, fallbackCompiler=null) {
     let target = path.join(rootCacheDir, 'compiler-info.json.gz');
