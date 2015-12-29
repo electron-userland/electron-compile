@@ -17,13 +17,15 @@ export default class InlineHtmlCompiler extends CompilerBase {
   }
 
   static createFromCompilers(compilersByMimeType) {
+    d(`Setting up inline HTML compilers: ${JSON.stringify(Object.keys(compilersByMimeType))}`);
+
     let compileBlock = async (sourceCode, filePath, mimeType, ctx) => {
       let realType = mimeType;
       if (!mimeType && ctx.tag === 'script') realType = 'application/javascript';
 
       if (!realType) return sourceCode;
 
-      let compiler = compilersByMimeType[realType];
+      let compiler = compilersByMimeType[realType] || compilersByMimeType['text/plain'];
       let ext = mimeTypes.extension(realType);
       let fakeFile = `${filePath}:inline_${ctx.count}.${ext}`;
 
@@ -38,7 +40,7 @@ export default class InlineHtmlCompiler extends CompilerBase {
 
       if (!realType) return sourceCode;
 
-      let compiler = compilersByMimeType[realType];
+      let compiler = compilersByMimeType[realType] || compilersByMimeType['text/plain'];
       let ext = mimeTypes.extension(realType);
       let fakeFile = `${filePath}:inline_${ctx.count}.${ext}`;
 
