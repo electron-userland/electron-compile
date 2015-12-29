@@ -5,12 +5,22 @@ import path from 'path';
 import fs from 'fs';
 import rimraf from 'rimraf';
 import mkdirp from 'mkdirp';
+import mimeTypes from 'mime-types';
 import FileChangeCache from '../lib/file-change-cache';
 import CompilerHost from '../lib/compiler-host';
 
 const d = require('debug')('test:compiler-host');
 
 let testCount=0;
+
+describe.only('All available compilers', function() {
+  it('should have a MIME type in mime-types', function() {
+    _.each(Object.keys(global.compilersByMimeType), (type) => {
+      d(`Extension for ${type} is ${mimeTypes.extension(type)}`);
+      expect(mimeTypes.extension(type)).to.be.ok;
+    });
+  });
+});
 
 describe('The compiler host', function() {
   this.timeout(15*1000);

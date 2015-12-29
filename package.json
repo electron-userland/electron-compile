@@ -2,10 +2,10 @@
   "name": "electron-compile",
   "version": "2.0.0",
   "description": "Electron supporting package to compile JS and CSS in Electron applications",
-  "main": "lib/main.js",
   "scripts": {
     "compile": "git clean -xdf lib && git clean -xdf test-dist && babel -d lib/ src/ && babel --ignore './test/fixtures/**' -d test-dist/ test/",
     "prepublish": "npm run compile",
+    "start": "npm run compile && electron ./test-dist/electron-smoke-test.js",
     "test": "npm run compile && mocha test-dist/*"
   },
   "bin": {
@@ -43,6 +43,7 @@
     "chai": "^3.4.1",
     "chai-as-promised": "^5.2.0",
     "cheerio": "^0.19.0",
+    "electron-prebuilt": "^0.36.2",
     "eslint": "^1.10.3",
     "mocha": "^2.3.4",
     "rimraf": "^2.5.0"

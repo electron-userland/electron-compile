@@ -101,7 +101,7 @@ export default class CompileCache {
     
     let result = await fetcher(filePath, cacheResult.hashInfo) || { hashInfo: cacheResult.hashInfo };
     
-    if (result.mimeType) {
+    if (result.mimeType && !CompileCache.shouldPassthrough(cacheResult.hashInfo)) {
       d(`Cache miss: saving out info for ${filePath}`);
       await this.save(cacheResult.hashInfo, result.code || result.binaryData, result.mimeType, result.dependentFiles);
     }
@@ -171,7 +171,7 @@ export default class CompileCache {
     
     let result = fetcherSync(filePath, cacheResult.hashInfo) || { hashInfo: cacheResult.hashInfo };
     
-    if (result.mimeType) {
+    if (result.mimeType && !CompileCache.shouldPassthrough(cacheResult.hashInfo)) {
       d(`Cache miss: saving out info for ${filePath}`);
       this.saveSync(cacheResult.hashInfo, result.code || result.binaryData, result.mimeType, result.dependentFiles);
     }
@@ -184,5 +184,9 @@ export default class CompileCache {
     // NB: This is an evil hack so that createFromCompiler can stomp it
     // at will
     return this.cachePath;
+  }
+    
+  static shouldPassthrough(hashInfo) {
+    return hashInfo.isMinified || hashInfo.isInNodeModules || hashInfo.hasSourceMap || hashInfo.isFileBinary;
   }
 }

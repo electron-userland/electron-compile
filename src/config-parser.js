@@ -6,6 +6,8 @@ import pify from 'pify';
 
 import FileChangedCache from './file-change-cache';
 import CompilerHost from './compiler-host';
+import { initializeProtocolHook } from './protocol-hook';
+import registerRequireExtension from './require-hook';
 
 const pfs = pify(fs);
 const d = require('debug')('electron-compile:config-parser');
@@ -13,6 +15,32 @@ const d = require('debug')('electron-compile:config-parser');
 // NB: We intentionally delay-load this so that in production, you can create
 // cache-only versions of these compilers
 let allCompilerClasses = null;
+
+export function initializeGlobalHooks(compilerHost) {
+  const { app } = require('electron');
+  
+  registerRequireExtension(compilerHost);
+
+  let protoify = function() { initializeProtocolHook(compilerHost); };
+  if (app.isReady()) {
+    protoify();
+  } else {
+    app.on('ready', protoify);
+  }
+}
+
+export function init(appRoot, mainModule, productionMode = false) {
+  let compilerHost = null;
+  if (productionMode) {
+    // In read-only mode, we'll assume that everything is in `appRoot/.cache`
+    compilerHost = CompilerHost.createReadonlyFromConfigurationSync(path.join(appRoot, '.cache'));
+  } else {
+    compilerHost = createCompilerHostFromProjectRootSync(appRoot);
+  }
+  
+  initializeGlobalHooks(compilerHost);
+  require.main.require(mainModule);
+}
 
 export function createCompilerHostFromConfiguration(info) {
   let compilers = createCompilers();
@@ -31,14 +59,17 @@ export function createCompilerHostFromConfiguration(info) {
     compilers[x].compilerOptions = opts;
   });
   
+  // NB: It's super important that we guarantee that the configuration is saved
+  // out, because we'll need to re-read it in the renderer process
   d(`Created compiler host with options: ${JSON.stringify(info)}`);
+  ret.saveConfigurationSync();
   return ret;
 }
 
 export async function createCompilerHostFromBabelRc(file) {
   let info = JSON.parse(await pfs.readFile(file, 'utf8'));
   
-  // project.json
+  // package.json
   if ('babel' in info) {
     info = info.babel;
   }
@@ -48,7 +79,7 @@ export async function createCompilerHostFromBabelRc(file) {
     info = info.env[ourEnv];
   }
   
-  // Are we still project.json (i.e. is there no babel info whatsoever?)
+  // Are we still package.json (i.e. is there no babel info whatsoever?)
   if ('name' in info && 'version' in info) {
     return createCompilerHostFromConfiguration({
       appRoot: path.dirname(file),
@@ -59,7 +90,7 @@ export async function createCompilerHostFromBabelRc(file) {
   return createCompilerHostFromConfiguration({
     appRoot: path.dirname(file),
     options: {
-      'text/javascript': info
+      'application/javascript': info
     }
   });
 }
@@ -89,13 +120,13 @@ export async function createCompilerHostFromProjectRoot(rootDir) {
     return createCompilerHostFromBabelRc(babelrc);
   }
     
-  return createCompilerHostFromBabelRc(path.join(rootDir, 'project.json'));
+  return createCompilerHostFromBabelRc(path.join(rootDir, 'package.json'));
 }
 
 export function createCompilerHostFromBabelRcSync(file) {
   let info = JSON.parse(fs.readFileSync(file, 'utf8'));
   
-  // project.json
+  // package.json
   if ('babel' in info) {
     info = info.babel;
   }
@@ -105,7 +136,7 @@ export function createCompilerHostFromBabelRcSync(file) {
     info = info.env[ourEnv];
   }
   
-  // Are we still project.json (i.e. is there no babel info whatsoever?)
+  // Are we still package.json (i.e. is there no babel info whatsoever?)
   if ('name' in info && 'version' in info) {
     return createCompilerHostFromConfiguration({
       appRoot: path.dirname(file),
@@ -138,15 +169,15 @@ export function createCompilerHostFromConfigFileSync(file) {
 export function createCompilerHostFromProjectRootSync(rootDir) {
   let compilerc = path.join(rootDir, '.compilerc');
   if (fs.existsSync(compilerc)) {
-    return createCompilerHostFromConfigFile(compilerc);
+    return createCompilerHostFromConfigFileSync(compilerc);
   }
   
   let babelrc = path.join(rootDir, '.babelrc');
   if (fs.existsSync(compilerc)) {
-    return createCompilerHostFromBabelRc(babelrc);
+    return createCompilerHostFromBabelRcSync(babelrc);
   }
     
-  return createCompilerHostFromBabelRc(path.join(rootDir, 'project.json'));
+  return createCompilerHostFromBabelRcSync(path.join(rootDir, 'package.json'));
 }
 
 export function calculateDefaultCompileCacheDirectory() {
@@ -162,7 +193,7 @@ export function calculateDefaultCompileCacheDirectory() {
 
 export function getDefaultConfiguration() {
   return {
-    'text/javascript': {
+    'application/javascript': {
       "presets": ["stage-0", "es2015"],
       "sourceMaps": "inline"
     }
@@ -196,6 +227,10 @@ export function createCompilers() {
     }
   }
 
+  // NB: Note that this code is carefully set up so that InlineHtmlCompiler 
+  // (i.e. classes with `createFromCompilers`) initially get an empty object,
+  // but will have a reference to the final result of what we return, which
+  // resolves the circular dependency we'd otherwise have here.
   let ret = {};
   let instantiatedClasses = _.map(allCompilerClasses, (Klass) => {
     if ('createFromCompilers' in Klass) {
@@ -205,10 +240,12 @@ export function createCompilers() {
     }
   });
 
-  return _.reduce(instantiatedClasses, (acc,x) => {
+  _.reduce(instantiatedClasses, (acc,x) => {
     let Klass = Object.getPrototypeOf(x).constructor;
 
     for (let type of Klass.getInputMimeTypes()) { acc[type] = x; }
     return acc;
-  }, {});
+  }, ret);
+  
+  return ret;
 }

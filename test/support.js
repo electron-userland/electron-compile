@@ -1,7 +1,6 @@
 import 'babel-polyfill';
 
 import _ from 'lodash';
-import mimeTypes from 'mime-types';
 
 const allCompilerClasses = require('electron-compilers');
 
@@ -18,11 +17,7 @@ global.AssertionError = chai.AssertionError;
 global.Assertion = chai.Assertion;
 global.assert = chai.assert;
 
-mimeTypes.types.ts = 'text/typescript';
-mimeTypes.extensions['text/typescript'] = ['ts'];
-
-mimeTypes.types.jade = 'text/jade';
-mimeTypes.extensions['text/jade'] = ['jade'];
+require('../lib/rig-mime-types').init();
 
 global.compilersByMimeType = _.reduce(allCompilerClasses, (acc,x) => {
   acc = acc || {};

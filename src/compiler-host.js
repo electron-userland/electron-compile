@@ -35,7 +35,7 @@ export default class CompilerHost {
       return acc;
     }, new Map());
   }
-  
+    
   static async createReadonlyFromConfiguration(rootCacheDir, fallbackCompiler=null) {
     let target = path.join(rootCacheDir, 'compiler-info.json.gz');
     let buf = await pfs.readFile(target);
@@ -50,6 +50,21 @@ export default class CompilerHost {
     }, {});
     
     return new CompilerHost(rootCacheDir, compilers, fileChangeCache, true, fallbackCompiler);
+  }
+  
+  static async createFromConfiguration(rootCacheDir, compilersByMimeType, fallbackCompiler=null) {
+    let target = path.join(rootCacheDir, 'compiler-info.json.gz');
+    let buf = await pfs.readFile(target);
+    let info = JSON.parse(await pzlib.gunzip(buf));
+    
+    let fileChangeCache = new FileChangedCache(info.fileChangeCache, false);
+    
+    _.each(Object.keys(info.compilers), (x) => {
+      let cur = info.compilers[x];
+      compilersByMimeType[x].compilerOptions = cur.compilerOptions;
+    });
+    
+    return new CompilerHost(rootCacheDir, compilersByMimeType, fileChangeCache, true, fallbackCompiler);
   }
   
   async saveConfiguration() {
@@ -88,16 +103,6 @@ export default class CompilerHost {
     return (this.readOnlyMode ? this.compileReadOnly(filePath) : this.fullCompile(filePath));
   }
   
-  // Public: Compiles a single file given its path.
-  //
-  // filePath: The path on disk to the file
-  //
-  // Returns a {String} with the compiled output, or will throw an {Error}
-  // representing the compiler errors encountered.
-  compileSync(filePath) {
-    return (this.readOnlyMode ? this.compileReadOnlySync(filePath) : this.fullCompileSync(filePath));
-  }
-
   async compileReadOnly(filePath) {
     let hashInfo = await this.fileChangeCache.getHashForPath(filePath);
     let type = mimeTypes.lookup(filePath);
@@ -209,6 +214,16 @@ export default class CompilerHost {
    * Sync Methods
    */
    
+  // Public: Compiles a single file given its path.
+  //
+  // filePath: The path on disk to the file
+  //
+  // Returns a {String} with the compiled output, or will throw an {Error}
+  // representing the compiler errors encountered.
+  compileSync(filePath) {
+    return (this.readOnlyMode ? this.compileReadOnlySync(filePath) : this.fullCompileSync(filePath));
+  }
+  
   static createReadonlyFromConfigurationSync(rootCacheDir, fallbackCompiler=null) {
     let target = path.join(rootCacheDir, 'compiler-info.json.gz');
     let buf = fs.readFileSync(target);
@@ -223,6 +238,21 @@ export default class CompilerHost {
     }, {});
     
     return new CompilerHost(rootCacheDir, compilers, fileChangeCache, true, fallbackCompiler);
+  }
+  
+  static createFromConfigurationSync(rootCacheDir, compilersByMimeType, fallbackCompiler=null) {
+    let target = path.join(rootCacheDir, 'compiler-info.json.gz');
+    let buf = fs.readFileSync(target);
+    let info = JSON.parse(zlib.gunzipSync(buf));
+    
+    let fileChangeCache = new FileChangedCache(info.fileChangeCache, false);
+    
+    _.each(Object.keys(info.compilers), (x) => {
+      let cur = info.compilers[x];
+      compilersByMimeType[x].compilerOptions = cur.compilerOptions;
+    });
+    
+    return new CompilerHost(rootCacheDir, compilersByMimeType, fileChangeCache, true, fallbackCompiler);
   }
    
   saveConfigurationSync() {

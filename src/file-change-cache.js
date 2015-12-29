@@ -200,7 +200,7 @@ export default class FileChangedCache {
   }
   
   static detectFileEncoding(buffer) {
-    if (buffer.length < 1) return true;
+    if (buffer.length < 1) return false;
     let buf = (buffer.length < 4096 ? buffer : buffer.slice(0, 4096));
     
     const encodings = ['utf8', 'utf16le'];
