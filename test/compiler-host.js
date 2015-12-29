@@ -13,7 +13,7 @@ const d = require('debug')('test:compiler-host');
 
 let testCount=0;
 
-describe.only('All available compilers', function() {
+describe('All available compilers', function() {
   it('should have a MIME type in mime-types', function() {
     _.each(Object.keys(global.compilersByMimeType), (type) => {
       d(`Extension for ${type} is ${mimeTypes.extension(type)}`);
