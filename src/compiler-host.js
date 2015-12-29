@@ -168,8 +168,10 @@ export default class CompilerHost {
     let shouldInlineHtmlify = 
       inputMimeType !== 'text/html' &&
       result.mimeType === 'text/html';
+    
+    let isPassthrough = result.mimeType === 'text/plain';
       
-    if (finalForms[result.mimeType] && !shouldInlineHtmlify) {
+    if (finalForms[result.mimeType] && !shouldInlineHtmlify && !isPassthrough) {
       // Got something we can use in-browser, let's return it
       return _.assign(result, {dependentFiles});
     } else {
