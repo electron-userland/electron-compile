@@ -1,4 +1,9 @@
 require('babel-polyfill');
+const init = require('../lib/config-parser').init;
+
+init(__dirname + '/..', './electron-smoke-test-app');
+
+/*
 const path = require('path');
 const app = require('electron').app;
 
@@ -18,3 +23,4 @@ if (app.isReady()) {
 }
 
 require('./electron-smoke-test-app');
+*/

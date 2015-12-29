@@ -6,6 +6,8 @@ import pify from 'pify';
 
 import FileChangedCache from './file-change-cache';
 import CompilerHost from './compiler-host';
+import { initializeProtocolHook } from './protocol-hook';
+import registerRequireExtension from './require-hook';
 
 const pfs = pify(fs);
 const d = require('debug')('electron-compile:config-parser');
@@ -13,6 +15,32 @@ const d = require('debug')('electron-compile:config-parser');
 // NB: We intentionally delay-load this so that in production, you can create
 // cache-only versions of these compilers
 let allCompilerClasses = null;
+
+export function initializeGlobalHooks(compilerHost) {
+  const { app } = require('electron');
+  
+  registerRequireExtension(compilerHost);
+
+  let protoify = function() { initializeProtocolHook(compilerHost); };
+  if (app.isReady()) {
+    protoify();
+  } else {
+    app.on('ready', protoify);
+  }
+}
+
+export function init(appRoot, mainModule, productionMode = false) {
+  let compilerHost = null;
+  if (productionMode) {
+    // In read-only mode, we'll assume that everything is in `appRoot/.cache`
+    compilerHost = CompilerHost.createReadonlyFromConfigurationSync(path.join(appRoot, '.cache'));
+  } else {
+    compilerHost = createCompilerHostFromProjectRootSync(appRoot);
+  }
+  
+  initializeGlobalHooks(compilerHost);
+  require.main.require(mainModule);
+}
 
 export function createCompilerHostFromConfiguration(info) {
   let compilers = createCompilers();
