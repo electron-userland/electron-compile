@@ -1,13 +1,13 @@
 {
   "env": {
     "production": {
-      "text/javascript": {
+      "application/javascript": {
         "presets": ["stage-0", "es2015", "react"],
         "sourceMaps": false
       }
     },
     "development": {
-      "text/javascript": {
+      "application/javascript": {
         "presets": ["stage-0", "es2015", "react"],
         "sourceMaps": "inline"
       }

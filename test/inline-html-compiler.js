@@ -14,6 +14,8 @@ const validInputs = [
 const pfs = pify(fs);
 const InlineHtmlCompiler = global.compilersByMimeType['text/html'];
 
+const d = require('debug')('test:inline-html-compiler');
+
 describe('The inline HTML compiler', function() {
   beforeEach(function() {
     let compilers = _.reduce(Object.keys(global.compilersByMimeType), (acc, x) => {
@@ -22,6 +24,13 @@ describe('The inline HTML compiler', function() {
       
       return acc;
     }, {});
+    
+    compilers['application/javascript'].compilerOptions = {
+      "presets": ["stage-0", "es2015", "react"],
+      "sourceMaps": "inline"
+    };
+    
+    compilers['text/coffeescript'].compilerOptions = { sourceMap: true };
     
     this.fixture = InlineHtmlCompiler.createFromCompilers(compilers);
   });
@@ -75,6 +84,7 @@ describe('The inline HTML compiler', function() {
         let text = $(el).text();
         if (!text || text.length < 2) return;
 
+        d(text);
         expect(_.find(text.split('\n'), (l) => l.match(/sourceMappingURL/))).to.be.ok;
       });
     });

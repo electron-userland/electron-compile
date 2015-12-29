@@ -27,26 +27,26 @@ describe('The compile cache', function() {
   });
   
   it('Should only call compile once for the same file', async function() {
-    let inputFile = path.resolve(__dirname, '..', 'lib', 'compile-cache.js');
+    let inputFile = path.resolve(__dirname, '..', 'src', 'compile-cache.js');
     let callCount = 0;
     
     let fetcher = async function(filePath, hashInfo) {
       callCount++;
       
       let code = hashInfo.sourceCode || await pfs.readFile(filePath, 'utf8');
-      let mimeType = 'text/javascript';
+      let mimeType = 'application/javascript';
       return { code, mimeType };
     };
     
     let result = await this.fixture.getOrFetch(inputFile, fetcher);
     
-    expect(result.mimeType).to.equal('text/javascript');
+    expect(result.mimeType).to.equal('application/javascript');
     expect(result.code.length > 10).to.be.ok;
     expect(callCount).to.equal(1);
     
     result = await this.fixture.getOrFetch(inputFile, fetcher);
       
-    expect(result.mimeType).to.equal('text/javascript');
+    expect(result.mimeType).to.equal('application/javascript');
     expect(result.code.length > 10).to.be.ok;
     expect(callCount).to.equal(1);
     
@@ -54,7 +54,7 @@ describe('The compile cache', function() {
         
     result = await this.fixture.getOrFetch(inputFile, fetcher);
       
-    expect(result.mimeType).to.equal('text/javascript');
+    expect(result.mimeType).to.equal('application/javascript');
     expect(result.code.length > 10).to.be.ok;
     expect(callCount).to.equal(1);
   });
@@ -101,28 +101,28 @@ describe('The compile cache', function() {
     expect(result.binaryData.length).to.equal(hashInfo.binaryData.length);  
   });
   
-  it('Should only call compile once for the same file synchronously', function() {
-    let inputFile = path.resolve(__dirname, '..', 'lib', 'compile-cache.js');
+  it.only('Should only call compile once for the same file synchronously', function() {
+    let inputFile = path.resolve(__dirname, '..', 'src', 'compile-cache.js');
     let callCount = 0;
     
     let fetcher = function(filePath, hashInfo) {
       callCount++;
       
       let code = hashInfo.sourceCode || fs.readFileSync(filePath, 'utf8');
-      let mimeType = 'text/javascript';
+      let mimeType = 'application/javascript';
       
       return { code, mimeType };
     };
     
     let result = this.fixture.getOrFetchSync(inputFile, fetcher);
     
-    expect(result.mimeType).to.equal('text/javascript');
+    expect(result.mimeType).to.equal('application/javascript');
     expect(result.code.length > 10).to.be.ok;
     expect(callCount).to.equal(1);
     
     result = this.fixture.getOrFetchSync(inputFile, fetcher);
       
-    expect(result.mimeType).to.equal('text/javascript');
+    expect(result.mimeType).to.equal('application/javascript');
     expect(result.code.length > 10).to.be.ok;
     expect(callCount).to.equal(1);
     
@@ -130,7 +130,7 @@ describe('The compile cache', function() {
         
     result = this.fixture.getOrFetchSync(inputFile, fetcher);
       
-    expect(result.mimeType).to.equal('text/javascript');
+    expect(result.mimeType).to.equal('application/javascript');
     expect(result.code.length > 10).to.be.ok;
     expect(callCount).to.equal(1);
   });

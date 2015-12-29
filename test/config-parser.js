@@ -46,7 +46,7 @@ describe('the configuration parser module', function() {
         appRoot: fixtureDir,
         rootCacheDir: this.tempCacheDir,
         options: {
-          'text/javascript': {
+          'application/javascript': {
             "presets": ["stage-0", "es2015"],
             "sourceMaps": false
           }
@@ -56,7 +56,7 @@ describe('the configuration parser module', function() {
       let compileInfo = await result.compile(path.join(fixtureDir, 'valid.js'));
       d(JSON.stringify(compileInfo));
       
-      expect(compileInfo.mimeType).to.equal('text/javascript');
+      expect(compileInfo.mimeType).to.equal('application/javascript');
       
       let lines = compileInfo.code.split('\n');
       expect(lines.length > 5).to.be.ok;

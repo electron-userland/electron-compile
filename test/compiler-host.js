@@ -67,6 +67,8 @@ describe('The compiler host', function() {
       if (filePath.match(/binaryfile/)) return false;
       if (filePath.match(/minified/)) return false;
       if (filePath.match(/source_map/)) return false;
+      if (filePath.match(/babelrc/)) return false;
+      if (filePath.match(/compilerc/)) return false;
       
       return true;
     });
@@ -80,6 +82,8 @@ describe('The compiler host', function() {
       if (filePath.match(/binaryfile/)) return false;
       if (filePath.match(/minified/)) return false;
       if (filePath.match(/source_map/)) return false;
+      if (filePath.match(/babelrc/)) return false;
+      if (filePath.match(/compilerc/)) return false;
       
       return true;
     });
@@ -93,6 +97,8 @@ describe('The compiler host', function() {
       if (filePath.match(/binaryfile/)) return false;
       if (filePath.match(/minified/)) return false;
       if (filePath.match(/source_map/)) return false;
+      if (filePath.match(/babelrc/)) return false;
+      if (filePath.match(/compilerc/)) return false;
       
       return true;
     });
@@ -105,6 +111,8 @@ describe('The compiler host', function() {
       if (filePath.match(/binaryfile/)) return false;
       if (filePath.match(/minified/)) return false;
       if (filePath.match(/source_map/)) return false;
+      if (filePath.match(/babelrc/)) return false;
+      if (filePath.match(/compilerc/)) return false;
       
       return true;
     });
@@ -118,6 +126,8 @@ describe('The compiler host', function() {
       if (filePath.match(/binaryfile/)) return false;
       if (filePath.match(/minified/)) return false;
       if (filePath.match(/source_map/)) return false;
+      if (filePath.match(/babelrc/)) return false;
+      if (filePath.match(/compilerc/)) return false;
       
       return true;
     });
@@ -130,6 +140,8 @@ describe('The compiler host', function() {
       if (filePath.match(/binaryfile/)) return false;
       if (filePath.match(/minified/)) return false;
       if (filePath.match(/source_map/)) return false;
+      if (filePath.match(/babelrc/)) return false;
+      if (filePath.match(/compilerc/)) return false;
       
       return true;
     });
@@ -144,6 +156,8 @@ describe('The compiler host', function() {
       if (filePath.match(/binaryfile/)) return false;
       if (filePath.match(/minified/)) return false;
       if (filePath.match(/source_map/)) return false;
+      if (filePath.match(/babelrc/)) return false;
+      if (filePath.match(/compilerc/)) return false;
       
       return true;
     });
@@ -161,6 +175,8 @@ describe('The compiler host', function() {
       if (filePath.match(/binaryfile/)) return false;
       if (filePath.match(/minified/)) return false;
       if (filePath.match(/source_map/)) return false;
+      if (filePath.match(/babelrc/)) return false;
+      if (filePath.match(/compilerc/)) return false;
       
       return true;
     });
@@ -175,6 +191,8 @@ describe('The compiler host', function() {
       if (filePath.match(/binaryfile/)) return false;
       if (filePath.match(/minified/)) return false;
       if (filePath.match(/source_map/)) return false;
+      if (filePath.match(/babelrc/)) return false;
+      if (filePath.match(/compilerc/)) return false;
       
       return true;
     });
@@ -192,6 +210,8 @@ describe('The compiler host', function() {
       if (filePath.match(/binaryfile/)) return false;
       if (filePath.match(/minified/)) return false;
       if (filePath.match(/source_map/)) return false;
+      if (filePath.match(/babelrc/)) return false;
+      if (filePath.match(/compilerc/)) return false;
       
       return true;
     });

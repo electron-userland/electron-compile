@@ -151,7 +151,7 @@ export function createCompilerHostFromBabelRcSync(file, rootCacheDir=null) {
   return createCompilerHostFromConfiguration({
     appRoot: path.dirname(file),
     options: {
-      'text/javascript': info
+      'application/javascript': info
     },
     rootCacheDir
   });

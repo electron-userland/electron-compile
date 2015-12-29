@@ -46,7 +46,7 @@ for (let mimeType of mimeTypesToTest) {
       expect(dependentFiles.length).to.equal(0);
 
       let result = await this.fixture.compile(source, input, ctx);
-      let expectedMimeType = expectedMimeTypeSpecialCases[mimeType] || 'text/javascript';
+      let expectedMimeType = expectedMimeTypeSpecialCases[mimeType] || 'application/javascript';
       
       expect(result.mimeType).to.equal(expectedMimeType);
 

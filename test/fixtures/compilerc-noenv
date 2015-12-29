@@ -1,5 +1,5 @@
 {
-  "text/javascript": {
+  "application/javascript": {
     "presets": ["stage-0", "es2015", "react"],
     "sourceMaps": "inline"
   }
