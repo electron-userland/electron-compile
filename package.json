@@ -24,6 +24,7 @@
     "url": "https://github.com/paulcbetts/electron-compile/issues"
   },
   "homepage": "https://github.com/paulcbetts/electron-compile",
+  "main": "lib/index.js",
   "dependencies": {
     "babel-polyfill": "^6.3.14",
     "btoa": "^1.1.2",
