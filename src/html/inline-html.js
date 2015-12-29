@@ -17,7 +17,7 @@ export default class InlineHtmlCompiler extends CompilerBase {
   static createFromCompilers(compilersByMimeType) {
     let compileBlock = async (sourceCode, filePath, mimeType, ctx) => {
       let realType = mimeType;
-      if (!mimeType && ctx.tag === 'script') realType = 'text/javascript';
+      if (!mimeType && ctx.tag === 'script') realType = 'application/javascript';
 
       if (!realType) return sourceCode;
 
@@ -31,7 +31,7 @@ export default class InlineHtmlCompiler extends CompilerBase {
 
     let compileBlockSync = (sourceCode, filePath, mimeType, ctx) => {
       let realType = mimeType;
-      if (!mimeType && ctx.tag === 'script') realType = 'text/javascript';
+      if (!mimeType && ctx.tag === 'script') realType = 'application/javascript';
 
       if (!realType) return sourceCode;
 

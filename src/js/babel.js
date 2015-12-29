@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import {CompilerBase} from '../compiler-base';
 
-const mimeTypes = ['text/jsx', 'application/javascript', 'text/javascript'];
+const mimeTypes = ['text/jsx', 'application/javascript'];
 let babel = null;
 
 export default class BabelCompiler extends CompilerBase {
@@ -31,7 +31,7 @@ export default class BabelCompiler extends CompilerBase {
 
     return {
       code: babel.transform(sourceCode, opts).code,
-      mimeType: 'text/javascript'
+      mimeType: 'application/javascript'
     };
   }
 
@@ -53,7 +53,7 @@ export default class BabelCompiler extends CompilerBase {
 
     return {
       code: babel.transform(sourceCode, opts).code,
-      mimeType: 'text/javascript'
+      mimeType: 'application/javascript'
     };
   }
 

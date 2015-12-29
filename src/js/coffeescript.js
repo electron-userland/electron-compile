@@ -3,7 +3,7 @@ import path from 'path';
 import btoa from 'btoa';
 import {SimpleCompilerBase} from '../compiler-base';
 
-const inputMimeTypes = ['text/coffeescript', 'application/coffeescript'];
+const inputMimeTypes = ['text/coffeescript'];
 let coffee = null;
 
 export default class CoffeeScriptCompiler extends SimpleCompilerBase {
@@ -29,7 +29,7 @@ export default class CoffeeScriptCompiler extends SimpleCompilerBase {
 
     return {
       code: js,
-      mimeType: 'text/javascript'
+      mimeType: 'application/javascript'
     };
   }
 

@@ -27,7 +27,7 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
 
     return {
       code: compiler.compile(sourceCode, filePath),
-      mimeType: 'text/javascript'
+      mimeType: 'application/javascript'
     };
   }
 
