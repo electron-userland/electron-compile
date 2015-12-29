@@ -41,7 +41,7 @@ export function createCompilerHostFromConfiguration(info) {
 export async function createCompilerHostFromBabelRc(file) {
   let info = JSON.parse(await pfs.readFile(file, 'utf8'));
   
-  // project.json
+  // package.json
   if ('babel' in info) {
     info = info.babel;
   }
@@ -51,7 +51,7 @@ export async function createCompilerHostFromBabelRc(file) {
     info = info.env[ourEnv];
   }
   
-  // Are we still project.json (i.e. is there no babel info whatsoever?)
+  // Are we still package.json (i.e. is there no babel info whatsoever?)
   if ('name' in info && 'version' in info) {
     return createCompilerHostFromConfiguration({
       appRoot: path.dirname(file),
@@ -92,13 +92,13 @@ export async function createCompilerHostFromProjectRoot(rootDir) {
     return createCompilerHostFromBabelRc(babelrc);
   }
     
-  return createCompilerHostFromBabelRc(path.join(rootDir, 'project.json'));
+  return createCompilerHostFromBabelRc(path.join(rootDir, 'package.json'));
 }
 
 export function createCompilerHostFromBabelRcSync(file) {
   let info = JSON.parse(fs.readFileSync(file, 'utf8'));
   
-  // project.json
+  // package.json
   if ('babel' in info) {
     info = info.babel;
   }
@@ -108,7 +108,7 @@ export function createCompilerHostFromBabelRcSync(file) {
     info = info.env[ourEnv];
   }
   
-  // Are we still project.json (i.e. is there no babel info whatsoever?)
+  // Are we still package.json (i.e. is there no babel info whatsoever?)
   if ('name' in info && 'version' in info) {
     return createCompilerHostFromConfiguration({
       appRoot: path.dirname(file),
@@ -141,15 +141,15 @@ export function createCompilerHostFromConfigFileSync(file) {
 export function createCompilerHostFromProjectRootSync(rootDir) {
   let compilerc = path.join(rootDir, '.compilerc');
   if (fs.existsSync(compilerc)) {
-    return createCompilerHostFromConfigFile(compilerc);
+    return createCompilerHostFromConfigFileSync(compilerc);
   }
   
   let babelrc = path.join(rootDir, '.babelrc');
   if (fs.existsSync(compilerc)) {
-    return createCompilerHostFromBabelRc(babelrc);
+    return createCompilerHostFromBabelRcSync(babelrc);
   }
     
-  return createCompilerHostFromBabelRc(path.join(rootDir, 'project.json'));
+  return createCompilerHostFromBabelRcSync(path.join(rootDir, 'package.json'));
 }
 
 export function calculateDefaultCompileCacheDirectory() {
