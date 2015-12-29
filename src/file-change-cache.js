@@ -214,12 +214,13 @@ export default class FileChangedCache {
   
   static containsControlCharacters(str) {
     let controlCount = 0;
+    let threshold = (str.length < 64 ? 2 : 16);
     
     for (let i=0; i < str.length; i++) {
       let c = str.charCodeAt(i);
       if (c === 65536 || c < 8) controlCount++;
       
-      if (controlCount > 16) return true;
+      if (controlCount > threshold) return true;
     }
     
     if (controlCount === 0) return false;
