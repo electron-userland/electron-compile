@@ -31,7 +31,10 @@ export function createCompilerHostFromConfiguration(info) {
     compilers[x].compilerOptions = opts;
   });
   
+  // NB: It's super important that we guarantee that the configuration is saved
+  // out, because we'll need to re-read it in the renderer process
   d(`Created compiler host with options: ${JSON.stringify(info)}`);
+  ret.saveConfigurationSync();
   return ret;
 }
 
