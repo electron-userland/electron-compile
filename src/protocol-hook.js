@@ -1,14 +1,15 @@
 import _ from 'lodash';
 import url from 'url';
 import fs from 'fs';
-import btoa from 'btoa';
 import mime from 'mime-types';
 import pify from 'pify';
-
-require('./regenerator');
+import CompilerHost from './compiler-host';
 
 const magicWords = "__magic__file__to__help__electron__compile.js";
-const fsp = pify(require('fs'));
+const magicGlobalForRootCacheDir = '__electron_compile_root_cache_dir';
+const pfs = pify(require('fs'));
+
+const d = require('debug')('electron-compile:protocol-hook');
 
 let protocol = null;
 
@@ -57,23 +58,39 @@ function requestFileJob(filePath, finish) {
   });
 }
 
-export function initializeProtocolHook(availableCompilers, initializeOpts) {
-  protocol = protocol || require('protocol');
-
-  // NB: If we were initialized with custom compilers, there is no way that we
-  // can recreate that automatically.
-  let disableAutoRendererSetup = initializeOpts.compilers && !initializeOpts.production;
-
-  // NB: Electron 0.30.0 is somehow including the script tag over and over, we
-  // need to bail if we've already set up.
-  let encodedOpts = btoa(encodeURIComponent(JSON.stringify(initializeOpts)));
-  let electronCompileSetupCode = initializeOpts.production ?
-    `if (window.require && !window.__electron_compile_set_up) { window.__electron_compile_set_up = true; var opts = JSON.parse(decodeURIComponent(atob("${encodedOpts}"))); require('electron-compile').initForProduction(opts.cacheDir, opts.compilerInformation); }` :
-    `if (window.require && !window.__electron_compile_set_up) { window.__electron_compile_set_up = true; var opts = JSON.parse(decodeURIComponent(atob("${encodedOpts}"))); require('electron-compile').initWithOptions(opts); }`;
+let rendererInitialized = false;
+export function initializeRendererProcess(readOnlyMode) {
+  if (rendererInitialized) return;
+  
+  let rootCacheDir = require('remote').getGlobal(magicGlobalForRootCacheDir);
+  let compilerHost = null;
+  
+  // NB: This has to be synchronous because we need to block HTML parsing
+  // until we're set up
+  if (readOnlyMode) {
+    d(`Setting up electron-compile in precompiled mode with cache dir: ${rootCacheDir}`);
+    compilerHost = CompilerHost.createReadonlyFromConfigurationSync(rootCacheDir);
+  } else {
+    d(`Setting up electron-compile in development mode with cache dir: ${rootCacheDir}`);
+    const { createCompilers } = require('./config-parser');
+    const compilersByMimeType = createCompilers();
     
+    compilerHost = CompilerHost.createFromConfigurationSync(rootCacheDir, compilersByMimeType);
+  }
+  
+  require('./require-hook').init(compilerHost);
+  rendererInitialized = true;
+}
+
+export function initializeProtocolHook(compilerHost) {
+  protocol = protocol || require('protocol');
+  
+  const electronCompileSetupCode = `if (window.require) require('electron-compile/lib/protocol-hook').initializeRendererProcess(${compilerHost.readOnlyMode});`;
+
   protocol.interceptBufferProtocol('file', async function(request, finish) {
     let uri = url.parse(request.url);
 
+    d(`Intercepting url ${request.url}`);
     if (request.url.indexOf(magicWords) > -1) {
       finish({
         mimeType: 'text/javascript',
@@ -86,8 +103,9 @@ export function initializeProtocolHook(availableCompilers, initializeOpts) {
     // This is a protocol-relative URL that has gone pear-shaped in Electron,
     // let's rewrite it
     if (uri.host && uri.host.length > 1) {
-      let newUri = request.url.replace(/^file:/, "https:");
+      //let newUri = request.url.replace(/^file:/, "https:");
       // TODO: Jump off this bridge later
+      d(`TODO: Found bogus protocol-relative URL, can't fix it up!!`);
       finish(-2);
     }
 
@@ -103,55 +121,27 @@ export function initializeProtocolHook(availableCompilers, initializeOpts) {
       requestFileJob(filePath, finish);
       return;
     }
-
-    let sourceCode = null;
-    let compiler = null;
-
+    
     try {
-      compiler = _.find(availableCompilers, (x) => x.shouldCompileFile(filePath));
-
-      if (!compiler) {
-        requestFileJob(filePath, finish);
+      let { code, mimeType } = await compilerHost.compile(filePath);
+      
+      if (filePath.match(/\.html?$/i)) {
+        code = rigHtmlDocumentToInitializeElectronCompile(code);
       }
-    } catch (e) {
-      console.log(`Failed to find compiler: ${e.message}\n${e.stack}`);
-      finish(-2); // net::FAILED
+        
+      finish({ data: new Buffer(code), mimeType });
       return;
-    }
-
-    try {
-      sourceCode = sourceCode || await fsp.readFile(filePath, {encoding: 'utf8'});
     } catch (e) {
-      // TODO: Actually come correct with these error codes
+      let err = `Failed to compile ${filePath}: ${e.message}\n${e.stack}`;
+      d(err);
+      
       if (e.errno === 34 /*ENOENT*/) {
         finish(-6); // net::ERR_FILE_NOT_FOUND
         return;
       }
 
-      console.log(`Failed to read file: ${e.message}\n${e.stack}`);
-      finish(-2); // net::FAILED
+      finish({ mimeType: 'text/plain', data: new Buffer(err) });
       return;
     }
-
-    let realSourceCode = null;
-    try {
-      realSourceCode = compiler.loadFile(null, filePath, true, sourceCode);
-    } catch (e) {
-      finish({
-        mimeType: compiler.getMimeType(),
-        data: new Buffer(`Failed to compile ${filePath}: ${e.message}\n${e.stack}`)
-      });
-      
-      return;
-    }
-
-    if (!disableAutoRendererSetup && filePath.match(/\.html?$/i)) {
-      realSourceCode = rigHtmlDocumentToInitializeElectronCompile(realSourceCode, initializeOpts.cacheDir);
-    }
-    
-    finish({
-      data: new Buffer(realSourceCode),
-      mimeType: compiler.getMimeType()
-    });
   });
 }
