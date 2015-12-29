@@ -199,6 +199,10 @@ export function createCompilers() {
     }
   }
 
+  // NB: Note that this code is carefully set up so that InlineHtmlCompiler 
+  // (i.e. classes with `createFromCompilers`) initially get an empty object,
+  // but will have a reference to the final result of what we return, which
+  // resolves the circular dependency we'd otherwise have here.
   let ret = {};
   let instantiatedClasses = _.map(allCompilerClasses, (Klass) => {
     if ('createFromCompilers' in Klass) {
@@ -208,10 +212,12 @@ export function createCompilers() {
     }
   });
 
-  return _.reduce(instantiatedClasses, (acc,x) => {
+  _.reduce(instantiatedClasses, (acc,x) => {
     let Klass = Object.getPrototypeOf(x).constructor;
 
     for (let type of Klass.getInputMimeTypes()) { acc[type] = x; }
     return acc;
-  }, {});
+  }, ret);
+  
+  return ret;
 }
