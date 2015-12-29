@@ -1,13 +1,12 @@
-import _ from 'lodash';
+import 'babel-polyfill';
 import url from 'url';
 import fs from 'fs';
 import mime from 'mime-types';
-import pify from 'pify';
+
 import CompilerHost from './compiler-host';
 
 const magicWords = "__magic__file__to__help__electron__compile.js";
 const magicGlobalForRootCacheDir = '__electron_compile_root_cache_dir';
-const pfs = pify(require('fs'));
 
 const d = require('debug')('electron-compile:protocol-hook');
 
@@ -78,12 +77,15 @@ export function initializeRendererProcess(readOnlyMode) {
     compilerHost = CompilerHost.createFromConfigurationSync(rootCacheDir, compilersByMimeType);
   }
   
-  require('./require-hook').init(compilerHost);
+  require('./x-require');
+  require('./require-hook').default(compilerHost);
   rendererInitialized = true;
 }
 
 export function initializeProtocolHook(compilerHost) {
   protocol = protocol || require('protocol');
+  
+  global[magicGlobalForRootCacheDir] = compilerHost.rootCacheDir;
   
   const electronCompileSetupCode = `if (window.require) require('electron-compile/lib/protocol-hook').initializeRendererProcess(${compilerHost.readOnlyMode});`;
 
