@@ -6,6 +6,8 @@ import {CompilerBase} from '../compiler-base';
 const inputMimeTypes = ['text/html'];
 let cheerio = null;
 
+const d = require('debug')('electron-compile:inline-html');
+
 export default class InlineHtmlCompiler extends CompilerBase {
   constructor(compileBlock, compileBlockSync) {
     super();
@@ -25,6 +27,7 @@ export default class InlineHtmlCompiler extends CompilerBase {
       let ext = mimeTypes.extension(realType);
       let fakeFile = `${filePath}:inline_${ctx.count}.${ext}`;
 
+      d(`Compiling inline block for ${filePath} with mimeType ${mimeType}`);
       if (!(await compiler.shouldCompileFile(fakeFile, ctx))) return sourceCode;
       return (await compiler.compileSync(sourceCode, fakeFile, ctx)).code;
     };
@@ -39,6 +42,7 @@ export default class InlineHtmlCompiler extends CompilerBase {
       let ext = mimeTypes.extension(realType);
       let fakeFile = `${filePath}:inline_${ctx.count}.${ext}`;
 
+      d(`Compiling inline block for ${filePath} with mimeType ${mimeType}`);
       if (!compiler.shouldCompileFileSync(fakeFile, ctx)) return sourceCode;
       return compiler.compileSync(sourceCode, fakeFile, ctx).code;
     };
@@ -88,7 +92,7 @@ export default class InlineHtmlCompiler extends CompilerBase {
     let that = this;
     let styleCount = 0;
     toWait.push(this.each($('style'), async (i, el) => {
-      let mimeType = $(el).attr('type');
+      let mimeType = $(el).attr('type') || 'text/plain';
 
       let thisCtx = _.assign({
         count: styleCount++,
@@ -112,7 +116,7 @@ export default class InlineHtmlCompiler extends CompilerBase {
         tag: 'script'
       }, compilerContext);
 
-      let mimeType = $(el).attr('type');
+      let mimeType = $(el).attr('type') || 'application/javascript';
 
       $(el).text(await that.compileBlock($(el).text(), filePath, mimeType, thisCtx));
       $(el).attr('type', 'application/javascript');
