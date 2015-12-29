@@ -1,17 +1,20 @@
-import {app, BrowserWindow} from 'electron';
+require('babel-polyfill');
+const path = require('path');
+const app = require('electron').app;
 
-// Quit when all windows are closed.
-app.on('window-all-closed', function() {
-  app.quit();
-});
+const createCompilerHostFromProjectRootSync = require('../lib/config-parser').createCompilerHostFromProjectRootSync;
 
-app.on('ready', function() {
-  global.mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
-    autoHideMenuBar: true
-  });
-  
-  global.mainWindow.loadURL('file://' + __dirname + '/../test/electron-smoke-test.html');
-  global.mainWindow.focus();
-});
+const registerRequireExtension = require('../lib/require-hook').default;
+const initializeProtocolHook = require('../lib/protocol-hook').initializeProtocolHook;
+
+let compilerHost = createCompilerHostFromProjectRootSync(path.join(__dirname, '..'));
+registerRequireExtension(compilerHost);
+
+let protoify = function() { initializeProtocolHook(compilerHost); };
+if (app.isReady()) {
+  protoify();
+} else {
+  app.on('ready', protoify);
+}
+
+require('./electron-smoke-test-app');
