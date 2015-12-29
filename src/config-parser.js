@@ -59,7 +59,7 @@ export async function createCompilerHostFromBabelRc(file) {
   return createCompilerHostFromConfiguration({
     appRoot: path.dirname(file),
     options: {
-      'text/javascript': info
+      'application/javascript': info
     }
   });
 }
@@ -162,7 +162,7 @@ export function calculateDefaultCompileCacheDirectory() {
 
 export function getDefaultConfiguration() {
   return {
-    'text/javascript': {
+    'application/javascript': {
       "presets": ["stage-0", "es2015"],
       "sourceMaps": "inline"
     }
