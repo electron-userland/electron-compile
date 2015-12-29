@@ -57,20 +57,18 @@
 </head>
 <body>
   <script>
-    const electron = require('electron');
-    const remote = electron.remote;
-    const shell = electron.shell;
+    import {remote, shell} from 'electron';
 
-    var execPath = remote.process.execPath;
-    var command = execPath + ' path-to-your-app';
+    let execPath = remote.process.execPath;
+    let command = execPath + ' path-to-your-app';
 
-    document.onclick = function(e) {
+    document.onclick = (e) => {
       e.preventDefault();
       if (e.target.tagName == 'A')
         shell.openExternal(e.target.href);
       return false;
     };
-    document.ondragover = document.ondrop = function(e) {
+    document.ondragover = document.ondrop = (e) => {
       e.preventDefault();
       return false;
     };
@@ -115,23 +113,24 @@
   </div>
 
   <script>
-    var holder = document.getElementById('holder');
-    holder.ondragover = function () {
+    let holder = document.getElementById('holder');
+    holder.ondragover = () => {
       this.className = 'hover';
       return false;
     };
-    holder.ondragleave = holder.ondragend = function () {
+    holder.ondragleave = holder.ondragend = () => {
       this.className = '';
       return false;
     };
-    holder.ondrop = function (e) {
+    holder.ondrop = (e) => {
       this.className = '';
       e.preventDefault();
 
-      var file = e.dataTransfer.files[0];
+      let file = e.dataTransfer.files[0];
       require('child_process').execFile(execPath, [file.path], {
         detached: true, stdio: 'ignore'
       }).unref();
+
       return false;
     };
   </script>
