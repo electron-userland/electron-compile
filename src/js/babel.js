@@ -7,7 +7,6 @@ let babel = null;
 export default class BabelCompiler extends CompilerBase {
   constructor() {
     super();
-    this.compilerOptions.babelrc = true;
   }
 
   static getInputMimeTypes() {

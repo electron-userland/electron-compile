@@ -21,6 +21,6 @@ export default class PassthroughCompiler extends SimpleCompilerBase {
   }
   
   getCompilerVersion() {
-    return require(path.join(__dirname, 'package.json')).version;
+    return require(path.join(__dirname, '..', 'package.json')).version;
   }
 }
