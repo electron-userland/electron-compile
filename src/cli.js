@@ -1,17 +1,60 @@
 #!/usr/bin/env node
 
-import {compile, init, collectCompilerInformation} from './main';
-import forAllFiles from './for-all-files';
-import _ from 'lodash';
-import fs from 'fs';
+import 'babel-polyfill';
 import path from 'path';
+import mkdirp from 'mkdirp';
+import _ from 'lodash';
+
+import {createCompilerHostFromProjectRoot} from './config-parser';
+import {forAllFiles} from './for-all-files';
+
+process.on('unhandledRejection', (e) => {
+  d(e.message || e);
+  d(e.stack || '');
+});
+
+process.on('uncaughtException', (e) => {
+  d(e.message || e);
+  d(e.stack || '');
+});
+
+async function main(appDir, sourceDirs) {
+  let compilerHost = null;
+  let rootCacheDir = path.join(appDir, '.cache');
+  mkdirp.sync(rootCacheDir);
+  
+  d(`main: ${appDir}, ${JSON.stringify(sourceDirs)}`);
+  try {
+    compilerHost = await createCompilerHostFromProjectRoot(appDir, rootCacheDir);
+  } catch (e) {
+    console.error(`Couldn't set up compilers: ${e.message}`);
+    d(e.stack);
+
+    throw e;
+  }
+  
+  await Promise.all(_.map(sourceDirs, (dir) => forAllFiles(dir, async (f) => {
+    try {
+      d(`Starting compilation for ${f}`);
+      await compilerHost.compile(f);
+    } catch (e) {
+      console.error(`Failed to compile file: ${f}`);
+      console.error(e.message);
+
+      d(e.stack);
+    }
+  })));
+  
+  d('Saving out configuration');
+  await compilerHost.saveConfiguration();
+}
+
+const d = require('debug')('electron-compile');
 
 const yargs = require('yargs')
-  .usage('Usage: electron-compile --target [target-path] paths...')
-  .alias('t', 'target')
-  .describe('t', 'The target directory to write a cache directory to')
-  .alias('v', 'verbose')
-  .describe('v', 'Print verbose information')
+  .usage('Usage: electron-compile --appdir [root-app-dir] paths...')
+  .alias('a', 'appdir')
+  .describe('a', 'The top-level application directory (i.e. where your package.json is)')
   .help('h')
   .alias('h', 'help')
   .epilog('Copyright 2015');
@@ -24,29 +67,14 @@ if (!argv._ || argv._.length < 1) {
 }
 
 const sourceDirs = argv._;
-const targetDir = argv.t || './cache';
+const appDir = argv.a || process.env.PWD;
 
-let allSucceeded = true;
-init(targetDir, true);
-
-_.each(sourceDirs, (sourceDir) => {
-  forAllFiles(sourceDir, (f) => {
-    if (argv.v) console.log(`Compiling ${f}...`);
-    try {
-      compile(f);
-    } catch (e) {
-      console.error(`Failed to compile ${f}!`);
-      console.error(e.message);
-
-      if (argv.v) console.error(e.stack);
-      console.error("\n");
-      allSucceeded = false;
-    }
-  });
-});
-
-fs.writeFileSync(
-  path.join(targetDir, 'settings.json'),
-  JSON.stringify(collectCompilerInformation()));
-
-process.exit(allSucceeded ? 0 : -1);
+main(appDir, sourceDirs)
+  .then(() => process.exit(0))
+  .catch((e) => {
+    console.error(e.message || e);
+    d(e.stack);
+    
+    console.error("Compilation failed!\nFor extra information, set the DEBUG environment variable to '*'");
+    process.exit(-1);
+  });  
