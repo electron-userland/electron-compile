@@ -5,6 +5,9 @@ import {CompilerBase} from '../compiler-base';
 const mimeTypes = ['text/less'];
 let lessjs = null;
 
+/**
+ * @access private
+ */ 
 export default class LessCompiler extends CompilerBase {
   constructor() {
     super();

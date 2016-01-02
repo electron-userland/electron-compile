@@ -4,7 +4,10 @@ import {SimpleCompilerBase} from '../compiler-base';
 const inputMimeTypes = ['text/jade'];
 let jade = null;
 
-export default class JadeCompiler extends SimpleCompilerBase {
+/**
+ * @access private
+ */ 
+ export default class JadeCompiler extends SimpleCompilerBase {
   constructor() {
     super();
     this.compilerOptions.sourceMap = true;

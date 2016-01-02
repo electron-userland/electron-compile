@@ -8,6 +8,9 @@ let cheerio = null;
 
 const d = require('debug')('electron-compile:inline-html');
 
+/**
+ * @access private
+ */
 export default class InlineHtmlCompiler extends CompilerBase {
   constructor(compileBlock, compileBlockSync) {
     super();

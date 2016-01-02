@@ -4,7 +4,10 @@ import _ from 'lodash';
 const inputMimeTypes = ['text/typescript'];
 let tss = null;
 
-export default class TypeScriptCompiler extends SimpleCompilerBase {
+/**
+ * @access private
+ */ 
+ export default class TypeScriptCompiler extends SimpleCompilerBase {
   constructor() {
     super();
     this.compilerOptions.sourceMap = true;

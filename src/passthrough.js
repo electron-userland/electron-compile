@@ -4,6 +4,13 @@ import mimeTypes from 'mime-types';
 
 const inputMimeTypes = ['text/plain'];
 
+
+/**
+ * @access private
+ * 
+ * This class is used for binary files and other files that should end up in 
+ * your cache directory, but aren't actually compiled
+ */ 
 export default class PassthroughCompiler extends SimpleCompilerBase {
   constructor() {
     super();
