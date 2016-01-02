@@ -5,20 +5,20 @@ import {pfs} from './promise';
 
 export function forAllFiles(rootDirectory, func, ...args) {
   let rec = async (dir) => {
-    let toAwait = _.map(await pfs.readdir(dir), async (name) => {
+    let entries = await pfs.readdir(dir);
+    
+    for (let name of entries) {
       let fullName = path.join(dir, name);
       let stats = await pfs.stat(fullName);
 
       if (stats.isDirectory()) {
-        return rec(fullName);
+        await rec(fullName);
       }
 
       if (stats.isFile()) {
-        return func(fullName, ...args);
+        await func(fullName, ...args);
       }
-    });
-
-    await Promise.all(toAwait);
+    }
   };
 
   return rec(rootDirectory);
