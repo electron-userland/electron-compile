@@ -201,7 +201,7 @@ export default class FileChangedCache {
   }
 
   static isInNodeModules(filePath) {
-    return !!(filePath.match(/[\\\/]node_modules[\\\/]/i) || filePath.match(/[\\\/]atom\.asar/));
+    return !!(filePath.match(/node_modules[\\\/]/i) || filePath.match(/atom\.asar/));
   }
 
   static hasSourceMap(sourceCode) {
