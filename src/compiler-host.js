@@ -106,6 +106,11 @@ export default class CompilerHost {
   async compileReadOnly(filePath) {
     let hashInfo = await this.fileChangeCache.getHashForPath(filePath);
     let type = mimeTypes.lookup(filePath);
+    
+    // We guarantee that node_modules are always shipped directly
+    if (hashInfo.isInNodeModules) {
+      return hashInfo.sourceCode || await pfs.readFile(filePath, 'utf8');
+    }
 
     // NB: Here, we're basically only using the compiler here to find
     // the appropriate CompileCache
@@ -289,6 +294,11 @@ export default class CompilerHost {
   compileReadOnlySync(filePath) {
     let hashInfo = this.fileChangeCache.getHashForPathSync(filePath);
     let type = mimeTypes.lookup(filePath);
+    
+    // We guarantee that node_modules are always shipped directly
+    if (hashInfo.isInNodeModules) {
+      return hashInfo.sourceCode || fs.readFileSync(filePath, 'utf8');
+    }
 
     // NB: Here, we're basically only using the compiler here to find
     // the appropriate CompileCache
