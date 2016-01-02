@@ -23,6 +23,10 @@ async function main(appDir, sourceDirs) {
   let rootCacheDir = path.join(appDir, '.cache');
   mkdirp.sync(rootCacheDir);
   
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`Using NODE_ENV = ${process.env.NODE_ENV || 'development'}`);
+  }
+  
   d(`main: ${appDir}, ${JSON.stringify(sourceDirs)}`);
   try {
     compilerHost = await createCompilerHostFromProjectRoot(appDir, rootCacheDir);
