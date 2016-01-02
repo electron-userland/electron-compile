@@ -123,8 +123,9 @@ export default class CompilerHost {
     if (!compiler) compiler = this.fallbackCompiler;
 
     let cache = this.cachesForCompilers.get(compiler);
-    let {code, mimeType} = await cache.get(filePath);
+    let {code, binaryData, mimeType} = await cache.get(filePath);
 
+    code = code || binaryData;
     if (!code || !mimeType) {
       throw new Error(`Asked to compile ${filePath} in production, is this file not precompiled?`);
     }
@@ -134,9 +135,14 @@ export default class CompilerHost {
 
   async fullCompile(filePath) {
     d(`Compiling ${filePath}`);
-
+    
     let hashInfo = await this.fileChangeCache.getHashForPath(filePath);
     let type = mimeTypes.lookup(filePath);
+    
+    if (hashInfo.isInNodeModules) {
+      let code = hashInfo.sourceCode || await pfs.readFile(filePath, 'utf8');
+      return { code, mimeType: type };
+    }
 
     let compiler = CompilerHost.shouldPassthrough(hashInfo) ?
       this.getPassthroughCompiler() :
@@ -158,8 +164,17 @@ export default class CompilerHost {
   }
 
   async compileUncached(filePath, hashInfo, compiler) {
-    let ctx = {};
     let inputMimeType = mimeTypes.lookup(filePath);
+    
+    if (hashInfo.isFileBinary) {
+      return {
+        binaryData: hashInfo.binaryData || await pfs.readFile(filePath),
+        mimeType: inputMimeType,
+        dependentFiles: []
+      };
+    }
+    
+    let ctx = {};
     let code = hashInfo.sourceCode || await pfs.readFile(filePath, 'utf8');
 
     if (!(await compiler.shouldCompileFile(code, ctx))) {
@@ -322,8 +337,9 @@ export default class CompilerHost {
     if (!compiler) compiler = this.fallbackCompiler;
 
     let cache = this.cachesForCompilers.get(compiler);
-    let {code, mimeType} = cache.getSync(filePath);
+    let {code, binaryData, mimeType} = cache.getSync(filePath);
 
+    code = code || binaryData;
     if (!code || !mimeType) {
       throw new Error(`Asked to compile ${filePath} in production, is this file not precompiled?`);
     }
@@ -336,6 +352,11 @@ export default class CompilerHost {
 
     let hashInfo = this.fileChangeCache.getHashForPathSync(filePath);
     let type = mimeTypes.lookup(filePath);
+    
+    if (hashInfo.isInNodeModules) {
+      let code = hashInfo.sourceCode || fs.readFileSync(filePath, 'utf8');
+      return { code, mimeType: type };
+    }
 
     let compiler = CompilerHost.shouldPassthrough(hashInfo) ?
       this.getPassthroughCompiler() :
@@ -357,8 +378,17 @@ export default class CompilerHost {
   }
 
   compileUncachedSync(filePath, hashInfo, compiler) {
-    let ctx = {};
     let inputMimeType = mimeTypes.lookup(filePath);
+    
+    if (hashInfo.isFileBinary) {
+      return {
+        binaryData: hashInfo.binaryData || fs.readFileSync(filePath),
+        mimeType: inputMimeType,
+        dependentFiles: []
+      };
+    }
+  
+    let ctx = {};
     let code = hashInfo.sourceCode || fs.readFileSync(filePath, 'utf8');
 
     if (!(compiler.shouldCompileFileSync(code, ctx))) {
