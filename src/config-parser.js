@@ -46,6 +46,7 @@ export function createCompilerHostFromConfiguration(info) {
   let compilers = createCompilers();
   let rootCacheDir = info.rootCacheDir || calculateDefaultCompileCacheDirectory();
   
+  d(`Creating CompilerHost: ${JSON.stringify(info)}, rootCacheDir = ${rootCacheDir}`);
   let fileChangeCache = new FileChangedCache(info.appRoot);
   let ret = new CompilerHost(rootCacheDir, compilers, fileChangeCache, false, compilers['text/plain']);
   
@@ -114,16 +115,19 @@ export async function createCompilerHostFromConfigFile(file, rootCacheDir=null) 
 
 export async function createCompilerHostFromProjectRoot(rootDir, rootCacheDir=null) {
   let compilerc = path.join(rootDir, '.compilerc');
-  if (await pfs.exists(compilerc)) {
-    return createCompilerHostFromConfigFile(compilerc, rootCacheDir);
+  if (await pfs.stat(compilerc)) {
+    d(`Found a .compilerc at ${compilerc}, using it`);
+    return await createCompilerHostFromConfigFile(compilerc, rootCacheDir);
   }
   
   let babelrc = path.join(rootDir, '.babelrc');
-  if (await pfs.exists(compilerc)) {
-    return createCompilerHostFromBabelRc(babelrc, rootCacheDir);
+  if (await pfs.stat(compilerc)) {
+    d(`Found a .babelrc at ${babelrc}, using it`);
+    return await createCompilerHostFromBabelRc(babelrc, rootCacheDir);
   }
     
-  return createCompilerHostFromBabelRc(path.join(rootDir, 'package.json'), rootCacheDir);
+  d(`Using package.json or default parameters at ${rootDir}`);
+  return await createCompilerHostFromBabelRc(path.join(rootDir, 'package.json'), rootCacheDir);
 }
 
 export function createCompilerHostFromBabelRcSync(file, rootCacheDir=null) {
@@ -174,12 +178,12 @@ export function createCompilerHostFromConfigFileSync(file, rootCacheDir=null) {
 
 export function createCompilerHostFromProjectRootSync(rootDir, rootCacheDir=null) {
   let compilerc = path.join(rootDir, '.compilerc');
-  if (fs.existsSync(compilerc)) {
+  if (fs.statSync(compilerc)) {
     return createCompilerHostFromConfigFileSync(compilerc, rootCacheDir);
   }
   
   let babelrc = path.join(rootDir, '.babelrc');
-  if (fs.existsSync(compilerc)) {
+  if (fs.statSync(compilerc)) {
     return createCompilerHostFromBabelRcSync(babelrc, rootCacheDir);
   }
     
