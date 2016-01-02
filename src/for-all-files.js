@@ -1,9 +1,7 @@
 import _ from 'lodash';
 import fs from 'fs';
 import path from 'path';
-import pify from 'pify';
-
-const pfs = pify(fs);
+import {pfs} from './promise';
 
 export function forAllFiles(rootDirectory, func, ...args) {
   let rec = async (dir) => {

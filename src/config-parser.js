@@ -2,14 +2,13 @@ import _ from 'lodash';
 import fs from 'fs';
 import path from 'path';
 import mkdirp from 'mkdirp';
-import pify from 'pify';
+import {pfs} from './promise';
 
 import FileChangedCache from './file-change-cache';
 import CompilerHost from './compiler-host';
 import { initializeProtocolHook } from './protocol-hook';
 import registerRequireExtension from './require-hook';
 
-const pfs = pify(fs);
 const d = require('debug')('electron-compile:config-parser');
 
 // NB: We intentionally delay-load this so that in production, you can create

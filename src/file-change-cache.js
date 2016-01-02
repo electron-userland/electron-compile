@@ -1,11 +1,9 @@
 import fs from 'fs';
 import zlib from 'zlib';
 import crypto from 'crypto';
-import pify from 'pify';
+import {pfs, pzlib} from './promise';
 import _ from 'lodash';
 
-const pfs = pify(fs);
-const pzlib = pify(zlib);
 const d = require('debug')('electron-compile:file-change-cache');
 
 export default class FileChangedCache {

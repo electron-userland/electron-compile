@@ -2,11 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import zlib from 'zlib';
 import createDigestForObject from './digest-for-object';
-import pify from 'pify';
+import {pfs, pzlib} from './promise';
 import mkdirp from 'mkdirp';
 
-const pfs = pify(fs);
-const pzlib = pify(zlib);
 const d = require('debug')('electron-compile:compile-cache');
 
 export default class CompileCache {
