@@ -120,13 +120,13 @@ export async function createCompilerHostFromConfigFile(file, rootCacheDir=null) 
 
 export async function createCompilerHostFromProjectRoot(rootDir, rootCacheDir=null) {
   let compilerc = path.join(rootDir, '.compilerc');
-  if (await pfs.stat(compilerc)) {
+  if (fs.statSyncNoException(compilerc)) {
     d(`Found a .compilerc at ${compilerc}, using it`);
     return await createCompilerHostFromConfigFile(compilerc, rootCacheDir);
   }
   
   let babelrc = path.join(rootDir, '.babelrc');
-  if (await pfs.stat(compilerc)) {
+  if (fs.statSyncNoException(compilerc)) {
     d(`Found a .babelrc at ${babelrc}, using it`);
     return await createCompilerHostFromBabelRc(babelrc, rootCacheDir);
   }
@@ -183,12 +183,12 @@ export function createCompilerHostFromConfigFileSync(file, rootCacheDir=null) {
 
 export function createCompilerHostFromProjectRootSync(rootDir, rootCacheDir=null) {
   let compilerc = path.join(rootDir, '.compilerc');
-  if (fs.statSync(compilerc)) {
+  if (fs.statSyncNoException(compilerc)) {
     return createCompilerHostFromConfigFileSync(compilerc, rootCacheDir);
   }
   
   let babelrc = path.join(rootDir, '.babelrc');
-  if (fs.statSync(compilerc)) {
+  if (fs.statSyncNoException(compilerc)) {
     return createCompilerHostFromBabelRcSync(babelrc, rootCacheDir);
   }
     
