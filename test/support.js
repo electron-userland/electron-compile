@@ -1,12 +1,14 @@
+import 'babel-polyfill';
+
 import _ from 'lodash';
-import allCompilerClasses from 'electron-compilers';
+
+const allCompilerClasses = require('electron-compilers');
 
 let chai = require("chai");
 let chaiAsPromised = require("chai-as-promised");
 
 chai.should();
 chai.use(chaiAsPromised);
-chai.use(require('chai-spies'));
 
 global.chai = chai;
 global.chaiAsPromised = chaiAsPromised;
@@ -14,10 +16,12 @@ global.expect = chai.expect;
 global.AssertionError = chai.AssertionError;
 global.Assertion = chai.Assertion;
 global.assert = chai.assert;
-global.spy = chai.spy;
 
-global.importCompilerByExtension = (ext) => {
-  return _.find(allCompilerClasses, (Klass) => {
-    return _.any(Klass.getExtensions(), (x) => ext === x);
-  });
-};
+require('../lib/rig-mime-types').init();
+
+global.compilersByMimeType = _.reduce(allCompilerClasses, (acc,x) => {
+  acc = acc || {};
+  
+  for (let type of x.getInputMimeTypes()) { acc[type] = x; }
+  return acc;
+}, {});

@@ -1,0 +1,12 @@
+{
+  "env": {
+    "production": {
+      "presets": ["stage-0", "es2015", "react"],
+      "sourceMaps": false
+    },
+    "development": {
+      "presets": ["stage-0", "es2015", "react"],
+      "sourceMaps": "inline"
+    }
+  }
+}
