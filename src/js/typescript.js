@@ -1,39 +1,37 @@
+import {SimpleCompilerBase} from '../compiler-base';
 import _ from 'lodash';
-import CompileCache from 'electron-compile-cache';
 
+const inputMimeTypes = ['text/typescript'];
 let tss = null;
-const extensions = ['ts'];
 
-export default class TypeScriptCompiler extends CompileCache {
-  constructor(options={}) {
+export default class TypeScriptCompiler extends SimpleCompilerBase {
+  constructor() {
     super();
+    this.compilerOptions.sourceMap = true;
 
-    this.compilerInformation = _.extend({}, {
-      extensions: extensions,
-      target: 1,
+    this.compilerOptions = {
       module: 'commonjs',
       sourceMap: true
-    }, options);
-  }
-  
-  static getExtensions() {
-    return extensions;
+    };
   }
 
-  getCompilerInformation() {
-    return this.compilerInformation;
+  static getInputMimeTypes() {
+    return inputMimeTypes;
   }
 
-  compile(sourceCode, filePath) {
-    return tss.compile(sourceCode, filePath);
+  compileSync(sourceCode, filePath) {
+    tss = tss || require('typescript-simple');
+    
+    // NB: Work around TypeScriptSimple modifying the options object
+    let compiler = new tss.TypeScriptSimple(_.assign({}, this.compilerOptions));
+
+    return {
+      code: compiler.compile(sourceCode, filePath),
+      mimeType: 'application/javascript'
+    };
   }
 
-  getMimeType() { return 'text/javascript'; }
-
-  initializeCompiler() {
-    const {TypeScriptSimple} = require('typescript-simple');
-    tss = new TypeScriptSimple(this.compilerInformation, false);
-
+  getCompilerVersion() {
     return require('typescript-simple/package.json').version;
   }
 }

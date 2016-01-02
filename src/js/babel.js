@@ -1,73 +1,63 @@
 import _ from 'lodash';
-import CompileCache from 'electron-compile-cache';
-import fs from 'fs';
+import {CompilerBase} from '../compiler-base';
 
+const mimeTypes = ['text/jsx', 'application/javascript'];
 let babel = null;
 
-const invalidOpts = ['extension', 'extensions', 'version'];
-const extensions = ['js', 'jsx'];
-
-export default class BabelCompiler extends CompileCache {
-  constructor(options={}) {
+export default class BabelCompiler extends CompilerBase {
+  constructor() {
     super();
-    
-    this.compilerInformation = _.extend({}, {
-      extensions: extensions,
-      sourceMaps: 'inline',
-      blacklist: [
-        'useStrict'
-      ],
-      stage: 1,
-      optional: [
-        // Target a version of the regenerator runtime that
-        // supports yield so the transpiled code is cleaner/smaller.
-        'asyncToGenerator'
-      ],
-    }, options);
-  }
-  
-  static getExtensions() {
-    return extensions;
   }
 
-  getCompilerInformation() {
-    return this.compilerInformation;
+  static getInputMimeTypes() {
+    return mimeTypes;
   }
 
-  compile(sourceCode, filePath) {
-    this.babelCompilerOpts = this.babelCompilerOpts || _.omit(this.compilerInformation, invalidOpts);
-    let opts = _.extend({}, this.babelCompilerOpts, {
+  async shouldCompileFile(fileName, compilerContext) {
+    return true;
+  }
+
+  async determineDependentFiles(sourceCode, filePath, compilerContext) {
+    return [];
+  }
+
+  async compile(sourceCode, filePath, compilerContext) {
+    babel = babel || require('babel-core');
+
+    let opts = _.extend({}, this.compilerOptions, {
       filename: filePath,
       ast: false
     });
 
-    return babel.transform(sourceCode, opts).code;
+    return {
+      code: babel.transform(sourceCode, opts).code,
+      mimeType: 'application/javascript'
+    };
   }
 
-  getMimeType() { return 'text/javascript'; }
-
-  shouldCompileFile(filePath, sourceCode) {
-    let ret = super.shouldCompileFile(filePath);
-    if (!ret) return false;
-    
-    // Read the first 4k of the file
-    if (!sourceCode) {
-      let fd = fs.openSync(filePath, 'r');
-      
-      try {
-        let buf = new Buffer(4*1024);
-        fs.readSync(fd, buf, 0, 4*1024, 0);
-        sourceCode = buf.toString('utf8');
-      } finally {
-        fs.closeSync(fd);
-      }
-    }
-
-    return ret && !(/^("use nobabel"|'use nobabel')/.test(sourceCode));
+  shouldCompileFileSync(fileName, compilerContext) {
+    return true;
   }
 
-  initializeCompiler() {
+  determineDependentFilesSync(sourceCode, filePath, compilerContext) {
+    return [];
+  }
+
+  compileSync(sourceCode, filePath, compilerContext) {
     babel = babel || require('babel-core');
-    return babel.version;
+
+    let opts = _.extend({}, this.compilerOptions, {
+      filename: filePath,
+      ast: false
+    });
+
+    return {
+      code: babel.transform(sourceCode, opts).code,
+      mimeType: 'application/javascript'
+    };
+  }
+
+  getCompilerVersion() {
+    return require('babel-core/package.json').version;
   }
 }

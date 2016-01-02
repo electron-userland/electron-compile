@@ -1,46 +1,76 @@
-'use babel';
-
 import _ from 'lodash';
 import path from 'path';
-import CompileCache from 'electron-compile-cache';
+import {CompilerBase} from '../compiler-base';
 
+const mimeTypes = ['text/less'];
 let lessjs = null;
-const extensions = ['less'];
 
-export default class LessCompiler extends CompileCache {
-  constructor(options={}) {
+export default class LessCompiler extends CompilerBase {
+  constructor() {
     super();
 
-    const defaultOptions = {
-      compress: false,
-      sourcemap: { sourcemapfileinline: true }
+    this.compilerOptions = {
+      sourceMap: { sourceMapFileInline: true }
     };
 
-    const requiredOptions = {
-      extensions: extensions,
-      fileAsync: false, async: false, syncImport: true
-    };
-
-    this.compilerInformation = _.extend(defaultOptions, options, requiredOptions);
-  }
-  
-  static getExtensions() {
-    return extensions;
+    this.seenFilePaths = {};
   }
 
-  getCompilerInformation() {
-    return this.compilerInformation;
+  static getInputMimeTypes() {
+    return mimeTypes;
   }
 
-  compile(sourceCode, filePath) {
-    let source = '';
-    let error = null;
+  async shouldCompileFile(fileName, compilerContext) {
+    return true;
+  }
+
+  async determineDependentFiles(sourceCode, filePath, compilerContext) {
+    return [];
+  }
+
+  async compile(sourceCode, filePath, compilerContext) {
+    lessjs = lessjs || require('less');
+
     let paths = Object.keys(this.seenFilePaths);
     paths.unshift('.');
 
-    let opts = _.extend({}, this.compilerInformation, {
+    this.seenFilePaths[path.dirname(filePath)] = true;
+
+    let opts = _.extend({}, this.compilerOptions, {
       paths: paths,
       filename: path.basename(filePath)
+    });
+
+    let result = await lessjs.render(sourceCode, opts);
+
+    return {
+      code: result.css,
+      mimeType: 'text/css'
+    };
+  }
+
+  shouldCompileFileSync(fileName, compilerContext) {
+    return true;
+  }
+
+  determineDependentFilesSync(sourceCode, filePath, compilerContext) {
+    return [];
+  }
+
+  compileSync(sourceCode, filePath, compilerContext) {
+    lessjs = lessjs || require('less');
+
+    let source = '';
+    let error = null;
+
+    let paths = Object.keys(this.seenFilePaths);
+    paths.unshift('.');
+    this.seenFilePaths[path.dirname(filePath)] = true;
+
+    let opts = _.extend({}, this.compilerOptions, {
+      paths: paths,
+      filename: path.basename(filePath),
+      fileAsync: false, async: false, syncImport: true
     });
 
     lessjs.render(sourceCode, opts, (err, out) => {
@@ -56,15 +86,13 @@ export default class LessCompiler extends CompileCache {
       throw error;
     }
 
-    return source;
+    return {
+      code: source,
+      mimeType: 'text/css'
+    };
   }
 
-  getMimeType() { return 'text/css'; }
-
-  register() {}
-
-  initializeCompiler() {
-    lessjs = require('less');
+  getCompilerVersion() {
     return require('less/package.json').version;
   }
 }
