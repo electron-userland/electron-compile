@@ -61,6 +61,9 @@ let rendererInitialized = false;
 export function initializeRendererProcess(readOnlyMode) {
   if (rendererInitialized) return;
   
+  // NB: If we don't do this, we'll get a renderer crash if you enable debug
+  require('debug/browser');
+  
   let rootCacheDir = require('remote').getGlobal(magicGlobalForRootCacheDir);
   let compilerHost = null;
   
