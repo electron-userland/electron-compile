@@ -4,6 +4,7 @@
   "description": "Compiler implementations for electron-compile",
   "main": "lib/main.js",
   "scripts": {
+    "doc": "esdoc -c ./esdoc.json",
     "compile": "git clean -xdf lib && babel -d lib/ src/",
     "prepublish": "npm run compile"
   },
@@ -41,6 +42,8 @@
     "babel-preset-es2015": "^6.1.2",
     "babel-preset-react": "^6.1.2",
     "babel-preset-stage-0": "^6.1.2",
+    "esdoc": "^0.4.3",
+    "esdoc-es7-plugin": "0.0.3",
     "eslint": "^1.5.1"
   }
 }
