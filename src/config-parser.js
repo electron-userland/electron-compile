@@ -28,11 +28,17 @@ export function initializeGlobalHooks(compilerHost) {
   }
 }
 
-export function init(appRoot, mainModule, productionMode = false) {
+export function init(appRoot, mainModule, productionMode = null) {
   let compilerHost = null;
+  let cacheDir = path.join(appRoot, '.cache');
+  
+  if (productionMode === null) {
+    productionMode = !!fs.statSyncNoException(cacheDir);
+  }
+  
   if (productionMode) {
     // In read-only mode, we'll assume that everything is in `appRoot/.cache`
-    compilerHost = CompilerHost.createReadonlyFromConfigurationSync(path.join(appRoot, '.cache'));
+    compilerHost = CompilerHost.createReadonlyFromConfigurationSync(cacheDir);
   } else {
     compilerHost = createCompilerHostFromProjectRootSync(appRoot);
   }
