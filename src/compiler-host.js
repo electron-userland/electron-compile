@@ -19,7 +19,8 @@ const finalForms = {
   'text/javascript': true,
   'application/javascript': true,
   'text/html': true,
-  'text/css': true
+  'text/css': true,
+  'image/svg+xml': true
 };
 
 export default class CompilerHost {
