@@ -1,11 +1,9 @@
 import fs from 'fs';
 import zlib from 'zlib';
 import crypto from 'crypto';
-import pify from 'pify';
+import {pfs, pzlib} from './promise';
 import _ from 'lodash';
 
-const pfs = pify(fs);
-const pzlib = pify(zlib);
 const d = require('debug')('electron-compile:file-change-cache');
 
 export default class FileChangedCache {
@@ -18,6 +16,7 @@ export default class FileChangedCache {
   static loadFromData(data, failOnCacheMiss=true) {
     let ret = new FileChangedCache(data.appRoot, failOnCacheMiss);
     ret.changeCache = data.changeCache;
+    ret.originalAppRoot = data.appRoot;
 
     return ret;
   }
@@ -30,7 +29,17 @@ export default class FileChangedCache {
   }
   
   async getHashForPath(absoluteFilePath) {
-    let cacheKey = this.appRoot ? absoluteFilePath.replace(this.appRoot, '') : absoluteFilePath;
+    let cacheKey = absoluteFilePath;
+    if (this.appRoot) {
+      cacheKey = absoluteFilePath.replace(this.appRoot, '');
+    } 
+    
+    // NB: We do this because x-require will include an absolute path from the 
+    // original built app and we need to still grok it
+    if (this.originalAppRoot) {
+      cacheKey = cacheKey.replace(this.originalAppRoot, '');
+    }
+    
     let cacheEntry = this.changeCache[cacheKey];
     
     if (this.failOnCacheMiss) {

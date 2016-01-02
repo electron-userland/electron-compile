@@ -1,9 +1,9 @@
 import _ from 'lodash';
 import mimeTypes from 'mime-types';
 import fs from 'fs';
-import path from 'path';
 import zlib from 'zlib';
-import pify from 'pify';
+import path from 'path';
+import {pfs, pzlib} from './promise';
 
 import {forAllFiles, forAllFilesSync} from './for-all-files';
 import CompileCache from './compile-cache';
@@ -11,15 +11,14 @@ import FileChangedCache from './file-change-cache';
 import ReadOnlyCompiler from './read-only-compiler';
 
 const d = require('debug')('electron-compile:compiler-host');
-const pfs = pify(fs);
-const pzlib = pify(zlib);
 
 // This isn't even my
 const finalForms = {
   'text/javascript': true,
   'application/javascript': true,
   'text/html': true,
-  'text/css': true
+  'text/css': true,
+  'image/svg+xml': true
 };
 
 export default class CompilerHost {
@@ -104,13 +103,16 @@ export default class CompilerHost {
   }
   
   async compileReadOnly(filePath) {
-    let hashInfo = await this.fileChangeCache.getHashForPath(filePath);
-    let type = mimeTypes.lookup(filePath);
-    
     // We guarantee that node_modules are always shipped directly
-    if (hashInfo.isInNodeModules) {
-      return hashInfo.sourceCode || await pfs.readFile(filePath, 'utf8');
+    let type = mimeTypes.lookup(filePath);
+    if (FileChangedCache.isInNodeModules(filePath)) {
+      return { 
+        mimeType: type || 'application/javascript',
+        code: await pfs.readFile(filePath, 'utf8') 
+      };    
     }
+    
+    let hashInfo = await this.fileChangeCache.getHashForPath(filePath);
 
     // NB: Here, we're basically only using the compiler here to find
     // the appropriate CompileCache
@@ -292,12 +294,23 @@ export default class CompilerHost {
   }
   
   compileReadOnlySync(filePath) {
-    let hashInfo = this.fileChangeCache.getHashForPathSync(filePath);
+    // We guarantee that node_modules are always shipped directly
     let type = mimeTypes.lookup(filePath);
+    if (FileChangedCache.isInNodeModules(filePath)) {
+      return { 
+        mimeType: type || 'application/javascript',
+        code: fs.readFileSync(filePath, 'utf8') 
+      };    
+    }  
+
+    let hashInfo = this.fileChangeCache.getHashForPathSync(filePath);
     
     // We guarantee that node_modules are always shipped directly
     if (hashInfo.isInNodeModules) {
-      return hashInfo.sourceCode || fs.readFileSync(filePath, 'utf8');
+      return { 
+        mimeType: type, 
+        code: hashInfo.sourceCode || fs.readFileSync(filePath, 'utf8') 
+      };    
     }
 
     // NB: Here, we're basically only using the compiler here to find
