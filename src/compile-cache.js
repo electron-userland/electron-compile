@@ -47,10 +47,11 @@ export default class CompileCache {
     let binaryData = null;
     let dependentFiles = null;
     
+    let cacheFile = null;
     try {
-      let cacheFile = path.join(this.getCachePath(), hashInfo.hash);
-      
+      cacheFile = path.join(this.getCachePath(), hashInfo.hash);
       let result = null;
+
       if (hashInfo.isFileBinary) {
         d("File is binary, reading out info");
         let info = JSON.parse(await pfs.readFile(cacheFile + '.info'));
@@ -72,7 +73,7 @@ export default class CompileCache {
         dependentFiles = result.dependentFiles;
       }
     } catch (e) {
-      d(`Failed to read cache for ${filePath}: ${e.message}`);
+      d(`Failed to read cache for ${filePath}, looked in ${cacheFile}: ${e.message}`);
     }
     
     return { hashInfo, code, mimeType, binaryData, dependentFiles };
@@ -99,7 +100,7 @@ export default class CompileCache {
     
     let result = await fetcher(filePath, cacheResult.hashInfo) || { hashInfo: cacheResult.hashInfo };
     
-    if (result.mimeType && !CompileCache.shouldPassthrough(cacheResult.hashInfo)) {
+    if (result.mimeType && !cacheResult.hashInfo.isInNodeModules) {
       d(`Cache miss: saving out info for ${filePath}`);
       await this.save(cacheResult.hashInfo, result.code || result.binaryData, result.mimeType, result.dependentFiles);
     }
@@ -169,7 +170,7 @@ export default class CompileCache {
     
     let result = fetcherSync(filePath, cacheResult.hashInfo) || { hashInfo: cacheResult.hashInfo };
     
-    if (result.mimeType && !CompileCache.shouldPassthrough(cacheResult.hashInfo)) {
+    if (result.mimeType && !cacheResult.hashInfo.isInNodeModules) {
       d(`Cache miss: saving out info for ${filePath}`);
       this.saveSync(cacheResult.hashInfo, result.code || result.binaryData, result.mimeType, result.dependentFiles);
     }
