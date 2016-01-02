@@ -12,7 +12,6 @@ For JavaScript:
 For CSS:
 
 * LESS
-* Sass/SCSS
 
 ### Why is this a separate repo?!
 
