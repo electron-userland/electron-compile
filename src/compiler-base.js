@@ -1,5 +1,3 @@
-
-
 /**
  * This class is the base interface for compilers that are used by 
  * electron-compile. If your compiler library only supports a 
@@ -11,7 +9,6 @@ export class CompilerBase {
   constructor() {
     this.compilerOptions = {};
   }
-  
   
   /**  
    * This method describes the MIME types that your compiler supports as input. 
@@ -32,7 +29,7 @@ export class CompilerBase {
    * Determines whether a file should be compiled
    *    
    * @param  {string} fileName        The full path of a file to compile.
-   * @param  {Object} compilerContext An object that compilers can add extra
+   * @param  {object} compilerContext An object that compilers can add extra
                                     information to as part of a job - the caller
                                     won't do anything with this.
    * @return {Promise<bool>}        True if you are able to compile this file.
@@ -52,7 +49,7 @@ export class CompilerBase {
    *    
    * @param  {string} sourceCode    The contents of filePath
    * @param  {string} fileName        The full path of a file to compile.
-   * @param  {Object} compilerContext An object that compilers can add extra
+   * @param  {object} compilerContext An object that compilers can add extra
                                     information to as part of a job - the caller
                                     won't do anything with this.
    * @return {Promise<string[]>}    An array of dependent file paths, or an empty
@@ -70,10 +67,10 @@ export class CompilerBase {
    *    
    * @param  {string} sourceCode    The contents of filePath
    * @param  {string} fileName      The full path of a file to compile.
-   * @param  {Object} compilerContext An object that compilers can add extra
+   * @param  {object} compilerContext An object that compilers can add extra
                                     information to as part of a job - the caller
                                     won't do anything with this.
-   * @return {Promise<Object>}      An object representing the compiled result
+   * @return {Promise<object>}      An object representing the compiled result
    * @property {string} code        The compiled code
    * @property {string} mimeType    The MIME type of the compiled result, which 
    *                                should exist in the mime-types database.
@@ -88,11 +85,11 @@ export class CompilerBase {
     throw new Error("Implement me!");
   }
 
-  determineDependentFilesSync(sourceCode, filePath, compilerContext) {
+  determineDependentFilesSync(sourceCode, fileName, compilerContext) {
     throw new Error("Implement me!");
   }
 
-  compileSync(sourceCode, filePath, compilerContext) {
+  compileSync(sourceCode, fileName, compilerContext) {
     throw new Error("Implement me!");
   }
 
@@ -110,6 +107,17 @@ export class CompilerBase {
   }
 }
 
+
+/**
+ * This class implements all of the async methods of CompilerBase by just 
+ * calling the sync version. Use it to save some time when implementing 
+ * simple compilers.
+ *
+ * To use it, implement the compile method, the getCompilerVersion method, 
+ * and the getInputMimeTypes static method. 
+ * 
+ * @abstract
+ */ 
 export class SimpleCompilerBase extends CompilerBase {
   constructor() {
     super();
