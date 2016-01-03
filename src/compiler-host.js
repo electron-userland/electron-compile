@@ -63,7 +63,7 @@ export default class CompilerHost {
       compilersByMimeType[x].compilerOptions = cur.compilerOptions;
     });
     
-    return new CompilerHost(rootCacheDir, compilersByMimeType, fileChangeCache, true, fallbackCompiler);
+    return new CompilerHost(rootCacheDir, compilersByMimeType, fileChangeCache, false, fallbackCompiler);
   }
   
   async saveConfiguration() {
@@ -279,7 +279,7 @@ export default class CompilerHost {
       compilersByMimeType[x].compilerOptions = cur.compilerOptions;
     });
     
-    return new CompilerHost(rootCacheDir, compilersByMimeType, fileChangeCache, true, fallbackCompiler);
+    return new CompilerHost(rootCacheDir, compilersByMimeType, fileChangeCache, false, fallbackCompiler);
   }
    
   saveConfigurationSync() {
