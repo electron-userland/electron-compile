@@ -101,6 +101,8 @@ export class CompilerBase {
    * @return {string}  A version number. Note that this string isn't 
    *                   parsed in any way, just compared to the previous
    *                   one for equality.
+   *
+   * @abstract
    */   
   getCompilerVersion() {
     throw new Error("Implement me!");
