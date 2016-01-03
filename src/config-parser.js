@@ -21,7 +21,7 @@ function statSyncNoException(fsPath) {
   }
   
   try {
-    return fs.stat(fsPath);
+    return fs.statSync(fsPath);
   } catch (e) {
     return null;
   }
@@ -138,7 +138,7 @@ export async function createCompilerHostFromProjectRoot(rootDir, rootCacheDir=nu
   }
   
   let babelrc = path.join(rootDir, '.babelrc');
-  if (statSyncNoException(compilerc)) {
+  if (statSyncNoException(babelrc)) {
     d(`Found a .babelrc at ${babelrc}, using it`);
     return await createCompilerHostFromBabelRc(babelrc, rootCacheDir);
   }
@@ -201,7 +201,7 @@ export function createCompilerHostFromProjectRootSync(rootDir, rootCacheDir=null
   }
   
   let babelrc = path.join(rootDir, '.babelrc');
-  if (statSyncNoException(compilerc)) {
+  if (statSyncNoException(babelrc)) {
     d(`Found a .babelrc at ${babelrc}, using it`);
     return createCompilerHostFromBabelRcSync(babelrc, rootCacheDir);
   }
