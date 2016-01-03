@@ -15,6 +15,18 @@ const d = require('debug')('electron-compile:config-parser');
 // cache-only versions of these compilers
 let allCompilerClasses = null;
 
+function statSyncNoException(fsPath) {
+  if ('statSyncNoException' in fs) {
+    return fs.statSyncNoException(fsPath);
+  }
+  
+  try {
+    return fs.stat(fsPath);
+  } catch (e) {
+    return null;
+  }
+}
+
 export function initializeGlobalHooks(compilerHost) {
   const { app } = require('electron');
   
@@ -33,7 +45,7 @@ export function init(appRoot, mainModule, productionMode = null) {
   let cacheDir = path.join(appRoot, '.cache');
   
   if (productionMode === null) {
-    productionMode = !!fs.statSyncNoException(cacheDir);
+    productionMode = !!statSyncNoException(cacheDir);
   }
   
   if (productionMode) {
@@ -120,13 +132,13 @@ export async function createCompilerHostFromConfigFile(file, rootCacheDir=null) 
 
 export async function createCompilerHostFromProjectRoot(rootDir, rootCacheDir=null) {
   let compilerc = path.join(rootDir, '.compilerc');
-  if (fs.statSyncNoException(compilerc)) {
+  if (statSyncNoException(compilerc)) {
     d(`Found a .compilerc at ${compilerc}, using it`);
     return await createCompilerHostFromConfigFile(compilerc, rootCacheDir);
   }
   
   let babelrc = path.join(rootDir, '.babelrc');
-  if (fs.statSyncNoException(compilerc)) {
+  if (statSyncNoException(compilerc)) {
     d(`Found a .babelrc at ${babelrc}, using it`);
     return await createCompilerHostFromBabelRc(babelrc, rootCacheDir);
   }
@@ -183,15 +195,18 @@ export function createCompilerHostFromConfigFileSync(file, rootCacheDir=null) {
 
 export function createCompilerHostFromProjectRootSync(rootDir, rootCacheDir=null) {
   let compilerc = path.join(rootDir, '.compilerc');
-  if (fs.statSyncNoException(compilerc)) {
+  if (statSyncNoException(compilerc)) {
+    d(`Found a .compilerc at ${compilerc}, using it`);
     return createCompilerHostFromConfigFileSync(compilerc, rootCacheDir);
   }
   
   let babelrc = path.join(rootDir, '.babelrc');
-  if (fs.statSyncNoException(compilerc)) {
+  if (statSyncNoException(compilerc)) {
+    d(`Found a .babelrc at ${babelrc}, using it`);
     return createCompilerHostFromBabelRcSync(babelrc, rootCacheDir);
   }
     
+  d(`Using package.json or default parameters at ${rootDir}`);
   return createCompilerHostFromBabelRcSync(path.join(rootDir, 'package.json'), rootCacheDir);
 }
 
