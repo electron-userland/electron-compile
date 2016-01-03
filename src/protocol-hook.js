@@ -1,4 +1,4 @@
-import 'babel-polyfill';
+import './babel-maybefill';
 import url from 'url';
 import fs from 'fs';
 import mime from 'mime-types';

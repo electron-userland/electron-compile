@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import 'babel-polyfill';
+import './babel-maybefill';
 import path from 'path';
 import mkdirp from 'mkdirp';
 import _ from 'lodash';
