@@ -14,7 +14,8 @@
   "includeSource": true,
   "title": "electron-compilers",
   "plugins": [
-    {"name": "esdoc-es7-plugin"}
+    {"name": "esdoc-es7-plugin"},
+    {"name": "esdoc-plugin-async-to-sync"}
   ],
   "lint": true
 }
