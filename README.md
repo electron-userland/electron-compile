@@ -1,5 +1,7 @@
 ## electron-compile
 
+![](http://electronjs.github.io/electron-compile/docs/badge.svg)
+
 electron-compile compiles JS and CSS on the fly with a single call in your app's 'ready' function.
 
 For JavaScript:
@@ -106,4 +108,6 @@ Run `electron-compile` on all of your application assets, even if they aren't st
 electron-compile --appDir . ./src ./static
 ```
 
-Compilation also has its own API, check out the [documentation](LINK HERE) for more information.
+### But I use Grunt / Gulp / I want to do Something Interesting
+
+Compilation also has its own API, check out the [documentation](http://electronjs.github.io/electron-compile/docs/badge.svg) for more information.
