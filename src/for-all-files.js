@@ -3,6 +3,12 @@ import fs from 'fs';
 import path from 'path';
 import {pfs} from './promise';
 
+
+/**
+ * Invokes a method on all files in a directory recursively.
+ * 
+ * @private
+ */ 
 export function forAllFiles(rootDirectory, func, ...args) {
   let rec = async (dir) => {
     let entries = await pfs.readdir(dir);
