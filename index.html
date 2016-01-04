@@ -34,6 +34,8 @@
         <h2>
 <a id="electron-compile" class="anchor" href="#electron-compile" aria-hidden="true"><span class="octicon octicon-link"></span></a>electron-compile</h2>
 
+<p><img src="https://img.shields.io/npm/dm/electron-compile.svg" alt=""> <a href="http://electronjs.github.io/electron-compile/docs"><img src="http://electronjs.github.io/electron-compile/docs/badge.svg" alt=""></a></p>
+
 <p>electron-compile compiles JS and CSS on the fly with a single call in your app's 'ready' function.</p>
 
 <p>For JavaScript:</p>
@@ -98,9 +100,20 @@ npm install --save-dev electron-compilers</pre></div>
 <div class="highlight highlight-source-js"><pre><span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>./mylib<span class="pl-pds">'</span></span>)   <span class="pl-c">// mylib.ts</span></pre></div>
 
 <h3>
+<a id="something-isnt-working--im-getting-weird-errors" class="anchor" href="#something-isnt-working--im-getting-weird-errors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Something isn't working / I'm getting weird errors</h3>
+
+<p>electron-compile uses the <a href="https://github.com/visionmedia/debug">debug module</a>, set the DEBUG environment variable to debug what electron-compile is doing:</p>
+
+<div class="highlight highlight-source-shell"><pre><span class="pl-c">## Debug just electron-compile</span>
+DEBUG=electron-compile:<span class="pl-k">*</span> npm start
+
+<span class="pl-c">## Grab everything except for Babel which is very noisy</span>
+DEBUG=<span class="pl-k">*</span>,-babel npm start</pre></div>
+
+<h3>
 <a id="how-do-i-set-up-babel--less--whatever-the-way-i-want" class="anchor" href="#how-do-i-set-up-babel--less--whatever-the-way-i-want" aria-hidden="true"><span class="octicon octicon-link"></span></a>How do I set up (Babel / LESS / whatever) the way I want?</h3>
 
-<p>If you've got a .babelrc and that's all you want to customize, you can simply use it directly. electron-compile will respect it, even the environment-specific settings. If you want to customize other compilers, use a <code>.compilerc</code> file. Here's an example:</p>
+<p>If you've got a <code>.babelrc</code> and that's all you want to customize, you can simply use it directly. electron-compile will respect it, even the environment-specific settings. If you want to customize other compilers, use a <code>.compilerc</code> file. Here's an example:</p>
 
 <div class="highlight highlight-source-js"><pre>{
   <span class="pl-s"><span class="pl-pds">"</span>application/javascript<span class="pl-pds">"</span></span><span class="pl-k">:</span> {
@@ -109,6 +122,28 @@ npm install --save-dev electron-compilers</pre></div>
   },
   <span class="pl-s"><span class="pl-pds">"</span>text/less<span class="pl-pds">"</span></span><span class="pl-k">:</span> {
     <span class="pl-s"><span class="pl-pds">"</span>dumpLineNumbers<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>comments<span class="pl-pds">"</span></span>
+  }
+}</pre></div>
+
+<p><code>.compilerc</code> also accepts environments with the same syntax as <code>.babelrc</code>:</p>
+
+<div class="highlight highlight-source-js"><pre>{
+  <span class="pl-s"><span class="pl-pds">"</span>env<span class="pl-pds">"</span></span><span class="pl-k">:</span> {
+    <span class="pl-s"><span class="pl-pds">"</span>development<span class="pl-pds">"</span></span><span class="pl-k">:</span> {
+      <span class="pl-s"><span class="pl-pds">"</span>application/javascript<span class="pl-pds">"</span></span><span class="pl-k">:</span> {
+        <span class="pl-s"><span class="pl-pds">"</span>presets<span class="pl-pds">"</span></span><span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">"</span>stage-0<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>es2015<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>react<span class="pl-pds">"</span></span>],
+        <span class="pl-s"><span class="pl-pds">"</span>sourceMaps<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>inline<span class="pl-pds">"</span></span>
+      },
+      <span class="pl-s"><span class="pl-pds">"</span>text/less<span class="pl-pds">"</span></span><span class="pl-k">:</span> {
+        <span class="pl-s"><span class="pl-pds">"</span>dumpLineNumbers<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>comments<span class="pl-pds">"</span></span>
+      }
+    },
+    <span class="pl-s"><span class="pl-pds">"</span>production<span class="pl-pds">"</span></span><span class="pl-k">:</span> {
+      <span class="pl-s"><span class="pl-pds">"</span>application/javascript<span class="pl-pds">"</span></span><span class="pl-k">:</span> {
+        <span class="pl-s"><span class="pl-pds">"</span>presets<span class="pl-pds">"</span></span><span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">"</span>stage-0<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>es2015<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>react<span class="pl-pds">"</span></span>]
+        <span class="pl-s"><span class="pl-pds">"</span>sourceMaps<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>none<span class="pl-pds">"</span></span>
+      }
+    }
   }
 }</pre></div>
 
@@ -141,9 +176,12 @@ Options:
 
 <p>Run <code>electron-compile</code> on all of your application assets, even if they aren't strictly code (i.e. your static assets like PNGs). electron-compile will recursively walk the given directories.</p>
 
-<div class="highlight highlight-source-shell"><pre>electron-compile --appDir <span class="pl-c1">.</span> ./src ./static</pre></div>
+<div class="highlight highlight-source-shell"><pre>electron-compile --appDir /path/to/my/app ./src ./static</pre></div>
 
-<p>Compilation also has its own API, check out the <a href="LINK%20HERE">documentation</a> for more information.</p>
+<h3>
+<a id="but-i-use-grunt--gulp--i-want-to-do-something-interesting" class="anchor" href="#but-i-use-grunt--gulp--i-want-to-do-something-interesting" aria-hidden="true"><span class="octicon octicon-link"></span></a>But I use Grunt / Gulp / I want to do Something Interesting</h3>
+
+<p>Compilation also has its own API, check out the <a href="http://electronjs.github.io/electron-compile/docs/badge.svg">documentation</a> for more information.</p>
       </section>
     </div>
 
