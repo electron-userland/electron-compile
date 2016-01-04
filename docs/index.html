@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl">
+  <title data-ice="title">electron-compilers API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+  <script src="script/manual.js"></script>
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  <a href="test.html" data-ice="testLink">Test</a>
+  <a data-ice="repoURL" href="https://github.com/paulcbetts/electron-compile" class="repo-url-github">Repository</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/compile-cache.js~CompileCache.html">CompileCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/compiler-host.js~CompilerHost.html">CompilerHost</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/file-change-cache.js~FileChangedCache.html">FileChangedCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/read-only-compiler.js~ReadOnlyCompiler.html">ReadOnlyCompiler</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-calculateDefaultCompileCacheDirectory">calculateDefaultCompileCacheDirectory</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromBabelRc">createCompilerHostFromBabelRc</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromBabelRcSync">createCompilerHostFromBabelRcSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromConfigFile">createCompilerHostFromConfigFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromConfigFileSync">createCompilerHostFromConfigFileSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromProjectRoot">createCompilerHostFromProjectRoot</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromProjectRootSync">createCompilerHostFromProjectRootSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilers">createCompilers</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getDefaultConfiguration">getDefaultConfiguration</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-init">init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-initializeGlobalHooks">initializeGlobalHooks</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-forAllFilesSync">forAllFilesSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-initializeProtocolHook">initializeProtocolHook</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-registerRequireExtension">registerRequireExtension</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><div data-ice="index" class="github-markdown"><h2 id="electron-compile">electron-compile</h2>
+<p>electron-compile compiles JS and CSS on the fly with a single call in your app&apos;s &apos;ready&apos; function.</p>
+<p>For JavaScript:</p>
+<ul>
+<li>JavaScript ES6/ES7 (via Babel)</li>
+<li>TypeScript</li>
+<li>CoffeeScript</li>
+</ul>
+<p>For CSS:</p>
+<ul>
+<li>LESS</li>
+</ul>
+<p>For HTML:</p>
+<ul>
+<li>Jade</li>
+</ul>
+<h3 id="how-does-it-work-easiest-way-">How does it work? (Easiest Way)</h3>
+<p>Change your reference to <code>electron-prebuilt</code> to <code>electron-prebuilt-compile</code>. Tada! You did it.</p>
+<h3 id="wait-seriously-">Wait, seriously?</h3>
+<p>Yeah. <code>electron-prebuilt-compile</code> is like an <code>electron-prebuilt</code> that Just Works with all of these languages above.</p>
+<h3 id="how-does-it-work-slightly-harder-way-">How does it work? (Slightly Harder Way)</h3>
+<p>First, add <code>electron-compile</code> and <code>electron-compilers</code> as a <code>devDependency</code>.</p>
+<pre><code class="lang-sh"><code class="source-code prettyprint">npm install --save electron-compile
+npm install --save-dev electron-compilers</code>
+</code></pre>
+<p>Create a new file that will be the entry point of your app (perhaps changing &apos;main&apos; in package.json) - you need to pass in the root directory of your application, which will vary based on your setup. The root directory is the directory that your <code>package.json</code> is in.</p>
+<pre><code class="lang-js"><code class="source-code prettyprint">// Assuming this file is ./src/es6-init.js
+var appRoot = path.join(__dirname, &apos;..&apos;);
+
+// ...and that your main app is called ./src/main.js. This is written as if
+// you were going to `require` the file from here.
+require(&apos;electron-compile&apos;).init(appRoot, &apos;./main&apos;);</code>
+</code></pre>
+<h3 id="i-did-it-now-what-">I did it, now what?</h3>
+<p>From then on, you can now simply include files directly in your HTML, no need for cross-compilation:</p>
+<pre><code class="lang-html"><code class="source-code prettyprint">&lt;head&gt;
+  &lt;script type=&quot;text/coffeescript&quot; src=&quot;main.coffee&quot;&gt;&lt;/script&gt;
+  &lt;link rel=&quot;stylesheet&quot; type=&quot;text/less&quot; href=&quot;main.less&quot; /&gt;
+&lt;/head&gt;</code>
+</code></pre>
+<p>or just require them in:</p>
+<pre><code class="lang-js"><code class="source-code prettyprint">require(&apos;./mylib&apos;)   // mylib.ts</code>
+</code></pre>
+<h3 id="how-do-i-set-up-babel-less-whatever-the-way-i-want-">How do I set up (Babel / LESS / whatever) the way I want?</h3>
+<p>If you&apos;ve got a .babelrc and that&apos;s all you want to customize, you can simply use it directly. electron-compile will respect it, even the environment-specific settings. If you want to customize other compilers, use a <code>.compilerc</code> file. Here&apos;s an example:</p>
+<pre><code class="lang-js"><code class="source-code prettyprint">{
+  &quot;application/javascript&quot;: {
+    &quot;presets&quot;: [&quot;stage-0&quot;, &quot;es2015&quot;, &quot;react&quot;],
+    &quot;sourceMaps&quot;: &quot;inline&quot;
+  },
+  &quot;text/less&quot;: {
+    &quot;dumpLineNumbers&quot;: &quot;comments&quot;
+  }
+}</code>
+</code></pre>
+<p>The opening Object is a list of MIME Types, and options passed to the compiler implementation. These parameters are documented here:</p>
+<ul>
+<li>Babel - <a href="http://babeljs.io/docs/usage/options">http://babeljs.io/docs/usage/options</a></li>
+<li>CoffeeScript - <a href="http://coffeescript.org/documentation/docs/coffee-script.html#section-5">http://coffeescript.org/documentation/docs/coffee-script.html#section-5</a></li>
+<li>TypeScript - <a href="https://github.com/Microsoft/TypeScript/blob/v1.5.0-beta/bin/typescriptServices.d.ts#L1076">https://github.com/Microsoft/TypeScript/blob/v1.5.0-beta/bin/typescriptServices.d.ts#L1076</a> </li>
+<li>LESS - <a href="http://lesscss.org/usage/index.html#command-line-usage-options">http://lesscss.org/usage/index.html#command-line-usage-options</a></li>
+<li>Jade - <a href="http://jade-lang.com/api">http://jade-lang.com/api</a></li>
+</ul>
+<h2 id="how-can-i-precompile-my-code-for-release-time-">How can I precompile my code for release-time?</h2>
+<p>electron-compile comes with a command-line application to pre-create a cache for you.</p>
+<pre><code class="lang-sh"><code class="source-code prettyprint">Usage: electron-compile --appDir [root-app-dir] paths...
+
+Options:
+  -a, --appdir  The top-level application directory (i.e. where your
+                package.json is)
+  -v, --verbose  Print verbose information
+  -h, --help     Show help</code>
+</code></pre>
+<p>Run <code>electron-compile</code> on all of your application assets, even if they aren&apos;t strictly code (i.e. your static assets like PNGs). electron-compile will recursively walk the given directories.</p>
+<pre><code class="lang-sh"><code class="source-code prettyprint">electron-compile --appDir . ./src ./static</code>
+</code></pre>
+<p>Compilation also has its own API, check out the <a href="LINK HERE">documentation</a> for more information.</p>
+</div>
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.4.3)</span></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+{
+  "coverage": "64.51%",
+  "expectCount": 62,
+  "actualCount": 40,
+  "files": {
+    "src/compile-cache.js": {
+      "expectCount": 12,
+      "actualCount": 10,
+      "undocumentLines": [
+        28,
+        29
+      ]
+    },
+    "src/compiler-host.js": {
+      "expectCount": 14,
+      "actualCount": 11,
+      "undocumentLines": [
+        68,
+        70,
+        370
+      ]
+    },
+    "src/file-change-cache.js": {
+      "expectCount": 14,
+      "actualCount": 8,
+      "undocumentLines": [
+        22,
+        170,
+        240,
+        24,
+        21,
+        23
+      ]
+    },
+    "src/read-only-compiler.js": {
+      "expectCount": 8,
+      "actualCount": 1,
+      "undocumentLines": [
+        22,
+        29,
+        20,
+        27,
+        33,
+        19,
+        26
+      ]
+    },
+    "src/config-parser.js": {
+      "expectCount": 11,
+      "actualCount": 8,
+      "undocumentLines": [
+        219,
+        250,
+        265
+      ]
+    },
+    "src/for-all-files.js": {
+      "expectCount": 1,
+      "actualCount": 0,
+      "undocumentLines": [
+        33
+      ]
+    },
+    "src/protocol-hook.js": {
+      "expectCount": 1,
+      "actualCount": 1,
+      "undocumentLines": []
+    },
+    "src/require-hook.js": {
+      "expectCount": 1,
+      "actualCount": 1,
+      "undocumentLines": []
+    }
+  }
+}

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">test/inline-html-compiler.js | electron-compilers API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+  <script src="script/manual.js"></script>
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  <a href="test.html" data-ice="testLink">Test</a>
+  <a data-ice="repoURL" href="https://github.com/paulcbetts/electron-compile" class="repo-url-github">Repository</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/compile-cache.js~CompileCache.html">CompileCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/compiler-host.js~CompilerHost.html">CompilerHost</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/file-change-cache.js~FileChangedCache.html">FileChangedCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/read-only-compiler.js~ReadOnlyCompiler.html">ReadOnlyCompiler</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-calculateDefaultCompileCacheDirectory">calculateDefaultCompileCacheDirectory</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromBabelRc">createCompilerHostFromBabelRc</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromBabelRcSync">createCompilerHostFromBabelRcSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromConfigFile">createCompilerHostFromConfigFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromConfigFileSync">createCompilerHostFromConfigFileSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromProjectRoot">createCompilerHostFromProjectRoot</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromProjectRootSync">createCompilerHostFromProjectRootSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilers">createCompilers</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getDefaultConfiguration">getDefaultConfiguration</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-init">init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-initializeGlobalHooks">initializeGlobalHooks</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-forAllFilesSync">forAllFilesSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-initializeProtocolHook">initializeProtocolHook</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-registerRequireExtension">registerRequireExtension</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">test/inline-html-compiler.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import &apos;./support.js&apos;;
+
+import fs from &apos;fs&apos;;
+import path from &apos;path&apos;;
+import cheerio from &apos;cheerio&apos;;
+import pify from &apos;pify&apos;;
+import _ from &apos;lodash&apos;;
+
+const validInputs = [
+  &apos;inline-valid.html&apos;,
+  &apos;inline-valid-2.html&apos;
+];
+
+const pfs = pify(fs);
+const InlineHtmlCompiler = global.compilersByMimeType[&apos;text/html&apos;];
+
+const d = require(&apos;debug&apos;)(&apos;test:inline-html-compiler&apos;);
+
+describe(&apos;The inline HTML compiler&apos;, function() {
+  beforeEach(function() {
+    let compilers = _.reduce(Object.keys(global.compilersByMimeType), (acc, x) =&gt; {
+      let Klass = global.compilersByMimeType[x];
+      acc[x] = new Klass();
+      
+      return acc;
+    }, {});
+    
+    compilers[&apos;application/javascript&apos;].compilerOptions = {
+      &quot;presets&quot;: [&quot;stage-0&quot;, &quot;es2015&quot;, &quot;react&quot;],
+      &quot;sourceMaps&quot;: &quot;inline&quot;
+    };
+    
+    compilers[&apos;text/coffeescript&apos;].compilerOptions = { sourceMap: true };
+    
+    this.fixture = InlineHtmlCompiler.createFromCompilers(compilers);
+  });
+
+  _.each(validInputs, (inputFile) =&gt; {
+    it(&apos;should compile the valid fixture &apos; + inputFile, async function() {
+      let input = path.join(__dirname, &apos;..&apos;, &apos;test&apos;, &apos;fixtures&apos;, inputFile);
+
+      let cc = {};
+      expect(await this.fixture.shouldCompileFile(input, cc)).to.be.ok;
+
+      let code = await pfs.readFile(input, &apos;utf8&apos;);
+      let df = await this.fixture.determineDependentFiles(input, code, cc);
+
+      expect(df.length).to.equal(0);
+
+      let result = await this.fixture.compile(code, input, cc);
+      expect(result.mimeType).to.equal(&apos;text/html&apos;);
+
+      let $ = cheerio.load(result.code);
+      let tags = $(&apos;script&apos;);
+      expect(tags.length &gt; 0).to.be.ok;
+
+      $(&apos;script&apos;).map((__, el) =&gt; {
+        let text = $(el).text();
+        if (!text || text.length &lt; 2) return;
+
+        expect(_.find(text.split(&apos;\n&apos;), (l) =&gt; l.match(/sourceMappingURL/))).to.be.ok;
+      });
+    });
+
+    it(&apos;should compile the valid fixture &apos; + inputFile + &apos; synchronously&apos;, function() {
+      let input = path.join(__dirname, &apos;..&apos;, &apos;test&apos;, &apos;fixtures&apos;, inputFile);
+
+      let cc = {};
+      expect(this.fixture.shouldCompileFileSync(input, cc)).to.be.ok;
+
+      let code = fs.readFileSync(input, &apos;utf8&apos;);
+      let df = this.fixture.determineDependentFilesSync(input, code, cc);
+
+      expect(df.length).to.equal(0);
+
+      let result = this.fixture.compileSync(code, input, cc);
+      expect(result.mimeType).to.equal(&apos;text/html&apos;);
+
+      let $ = cheerio.load(result.code);
+      let tags = $(&apos;script&apos;);
+      expect(tags.length &gt; 0).to.be.ok;
+
+      $(&apos;script&apos;).map((__, el) =&gt; {
+        let text = $(el).text();
+        if (!text || text.length &lt; 2) return;
+
+        d(text);
+        expect(_.find(text.split(&apos;\n&apos;), (l) =&gt; l.match(/sourceMappingURL/))).to.be.ok;
+      });
+    });
+  });
+
+  it(&apos;should remove protocol-relative URLs because they are dumb&apos;, async function() {
+    let input = path.join(__dirname, &apos;..&apos;, &apos;test&apos;, &apos;fixtures&apos;, &apos;roboto.html&apos;);
+
+    let cc = {};
+    expect(await this.fixture.shouldCompileFile(input, cc)).to.be.ok;
+
+    let code = await pfs.readFile(input, &apos;utf8&apos;);
+    let df = await this.fixture.determineDependentFiles(input, code, cc);
+
+    expect(df.length).to.equal(0);
+
+    let result = await this.fixture.compile(code, input, cc);
+
+    expect(result.code.length &gt; 0).to.be.ok;
+    expect(result.mimeType).to.equal(&apos;text/html&apos;);
+
+    let $ = cheerio.load(result.code);
+    let tags = $(&apos;link&apos;);
+    expect(tags.length === 1).to.be.ok;
+    expect($(tags[0]).attr(&apos;href&apos;).match(/^https/i)).to.be.ok;
+  });
+
+  it(&apos;should canonicalize x-require paths&apos;, async function() {
+    let input = path.join(__dirname, &apos;..&apos;, &apos;test&apos;, &apos;fixtures&apos;, &apos;x-require-valid.html&apos;);
+
+    let cc = {};
+    expect(await this.fixture.shouldCompileFile(input, cc)).to.be.ok;
+
+    let code = await pfs.readFile(input, &apos;utf8&apos;);
+    let df = await this.fixture.determineDependentFiles(input, code, cc);
+
+    expect(df.length).to.equal(0);
+
+    let result = await this.fixture.compile(code, input, cc);
+
+    expect(result.code.length &gt; 0).to.be.ok;
+    expect(result.mimeType).to.equal(&apos;text/html&apos;);
+
+    let $ = cheerio.load(result.code);
+    let tags = $(&apos;x-require&apos;);
+    expect(tags.length === 1).to.be.ok;
+
+    $(&apos;x-require&apos;).map((__, el) =&gt; {
+      let src = $(el).attr(&apos;src&apos;);
+      expect(_.find(src.split(/[\\\/]/), (x) =&gt; x === &apos;.&apos; || x === &apos;..&apos;)).not.to.be.ok;
+    });
+  });
+});
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.4.3)</span></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

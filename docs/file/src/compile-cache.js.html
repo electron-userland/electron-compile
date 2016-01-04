@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/compile-cache.js | electron-compilers API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+  <script src="script/manual.js"></script>
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  <a href="test.html" data-ice="testLink">Test</a>
+  <a data-ice="repoURL" href="https://github.com/paulcbetts/electron-compile" class="repo-url-github">Repository</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/compile-cache.js~CompileCache.html">CompileCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/compiler-host.js~CompilerHost.html">CompilerHost</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/file-change-cache.js~FileChangedCache.html">FileChangedCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/read-only-compiler.js~ReadOnlyCompiler.html">ReadOnlyCompiler</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-calculateDefaultCompileCacheDirectory">calculateDefaultCompileCacheDirectory</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromBabelRc">createCompilerHostFromBabelRc</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromBabelRcSync">createCompilerHostFromBabelRcSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromConfigFile">createCompilerHostFromConfigFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromConfigFileSync">createCompilerHostFromConfigFileSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromProjectRoot">createCompilerHostFromProjectRoot</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromProjectRootSync">createCompilerHostFromProjectRootSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilers">createCompilers</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getDefaultConfiguration">getDefaultConfiguration</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-init">init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-initializeGlobalHooks">initializeGlobalHooks</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-forAllFilesSync">forAllFilesSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-initializeProtocolHook">initializeProtocolHook</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-registerRequireExtension">registerRequireExtension</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/compile-cache.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import fs from &apos;fs&apos;;
+import path from &apos;path&apos;;
+import zlib from &apos;zlib&apos;;
+import createDigestForObject from &apos;./digest-for-object&apos;;
+import {pfs, pzlib} from &apos;./promise&apos;;
+import mkdirp from &apos;mkdirp&apos;;
+
+const d = require(&apos;debug&apos;)(&apos;electron-compile:compile-cache&apos;);
+
+/**
+ * CompileCache manages getting and setting entries for a single compiler; each
+ * in-use compiler will have an instance of this class, usually created via
+ * {@link createFromCompiler}. 
+ * 
+ * You usually will not use this class directly, it is an implementation class 
+ * for {@link CompileHost}.
+ */ 
+export default class CompileCache {
+  /**  
+   * Creates an instance, usually used for testing only.
+   *    
+   * @param  {string} cachePath  The root directory to use as a cache path
+   *
+   * @param  {FileChangedCache} fileChangeCache  A file-change cache that is 
+   *                                             optionally pre-loaded.
+   */   
+  constructor(cachePath, fileChangeCache) {
+    this.cachePath = cachePath;
+    this.fileChangeCache = fileChangeCache;
+  }
+  
+  /**  
+   * Creates a CompileCache from a class compatible with the CompilerBase 
+   * interface. This method uses the compiler name / version / options to 
+   * generate a unique directory name for cached results
+   *    
+   * @param  {string} cachePath  The root path to use for the cache, a directory
+   *                             representing the hash of the compiler parameters
+   *                             will be created here.
+   *
+   * @param  {CompilerBase} compiler  The compiler to use for version / option
+   *                                  information.
+   *
+   * @param  {FileChangedCache} fileChangeCache  A file-change cache that is 
+   *                                             optionally pre-loaded.
+   *
+   * @return {CompileCache}  A configured CompileCache instance.
+   */   
+  static createFromCompiler(cachePath, compiler, fileChangeCache) {
+    let newCachePath = null;
+    let getCachePath = () =&gt; {
+      if (newCachePath) return newCachePath;
+
+      const digestObj = {
+        name: compiler.name || Object.getPrototypeOf(compiler).constructor.name,
+        version: compiler.getCompilerVersion(),
+        options: compiler.compilerOptions
+      };
+
+      newCachePath = path.join(cachePath, createDigestForObject(digestObj));
+
+      d(`Path for ${digestObj.name}: ${newCachePath}`);
+      d(`Set up with parameters: ${JSON.stringify(digestObj)}`);
+      mkdirp.sync(newCachePath);
+      return newCachePath;
+    };
+    
+    let ret = new CompileCache(&apos;&apos;, fileChangeCache);
+    ret.getCachePath = getCachePath;
+    
+    return ret;
+  }
+  
+  /**  
+   * Returns a file&apos;s compiled contents from the cache.
+   *    
+   * @param  {string} filePath  The path to the file. FileChangedCache will look
+   *                            up the hash and use that as the key in the cache.
+   *
+   * @return {Promise&lt;Object&gt;}  An object with all kinds of information
+   *
+   * @property {Object} hashInfo  The hash information returned from getHashForPath
+   * @property {string} code  The source code if the file was a text file
+   * @property {Buffer} binaryData  The file if it was a binary file
+   * @property {string} mimeType  The MIME type saved in the cache.
+   * @property {string[]} dependentFiles  The dependent files returned from 
+   *                                      compiling the file, if any.
+   */   
+  async get(filePath) {
+    d(`Fetching ${filePath} from cache`);
+    let hashInfo = await this.fileChangeCache.getHashForPath(path.resolve(filePath));
+  
+    let code = null;
+    let mimeType = null;
+    let binaryData = null;
+    let dependentFiles = null;
+    
+    let cacheFile = null;
+    try {
+      cacheFile = path.join(this.getCachePath(), hashInfo.hash);
+      let result = null;
+
+      if (hashInfo.isFileBinary) {
+        d(&quot;File is binary, reading out info&quot;);
+        let info = JSON.parse(await pfs.readFile(cacheFile + &apos;.info&apos;));
+        mimeType = info.mimeType;
+        dependentFiles = info.dependentFiles;
+        
+        binaryData = hashInfo.binaryData;
+        if (!binaryData) {
+          binaryData = await pfs.readFile(cacheFile);
+          binaryData = await pzlib.gunzip(binaryData);
+        }
+      } else {
+        let buf = await pfs.readFile(cacheFile);
+        let str = (await pzlib.gunzip(buf)).toString(&apos;utf8&apos;);
+
+        result = JSON.parse(str);
+        code = result.code;
+        mimeType = result.mimeType;
+        dependentFiles = result.dependentFiles;
+      }
+    } catch (e) {
+      d(`Failed to read cache for ${filePath}, looked in ${cacheFile}: ${e.message}`);
+    }
+    
+    return { hashInfo, code, mimeType, binaryData, dependentFiles };
+  }
+
+  
+  /**  
+   * Saves a compiled result to cache
+   *    
+   * @param  {Object} hashInfo  The hash information returned from getHashForPath   
+   *
+   * @param  {string / Buffer} codeOrBinaryData   The file&apos;s contents, either as
+   *                                              a string or a Buffer.
+   * @param  {string} mimeType  The MIME type returned by the compiler.
+   *
+   * @param  {string[]} dependentFiles  The list of dependent files returned by
+   *                                    the compiler.
+   * @return {Promise}  Completion.
+   */   
+  async save(hashInfo, codeOrBinaryData, mimeType, dependentFiles) {
+    let buf = null;
+    let target = path.join(this.getCachePath(), hashInfo.hash);
+    d(`Saving to ${target}`);
+    
+    if (hashInfo.isFileBinary) {
+      buf = await pzlib.gzip(codeOrBinaryData);
+      await pfs.writeFile(target + &apos;.info&apos;, JSON.stringify({mimeType, dependentFiles}), &apos;utf8&apos;);
+    } else {
+      buf = await pzlib.gzip(new Buffer(JSON.stringify({code: codeOrBinaryData, mimeType, dependentFiles})));
+    }
+    
+    await pfs.writeFile(target, buf);
+  }
+  
+  /**  
+   * Attempts to first get a key via {@link get}, then if it fails, call a method
+   * to retrieve the contents, then save the result to cache.
+   * 
+   * The fetcher parameter is expected to have the signature:
+   * 
+   * Promise&lt;Object&gt; fetcher(filePath : string, hashInfo : Object);
+   * 
+   * hashInfo is a value returned from getHashForPath
+   * The return value of fetcher must be an Object with the properties:
+   * 
+   * mimeType - the MIME type of the data to save
+   * code (optional) - the source code as a string, if file is text
+   * binaryData (optional) - the file contents as a Buffer, if file is binary
+   * dependentFiles - the dependent files returned by the compiler.
+   *
+   * @param  {string} filePath  The path to the file. FileChangedCache will look
+   *                            up the hash and use that as the key in the cache.
+   *
+   * @param  {Function} fetcher  A method which conforms to the description above.
+   *
+   * @return {Promise&lt;Object&gt;}  An Object which has the same fields as the 
+   *                            {@link get} method return result.
+   */   
+  async getOrFetch(filePath, fetcher) {
+    let cacheResult = await this.get(filePath);
+    if (cacheResult.code || cacheResult.binaryData) return cacheResult;
+    
+    let result = await fetcher(filePath, cacheResult.hashInfo) || { hashInfo: cacheResult.hashInfo };
+    
+    if (result.mimeType &amp;&amp; !cacheResult.hashInfo.isInNodeModules) {
+      d(`Cache miss: saving out info for ${filePath}`);
+      await this.save(cacheResult.hashInfo, result.code || result.binaryData, result.mimeType, result.dependentFiles);
+    }
+    
+    result.hashInfo = cacheResult.hashInfo;
+    return result;
+  }
+  
+  getSync(filePath) {
+    d(`Fetching ${filePath} from cache`);
+    let hashInfo = this.fileChangeCache.getHashForPathSync(path.resolve(filePath));
+  
+    let code = null;
+    let mimeType = null;
+    let binaryData = null;
+    let dependentFiles = null;
+    
+    try {
+      let cacheFile = path.join(this.getCachePath(), hashInfo.hash);
+      
+      let result = null;
+      if (hashInfo.isFileBinary) {
+        d(&quot;File is binary, reading out info&quot;);
+        let info = JSON.parse(fs.readFileSync(cacheFile + &apos;.info&apos;));
+        mimeType = info.mimeType;
+        dependentFiles = info.dependentFiles;
+        
+        binaryData = hashInfo.binaryData;
+        if (!binaryData) {
+          binaryData = fs.readFileSync(cacheFile);
+          binaryData = zlib.gunzipSync(binaryData);
+        }
+      } else {
+        let buf = fs.readFileSync(cacheFile);
+        let str = (zlib.gunzipSync(buf)).toString(&apos;utf8&apos;);
+
+        result = JSON.parse(str);
+        code = result.code;
+        mimeType = result.mimeType;
+        dependentFiles = result.dependentFiles;
+      }
+    } catch (e) {
+      d(`Failed to read cache for ${filePath}`);
+    }
+    
+    return { hashInfo, code, mimeType, binaryData, dependentFiles };
+  }
+
+  saveSync(hashInfo, codeOrBinaryData, mimeType, dependentFiles) {
+    let buf = null;
+    let target = path.join(this.getCachePath(), hashInfo.hash);
+    d(`Saving to ${target}`);
+    
+    if (hashInfo.isFileBinary) {
+      buf = zlib.gzipSync(codeOrBinaryData);
+      fs.writeFileSync(target + &apos;.info&apos;, JSON.stringify({mimeType, dependentFiles}), &apos;utf8&apos;);
+    } else {
+      buf = zlib.gzipSync(new Buffer(JSON.stringify({code: codeOrBinaryData, mimeType, dependentFiles})));
+    }
+    
+    fs.writeFileSync(target, buf);
+  }
+  
+  getOrFetchSync(filePath, fetcher) {
+    let cacheResult = this.getSync(filePath);
+    if (cacheResult.code || cacheResult.binaryData) return cacheResult;
+    
+    let result = fetcher(filePath, cacheResult.hashInfo) || { hashInfo: cacheResult.hashInfo };
+    
+    if (result.mimeType &amp;&amp; !cacheResult.hashInfo.isInNodeModules) {
+      d(`Cache miss: saving out info for ${filePath}`);
+      this.saveSync(cacheResult.hashInfo, result.code || result.binaryData, result.mimeType, result.dependentFiles);
+    }
+    
+    result.hashInfo = cacheResult.hashInfo;
+    return result;
+  }
+  
+  
+  /**  
+   * @private
+   */   
+  getCachePath() {
+    // NB: This is an evil hack so that createFromCompiler can stomp it
+    // at will
+    return this.cachePath;
+  }
+    
+    
+  /**    
+   * Returns whether a file should not be compiled. Note that this doesn&apos;t 
+   * necessarily mean it won&apos;t end up in the cache, only that its contents are
+   * saved verbatim instead of trying to find an appropriate compiler.
+   *    
+   * @param  {Object} hashInfo  The hash information returned from getHashForPath   
+   *
+   * @return {boolean}  True if a file should be ignored
+   */   
+  static shouldPassthrough(hashInfo) {
+    return hashInfo.isMinified || hashInfo.isInNodeModules || hashInfo.hasSourceMap || hashInfo.isFileBinary;
+  }
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.4.3)</span></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

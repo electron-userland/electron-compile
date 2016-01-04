@@ -1,0 +1,664 @@
+{
+  "type": "Program",
+  "start": 0,
+  "end": 238,
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 16,
+      "column": 0
+    }
+  },
+  "sourceType": "module",
+  "body": [
+    {
+      "type": "ImportDeclaration",
+      "start": 0,
+      "end": 24,
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 24
+        }
+      },
+      "specifiers": [
+        {
+          "type": "ImportDefaultSpecifier",
+          "start": 7,
+          "end": 11,
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 7
+            },
+            "end": {
+              "line": 1,
+              "column": 11
+            }
+          },
+          "local": {
+            "type": "Identifier",
+            "start": 7,
+            "end": 11,
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 7
+              },
+              "end": {
+                "line": 1,
+                "column": 11
+              }
+            },
+            "name": "pify"
+          }
+        }
+      ],
+      "importKind": "value",
+      "source": {
+        "type": "Literal",
+        "start": 17,
+        "end": 23,
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 17
+          },
+          "end": {
+            "line": 1,
+            "column": 23
+          }
+        },
+        "value": "pify",
+        "rawValue": "pify",
+        "raw": "'pify'"
+      },
+      "trailingComments": [
+        {
+          "type": "CommentLine",
+          "value": " NB: We do this so that every module doesn't have to run pify",
+          "start": 26,
+          "end": 89,
+          "loc": {
+            "start": {
+              "line": 3,
+              "column": 0
+            },
+            "end": {
+              "line": 3,
+              "column": 63
+            }
+          },
+          "range": [
+            26,
+            89
+          ]
+        },
+        {
+          "type": "CommentLine",
+          "value": " on fs and zlib",
+          "start": 90,
+          "end": 107,
+          "loc": {
+            "start": {
+              "line": 4,
+              "column": 0
+            },
+            "end": {
+              "line": 4,
+              "column": 17
+            }
+          },
+          "range": [
+            90,
+            107
+          ]
+        },
+        {
+          "type": "Block",
+          "value": "*\n * @private\n ",
+          "start": 110,
+          "end": 129,
+          "loc": {
+            "start": {
+              "line": 7,
+              "column": 0
+            },
+            "end": {
+              "line": 9,
+              "column": 3
+            }
+          },
+          "range": [
+            110,
+            129
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ExportNamedDeclaration",
+      "start": 131,
+      "end": 170,
+      "loc": {
+        "start": {
+          "line": 10,
+          "column": 0
+        },
+        "end": {
+          "line": 10,
+          "column": 39
+        }
+      },
+      "declaration": {
+        "type": "VariableDeclaration",
+        "start": 138,
+        "end": 170,
+        "loc": {
+          "start": {
+            "line": 10,
+            "column": 7
+          },
+          "end": {
+            "line": 10,
+            "column": 39
+          }
+        },
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 144,
+            "end": 169,
+            "loc": {
+              "start": {
+                "line": 10,
+                "column": 13
+              },
+              "end": {
+                "line": 10,
+                "column": 38
+              }
+            },
+            "id": {
+              "type": "Identifier",
+              "start": 144,
+              "end": 147,
+              "loc": {
+                "start": {
+                  "line": 10,
+                  "column": 13
+                },
+                "end": {
+                  "line": 10,
+                  "column": 16
+                }
+              },
+              "name": "pfs",
+              "leadingComments": null
+            },
+            "init": {
+              "type": "CallExpression",
+              "start": 150,
+              "end": 169,
+              "loc": {
+                "start": {
+                  "line": 10,
+                  "column": 19
+                },
+                "end": {
+                  "line": 10,
+                  "column": 38
+                }
+              },
+              "callee": {
+                "type": "Identifier",
+                "start": 150,
+                "end": 154,
+                "loc": {
+                  "start": {
+                    "line": 10,
+                    "column": 19
+                  },
+                  "end": {
+                    "line": 10,
+                    "column": 23
+                  }
+                },
+                "name": "pify"
+              },
+              "arguments": [
+                {
+                  "type": "CallExpression",
+                  "start": 155,
+                  "end": 168,
+                  "loc": {
+                    "start": {
+                      "line": 10,
+                      "column": 24
+                    },
+                    "end": {
+                      "line": 10,
+                      "column": 37
+                    }
+                  },
+                  "callee": {
+                    "type": "Identifier",
+                    "start": 155,
+                    "end": 162,
+                    "loc": {
+                      "start": {
+                        "line": 10,
+                        "column": 24
+                      },
+                      "end": {
+                        "line": 10,
+                        "column": 31
+                      }
+                    },
+                    "name": "require"
+                  },
+                  "arguments": [
+                    {
+                      "type": "Literal",
+                      "start": 163,
+                      "end": 167,
+                      "loc": {
+                        "start": {
+                          "line": 10,
+                          "column": 32
+                        },
+                        "end": {
+                          "line": 10,
+                          "column": 36
+                        }
+                      },
+                      "value": "fs",
+                      "rawValue": "fs",
+                      "raw": "'fs'"
+                    }
+                  ]
+                }
+              ]
+            },
+            "leadingComments": null
+          }
+        ],
+        "kind": "const",
+        "leadingComments": [
+          {
+            "type": "CommentLine",
+            "value": " NB: We do this so that every module doesn't have to run pify",
+            "start": 26,
+            "end": 89,
+            "loc": {
+              "start": {
+                "line": 3,
+                "column": 0
+              },
+              "end": {
+                "line": 3,
+                "column": 63
+              }
+            },
+            "range": [
+              26,
+              89
+            ]
+          },
+          {
+            "type": "CommentLine",
+            "value": " on fs and zlib",
+            "start": 90,
+            "end": 107,
+            "loc": {
+              "start": {
+                "line": 4,
+                "column": 0
+              },
+              "end": {
+                "line": 4,
+                "column": 17
+              }
+            },
+            "range": [
+              90,
+              107
+            ]
+          },
+          {
+            "type": "Block",
+            "value": "*\n * @private\n ",
+            "start": 110,
+            "end": 129,
+            "loc": {
+              "start": {
+                "line": 7,
+                "column": 0
+              },
+              "end": {
+                "line": 9,
+                "column": 3
+              }
+            },
+            "range": [
+              110,
+              129
+            ]
+          }
+        ],
+        "trailingComments": [
+          {
+            "type": "Block",
+            "value": "*\n * @private\n ",
+            "start": 172,
+            "end": 191,
+            "loc": {
+              "start": {
+                "line": 12,
+                "column": 0
+              },
+              "end": {
+                "line": 14,
+                "column": 3
+              }
+            },
+            "range": [
+              172,
+              191
+            ]
+          }
+        ]
+      },
+      "specifiers": [],
+      "source": null,
+      "leadingComments": [
+        {
+          "type": "CommentLine",
+          "value": " NB: We do this so that every module doesn't have to run pify",
+          "start": 26,
+          "end": 89,
+          "loc": {
+            "start": {
+              "line": 3,
+              "column": 0
+            },
+            "end": {
+              "line": 3,
+              "column": 63
+            }
+          },
+          "range": [
+            26,
+            89
+          ]
+        },
+        {
+          "type": "CommentLine",
+          "value": " on fs and zlib",
+          "start": 90,
+          "end": 107,
+          "loc": {
+            "start": {
+              "line": 4,
+              "column": 0
+            },
+            "end": {
+              "line": 4,
+              "column": 17
+            }
+          },
+          "range": [
+            90,
+            107
+          ]
+        },
+        {
+          "type": "Block",
+          "value": "*\n * @private\n ",
+          "start": 110,
+          "end": 129,
+          "loc": {
+            "start": {
+              "line": 7,
+              "column": 0
+            },
+            "end": {
+              "line": 9,
+              "column": 3
+            }
+          },
+          "range": [
+            110,
+            129
+          ]
+        }
+      ],
+      "trailingComments": [
+        {
+          "type": "Block",
+          "value": "*\n * @private\n ",
+          "start": 172,
+          "end": 191,
+          "loc": {
+            "start": {
+              "line": 12,
+              "column": 0
+            },
+            "end": {
+              "line": 14,
+              "column": 3
+            }
+          },
+          "range": [
+            172,
+            191
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ExportNamedDeclaration",
+      "start": 194,
+      "end": 237,
+      "loc": {
+        "start": {
+          "line": 15,
+          "column": 1
+        },
+        "end": {
+          "line": 15,
+          "column": 44
+        }
+      },
+      "declaration": {
+        "type": "VariableDeclaration",
+        "start": 201,
+        "end": 237,
+        "loc": {
+          "start": {
+            "line": 15,
+            "column": 8
+          },
+          "end": {
+            "line": 15,
+            "column": 44
+          }
+        },
+        "declarations": [
+          {
+            "type": "VariableDeclarator",
+            "start": 207,
+            "end": 236,
+            "loc": {
+              "start": {
+                "line": 15,
+                "column": 14
+              },
+              "end": {
+                "line": 15,
+                "column": 43
+              }
+            },
+            "id": {
+              "type": "Identifier",
+              "start": 207,
+              "end": 212,
+              "loc": {
+                "start": {
+                  "line": 15,
+                  "column": 14
+                },
+                "end": {
+                  "line": 15,
+                  "column": 19
+                }
+              },
+              "name": "pzlib",
+              "leadingComments": null
+            },
+            "init": {
+              "type": "CallExpression",
+              "start": 215,
+              "end": 236,
+              "loc": {
+                "start": {
+                  "line": 15,
+                  "column": 22
+                },
+                "end": {
+                  "line": 15,
+                  "column": 43
+                }
+              },
+              "callee": {
+                "type": "Identifier",
+                "start": 215,
+                "end": 219,
+                "loc": {
+                  "start": {
+                    "line": 15,
+                    "column": 22
+                  },
+                  "end": {
+                    "line": 15,
+                    "column": 26
+                  }
+                },
+                "name": "pify"
+              },
+              "arguments": [
+                {
+                  "type": "CallExpression",
+                  "start": 220,
+                  "end": 235,
+                  "loc": {
+                    "start": {
+                      "line": 15,
+                      "column": 27
+                    },
+                    "end": {
+                      "line": 15,
+                      "column": 42
+                    }
+                  },
+                  "callee": {
+                    "type": "Identifier",
+                    "start": 220,
+                    "end": 227,
+                    "loc": {
+                      "start": {
+                        "line": 15,
+                        "column": 27
+                      },
+                      "end": {
+                        "line": 15,
+                        "column": 34
+                      }
+                    },
+                    "name": "require"
+                  },
+                  "arguments": [
+                    {
+                      "type": "Literal",
+                      "start": 228,
+                      "end": 234,
+                      "loc": {
+                        "start": {
+                          "line": 15,
+                          "column": 35
+                        },
+                        "end": {
+                          "line": 15,
+                          "column": 41
+                        }
+                      },
+                      "value": "zlib",
+                      "rawValue": "zlib",
+                      "raw": "'zlib'"
+                    }
+                  ]
+                }
+              ]
+            },
+            "leadingComments": null
+          }
+        ],
+        "kind": "const",
+        "leadingComments": [
+          {
+            "type": "Block",
+            "value": "*\n * @private\n ",
+            "start": 172,
+            "end": 191,
+            "loc": {
+              "start": {
+                "line": 12,
+                "column": 0
+              },
+              "end": {
+                "line": 14,
+                "column": 3
+              }
+            },
+            "range": [
+              172,
+              191
+            ]
+          }
+        ],
+        "trailingComments": []
+      },
+      "specifiers": [],
+      "source": null,
+      "leadingComments": [
+        {
+          "type": "Block",
+          "value": "*\n * @private\n ",
+          "start": 172,
+          "end": 191,
+          "loc": {
+            "start": {
+              "line": 12,
+              "column": 0
+            },
+            "end": {
+              "line": 14,
+              "column": 3
+            }
+          },
+          "range": [
+            172,
+            191
+          ]
+        }
+      ]
+    }
+  ]
+}

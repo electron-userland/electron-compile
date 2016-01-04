@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/config-parser.js | electron-compilers API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+  <script src="script/manual.js"></script>
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  <a href="test.html" data-ice="testLink">Test</a>
+  <a data-ice="repoURL" href="https://github.com/paulcbetts/electron-compile" class="repo-url-github">Repository</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/compile-cache.js~CompileCache.html">CompileCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/compiler-host.js~CompilerHost.html">CompilerHost</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/file-change-cache.js~FileChangedCache.html">FileChangedCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/read-only-compiler.js~ReadOnlyCompiler.html">ReadOnlyCompiler</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-calculateDefaultCompileCacheDirectory">calculateDefaultCompileCacheDirectory</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromBabelRc">createCompilerHostFromBabelRc</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromBabelRcSync">createCompilerHostFromBabelRcSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromConfigFile">createCompilerHostFromConfigFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromConfigFileSync">createCompilerHostFromConfigFileSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromProjectRoot">createCompilerHostFromProjectRoot</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromProjectRootSync">createCompilerHostFromProjectRootSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilers">createCompilers</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getDefaultConfiguration">getDefaultConfiguration</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-init">init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-initializeGlobalHooks">initializeGlobalHooks</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-forAllFilesSync">forAllFilesSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-initializeProtocolHook">initializeProtocolHook</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-registerRequireExtension">registerRequireExtension</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/config-parser.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import _ from &apos;lodash&apos;;
+import fs from &apos;fs&apos;;
+import path from &apos;path&apos;;
+import mkdirp from &apos;mkdirp&apos;;
+import {pfs} from &apos;./promise&apos;;
+
+import FileChangedCache from &apos;./file-change-cache&apos;;
+import CompilerHost from &apos;./compiler-host&apos;;
+import { initializeProtocolHook } from &apos;./protocol-hook&apos;;
+import registerRequireExtension from &apos;./require-hook&apos;;
+
+const d = require(&apos;debug&apos;)(&apos;electron-compile:config-parser&apos;);
+
+// NB: We intentionally delay-load this so that in production, you can create
+// cache-only versions of these compilers
+let allCompilerClasses = null;
+
+function statSyncNoException(fsPath) {
+  if (&apos;statSyncNoException&apos; in fs) {
+    return fs.statSyncNoException(fsPath);
+  }
+  
+  try {
+    return fs.statSync(fsPath);
+  } catch (e) {
+    return null;
+  }
+}
+
+
+/**
+ * Initialize the global hooks (protocol hook for file:, node.js hook) 
+ * independent of initializing the compiler. This method is usually called by
+ * init instead of directly
+ * 
+ * @param {CompilerHost} compilerHost  The compiler host to use.
+ *  
+ */ 
+export function initializeGlobalHooks(compilerHost) {
+  const { app } = require(&apos;electron&apos;);
+  
+  registerRequireExtension(compilerHost);
+
+  let protoify = function() { initializeProtocolHook(compilerHost); };
+  if (app.isReady()) {
+    protoify();
+  } else {
+    app.on(&apos;ready&apos;, protoify);
+  }
+}
+
+
+/**
+ * Initialize electron-compile and set it up, either for development or 
+ * production use. This is almost always the only method you need to use in order
+ * to use electron-compile.
+ *  
+ * @param  {string} appRoot  The top-level directory for your application (i.e.
+ *                           the one which has your package.json).
+ *
+ * @param  {string} mainModule  The module to require in, relative to the module
+ *                              calling init, that will start your app. Write this 
+ *                              as if you were writing a require call from here.
+ *
+ * @param  {bool} productionMode   If explicitly True/False, will set read-only
+ *                                 mode to be disabled/enabled. If not, we&apos;ll
+ *                                 guess based on the presence of a production
+ *                                 cache.
+ */ 
+export function init(appRoot, mainModule, productionMode = null) {
+  let compilerHost = null;
+  let cacheDir = path.join(appRoot, &apos;.cache&apos;);
+  
+  if (productionMode === null) {
+    productionMode = !!statSyncNoException(cacheDir);
+  }
+  
+  if (productionMode) {
+    // In read-only mode, we&apos;ll assume that everything is in `appRoot/.cache`
+    compilerHost = CompilerHost.createReadonlyFromConfigurationSync(cacheDir, appRoot);
+  } else {
+    compilerHost = createCompilerHostFromProjectRootSync(appRoot);
+  }
+  
+  initializeGlobalHooks(compilerHost);
+  require.main.require(mainModule);
+}
+
+
+/**
+ * Creates a {@link CompilerHost} with the given information. This method is
+ * usually called by {@link createCompilerHostFromProjectRoot}.
+ *  
+ * @private
+ */ 
+export function createCompilerHostFromConfiguration(info) {
+  let compilers = createCompilers();
+  let rootCacheDir = info.rootCacheDir || calculateDefaultCompileCacheDirectory();
+  
+  d(`Creating CompilerHost: ${JSON.stringify(info)}, rootCacheDir = ${rootCacheDir}`);
+  let fileChangeCache = new FileChangedCache(info.appRoot);
+  let ret = new CompilerHost(rootCacheDir, compilers, fileChangeCache, false, compilers[&apos;text/plain&apos;]);
+  
+  _.each(Object.keys(info.options || {}), (x) =&gt; {
+    let opts = info.options[x];
+    if (!(x in compilers)) {
+      throw new Error(`Found compiler settings for missing compiler: ${x}`);
+    }
+    
+    d(`Setting options for ${x}: ${JSON.stringify(opts)}`);
+    compilers[x].compilerOptions = opts;
+  });
+  
+  // NB: It&apos;s super important that we guarantee that the configuration is saved
+  // out, because we&apos;ll need to re-read it in the renderer process
+  d(`Created compiler host with options: ${JSON.stringify(info)}`);
+  ret.saveConfigurationSync();
+  return ret;
+}
+
+/**
+ * Creates a compiler host from a .babelrc file. This method is usually called
+ * from {@link createCompilerHostFromProjectRoot} instead of used directly.
+ *  
+ * @param  {string} file  The path to a .babelrc file
+ *
+ * @param  {string} rootCacheDir (optional)  The directory to use as a cache.
+ *
+ * @return {Promise&lt;CompilerHost&gt;}  A set-up compiler host
+ */ 
+export async function createCompilerHostFromBabelRc(file, rootCacheDir=null) {
+  let info = JSON.parse(await pfs.readFile(file, &apos;utf8&apos;));
+  
+  // package.json
+  if (&apos;babel&apos; in info) {
+    info = info.babel;
+  }
+  
+  if (&apos;env&apos; in info) {
+    let ourEnv = process.env.BABEL_ENV || process.env.NODE_ENV || &apos;development&apos;;
+    info = info.env[ourEnv];
+  }
+  
+  // Are we still package.json (i.e. is there no babel info whatsoever?)
+  if (&apos;name&apos; in info &amp;&amp; &apos;version&apos; in info) {
+    return createCompilerHostFromConfiguration({
+      appRoot: path.dirname(file),
+      options: getDefaultConfiguration(),
+      rootCacheDir
+    });
+  }
+  
+  return createCompilerHostFromConfiguration({
+    appRoot: path.dirname(file),
+    options: {
+      &apos;application/javascript&apos;: info
+    },
+    rootCacheDir
+  });
+}
+
+
+/**
+ * Creates a compiler host from a .compilerc file. This method is usually called
+ * from {@link createCompilerHostFromProjectRoot} instead of used directly.
+ *  
+ * @param  {string} file  The path to a .compilerc file
+ *
+ * @param  {string} rootCacheDir (optional)  The directory to use as a cache.
+ *
+ * @return {Promise&lt;CompilerHost&gt;}  A set-up compiler host
+ */ 
+export async function createCompilerHostFromConfigFile(file, rootCacheDir=null) {
+  let info = JSON.parse(await pfs.readFile(file, &apos;utf8&apos;));
+  
+  if (&apos;env&apos; in info) {
+    let ourEnv = process.env.ELECTRON_COMPILE_ENV || process.env.NODE_ENV || &apos;development&apos;;
+    info = info.env[ourEnv];
+  }
+  
+  return createCompilerHostFromConfiguration({
+    appRoot: path.dirname(file),
+    options: info,
+    rootCacheDir
+  });
+}
+
+
+/**
+ * Creates a configured {@link CompilerHost} instance from the project root 
+ * directory. This method first searches for a .compilerc, then falls back to the
+ * default locations for Babel configuration info. If neither are found, defaults
+ * to standard settings
+ *  
+ * @param  {string} rootDir  The root application directory (i.e. the directory
+ *                           that has the app&apos;s package.json)
+ *
+ * @param  {string} rootCacheDir (optional)  The directory to use as a cache.
+ *
+ * @return {Promise&lt;CompilerHost&gt;}  A set-up compiler host
+ */ 
+export async function createCompilerHostFromProjectRoot(rootDir, rootCacheDir=null) {
+  let compilerc = path.join(rootDir, &apos;.compilerc&apos;);
+  if (statSyncNoException(compilerc)) {
+    d(`Found a .compilerc at ${compilerc}, using it`);
+    return await createCompilerHostFromConfigFile(compilerc, rootCacheDir);
+  }
+  
+  let babelrc = path.join(rootDir, &apos;.babelrc&apos;);
+  if (statSyncNoException(babelrc)) {
+    d(`Found a .babelrc at ${babelrc}, using it`);
+    return await createCompilerHostFromBabelRc(babelrc, rootCacheDir);
+  }
+    
+  d(`Using package.json or default parameters at ${rootDir}`);
+  return await createCompilerHostFromBabelRc(path.join(rootDir, &apos;package.json&apos;), rootCacheDir);
+}
+
+export function createCompilerHostFromBabelRcSync(file, rootCacheDir=null) {
+  let info = JSON.parse(fs.readFileSync(file, &apos;utf8&apos;));
+  
+  // package.json
+  if (&apos;babel&apos; in info) {
+    info = info.babel;
+  }
+  
+  if (&apos;env&apos; in info) {
+    let ourEnv = process.env.BABEL_ENV || process.env.NODE_ENV || &apos;development&apos;;
+    info = info.env[ourEnv];
+  }
+  
+  // Are we still package.json (i.e. is there no babel info whatsoever?)
+  if (&apos;name&apos; in info &amp;&amp; &apos;version&apos; in info) {
+    return createCompilerHostFromConfiguration({
+      appRoot: path.dirname(file),
+      options: getDefaultConfiguration(),
+      rootCacheDir
+    });
+  }
+  
+  return createCompilerHostFromConfiguration({
+    appRoot: path.dirname(file),
+    options: {
+      &apos;application/javascript&apos;: info
+    },
+    rootCacheDir
+  });
+}
+
+export function createCompilerHostFromConfigFileSync(file, rootCacheDir=null) {
+  let info = JSON.parse(fs.readFileSync(file, &apos;utf8&apos;));
+  
+  if (&apos;env&apos; in info) {
+    let ourEnv = process.env.ELECTRON_COMPILE_ENV || process.env.NODE_ENV || &apos;development&apos;;
+    info = info.env[ourEnv];
+  }
+  
+  return createCompilerHostFromConfiguration({
+    appRoot: path.dirname(file),
+    options: info,
+    rootCacheDir
+  });
+}
+
+export function createCompilerHostFromProjectRootSync(rootDir, rootCacheDir=null) {
+  let compilerc = path.join(rootDir, &apos;.compilerc&apos;);
+  if (statSyncNoException(compilerc)) {
+    d(`Found a .compilerc at ${compilerc}, using it`);
+    return createCompilerHostFromConfigFileSync(compilerc, rootCacheDir);
+  }
+  
+  let babelrc = path.join(rootDir, &apos;.babelrc&apos;);
+  if (statSyncNoException(babelrc)) {
+    d(`Found a .babelrc at ${babelrc}, using it`);
+    return createCompilerHostFromBabelRcSync(babelrc, rootCacheDir);
+  }
+    
+  d(`Using package.json or default parameters at ${rootDir}`);
+  return createCompilerHostFromBabelRcSync(path.join(rootDir, &apos;package.json&apos;), rootCacheDir);
+}
+
+/**
+ * Returns what electron-compile would use as a default rootCacheDir. Usually only
+ * used for debugging purposes
+ *  
+ * @return {string}  A path that may or may not exist where electron-compile would
+ *                   set up a development mode cache.
+ */ 
+export function calculateDefaultCompileCacheDirectory() {
+  let tmpDir = process.env.TEMP || process.env.TMPDIR || &apos;/tmp&apos;;
+  let hash = require(&apos;crypto&apos;).createHash(&apos;md5&apos;).update(process.execPath).digest(&apos;hex&apos;);
+
+  let cacheDir = path.join(tmpDir, `compileCache_${hash}`);
+  mkdirp.sync(cacheDir);
+  
+  d(`Using default cache directory: ${cacheDir}`);
+  return cacheDir;
+}
+
+
+/**
+ * Returns the default .configrc if no configuration information can be found.
+ *  
+ * @return {Object}  A list of default config settings for electron-compiler.
+ */ 
+export function getDefaultConfiguration() {
+  return {
+    &apos;application/javascript&apos;: {
+      &quot;presets&quot;: [&quot;stage-0&quot;, &quot;es2015&quot;],
+      &quot;sourceMaps&quot;: &quot;inline&quot;
+    }
+  };
+}
+
+/**
+ * Allows you to create new instances of all compilers that are supported by 
+ * electron-compile and use them directly. Currently supports Babel, CoffeeScript, 
+ * TypeScript, LESS, and Jade.
+ *  
+ * @return {Object}  An Object whose Keys are MIME types, and whose values 
+ * are instances of @{link CompilerBase}.
+ */ 
+export function createCompilers() {
+  if (!allCompilerClasses) {
+    // First we want to see if electron-compilers itself has been installed with
+    // devDependencies. If that&apos;s not the case, check to see if
+    // electron-compilers is installed as a peer dependency (probably as a
+    // devDependency of the root project).
+    const locations = [&apos;electron-compilers&apos;, &apos;../../electron-compilers&apos;];
+
+    for (let location of locations) {
+      try {
+        allCompilerClasses = require(location);
+      } catch (e) {
+        // Yolo
+      }
+    }
+
+    if (!allCompilerClasses) {
+      throw new Error(&quot;Electron compilers not found but were requested to be loaded&quot;);
+    }
+  }
+
+  // NB: Note that this code is carefully set up so that InlineHtmlCompiler 
+  // (i.e. classes with `createFromCompilers`) initially get an empty object,
+  // but will have a reference to the final result of what we return, which
+  // resolves the circular dependency we&apos;d otherwise have here.
+  let ret = {};
+  let instantiatedClasses = _.map(allCompilerClasses, (Klass) =&gt; {
+    if (&apos;createFromCompilers&apos; in Klass) {
+      return Klass.createFromCompilers(ret);
+    } else {
+      return new Klass();
+    }
+  });
+
+  _.reduce(instantiatedClasses, (acc,x) =&gt; {
+    let Klass = Object.getPrototypeOf(x).constructor;
+
+    for (let type of Klass.getInputMimeTypes()) { acc[type] = x; }
+    return acc;
+  }, ret);
+  
+  return ret;
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.4.3)</span></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

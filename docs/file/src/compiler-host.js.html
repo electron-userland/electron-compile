@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/compiler-host.js | electron-compilers API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+  <script src="script/manual.js"></script>
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  <a href="test.html" data-ice="testLink">Test</a>
+  <a data-ice="repoURL" href="https://github.com/paulcbetts/electron-compile" class="repo-url-github">Repository</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/compile-cache.js~CompileCache.html">CompileCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/compiler-host.js~CompilerHost.html">CompilerHost</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/file-change-cache.js~FileChangedCache.html">FileChangedCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/read-only-compiler.js~ReadOnlyCompiler.html">ReadOnlyCompiler</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-calculateDefaultCompileCacheDirectory">calculateDefaultCompileCacheDirectory</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromBabelRc">createCompilerHostFromBabelRc</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromBabelRcSync">createCompilerHostFromBabelRcSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromConfigFile">createCompilerHostFromConfigFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromConfigFileSync">createCompilerHostFromConfigFileSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromProjectRoot">createCompilerHostFromProjectRoot</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromProjectRootSync">createCompilerHostFromProjectRootSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilers">createCompilers</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getDefaultConfiguration">getDefaultConfiguration</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-init">init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-initializeGlobalHooks">initializeGlobalHooks</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-forAllFilesSync">forAllFilesSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-initializeProtocolHook">initializeProtocolHook</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-registerRequireExtension">registerRequireExtension</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/compiler-host.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import _ from &apos;lodash&apos;;
+import mimeTypes from &apos;mime-types&apos;;
+import fs from &apos;fs&apos;;
+import zlib from &apos;zlib&apos;;
+import path from &apos;path&apos;;
+import {pfs, pzlib} from &apos;./promise&apos;;
+
+import {forAllFiles, forAllFilesSync} from &apos;./for-all-files&apos;;
+import CompileCache from &apos;./compile-cache&apos;;
+import FileChangedCache from &apos;./file-change-cache&apos;;
+import ReadOnlyCompiler from &apos;./read-only-compiler&apos;;
+
+const d = require(&apos;debug&apos;)(&apos;electron-compile:compiler-host&apos;);
+
+// This isn&apos;t even my
+const finalForms = {
+  &apos;text/javascript&apos;: true,
+  &apos;application/javascript&apos;: true,
+  &apos;text/html&apos;: true,
+  &apos;text/css&apos;: true,
+  &apos;image/svg+xml&apos;: true
+};
+
+/**
+ * This class is the top-level class that encapsulates all of the logic of 
+ * compiling and caching application code. If you&apos;re looking for a &quot;Main class&quot;,
+ * this is it.
+ * 
+ * This class can be created directly but it is usually created via the methods
+ * in config-parser, which will among other things, set up the compiler options
+ * given a project root.
+ * 
+ * CompilerHost is also the top-level class that knows how to serialize all of the
+ * information necessary to recreate itself, either as a development host (i.e.
+ * will allow cache misses and actual compilation), or as a read-only version of
+ * itself for production.
+ */ 
+export default class CompilerHost {
+  /**  
+   * Creates an instance of CompilerHost. You probably want to use the methods
+   * in config-parser for development, or {@link createReadonlyFromConfiguration}
+   * for production instead.
+   *    
+   * @param  {string} rootCacheDir  The root directory to use for the cache
+   * 
+   * @param  {Object} compilers  an Object whose keys are input MIME types and
+   *                             whose values are instances of CompilerBase. Create
+   *                             this via the {@link createCompilers} method in
+   *                             config-parser.
+   * 
+   * @param  {FileChangedCache} fileChangeCache  A file-change cache that is 
+   *                                             optionally pre-loaded.
+   * 
+   * @param  {boolean} readOnlyMode  If True, cache misses will fail and 
+   *                                 compilation will not be attempted.
+   * 
+   * @param  {CompilerBase} fallbackCompiler (optional)  When a file is compiled
+   *                                         which doesn&apos;t have a matching compiler,
+   *                                         this compiler will be used instead. If
+   *                                         null, will fail compilation. A good
+   *                                         alternate fallback is the compiler for
+   *                                         &apos;text/plain&apos;, which is guaranteed to be
+   *                                         present.
+   */   
+  constructor(rootCacheDir, compilers, fileChangeCache, readOnlyMode, fallbackCompiler = null) {
+    let compilersByMimeType = _.assign({}, compilers);
+    _.assign(this, {rootCacheDir, compilersByMimeType, fileChangeCache, readOnlyMode, fallbackCompiler});
+    this.appRoot = this.fileChangeCache.appRoot;
+    
+    this.cachesForCompilers = _.reduce(Object.keys(compilersByMimeType), (acc, x) =&gt; {
+      let compiler = compilersByMimeType[x];
+      if (acc.has(compiler)) return acc;
+
+      acc.set(compiler, CompileCache.createFromCompiler(rootCacheDir, compiler, fileChangeCache));
+      return acc;
+    }, new Map());
+  }
+    
+  /**    
+   * Creates a production-mode CompilerHost from the previously saved 
+   * configuration
+   *    
+   * @param  {string} rootCacheDir  The root directory to use for the cache. This
+   *                                cache must have cache information saved via
+   *                                {@link saveConfiguration}
+   *
+   * @param  {string} appRoot  The top-level directory for your application (i.e.
+   *                           the one which has your package.json).
+   *
+   * @param  {CompilerBase} fallbackCompiler (optional)  When a file is compiled
+   *                                         which doesn&apos;t have a matching compiler,
+   *                                         this compiler will be used instead. If
+   *                                         null, will fail compilation. A good
+   *                                         alternate fallback is the compiler for
+   *                                         &apos;text/plain&apos;, which is guaranteed to be
+   *                                         present. 
+   *
+   * @return {Promise&lt;CompilerHost&gt;}  A read-only CompilerHost
+   */   
+  static async createReadonlyFromConfiguration(rootCacheDir, appRoot, fallbackCompiler=null) {
+    let target = path.join(rootCacheDir, &apos;compiler-info.json.gz&apos;);
+    let buf = await pfs.readFile(target);
+    let info = JSON.parse(await pzlib.gunzip(buf));
+    
+    let fileChangeCache = FileChangedCache.loadFromData(info.fileChangeCache, appRoot, true);
+
+    let compilers = _.reduce(Object.keys(info.compilers), (acc, x) =&gt; {
+      let cur = info.compilers[x];
+      acc[x] = new ReadOnlyCompiler(cur.name, cur.compilerVersion, cur.compilerOptions, cur.inputMimeTypes);
+      
+      return acc;
+    }, {});
+    
+    return new CompilerHost(rootCacheDir, compilers, fileChangeCache, true, fallbackCompiler);
+  }
+
+  /**    
+   * Creates a development-mode CompilerHost from the previously saved 
+   * configuration.
+   *    
+   * @param  {string} rootCacheDir  The root directory to use for the cache. This
+   *                                cache must have cache information saved via
+   *                                {@link saveConfiguration}
+   *
+   * @param  {string} appRoot  The top-level directory for your application (i.e.
+   *                           the one which has your package.json).
+   *
+   * @param  {Object} compilersByMimeType  an Object whose keys are input MIME 
+   *                                       types and whose values are instances 
+   *                                       of CompilerBase. Create this via the 
+   *                                       {@link createCompilers} method in 
+   *                                       config-parser.
+   * 
+   * @param  {CompilerBase} fallbackCompiler (optional)  When a file is compiled
+   *                                         which doesn&apos;t have a matching compiler,
+   *                                         this compiler will be used instead. If
+   *                                         null, will fail compilation. A good
+   *                                         alternate fallback is the compiler for
+   *                                         &apos;text/plain&apos;, which is guaranteed to be
+   *                                         present. 
+   *
+   * @return {Promise&lt;CompilerHost&gt;}  A read-only CompilerHost
+   */   
+  static async createFromConfiguration(rootCacheDir, appRoot, compilersByMimeType, fallbackCompiler=null) {
+    let target = path.join(rootCacheDir, &apos;compiler-info.json.gz&apos;);
+    let buf = await pfs.readFile(target);
+    let info = JSON.parse(await pzlib.gunzip(buf));
+    
+    let fileChangeCache = FileChangedCache.loadFromData(info.fileChangeCache, appRoot, false);
+    
+    _.each(Object.keys(info.compilers), (x) =&gt; {
+      let cur = info.compilers[x];
+      compilersByMimeType[x].compilerOptions = cur.compilerOptions;
+    });
+    
+    return new CompilerHost(rootCacheDir, compilersByMimeType, fileChangeCache, false, fallbackCompiler);
+  }
+  
+  
+  /**  
+   * Saves the current compiler configuration to a file that 
+   * {@link createReadonlyFromConfiguration} can use to recreate the current 
+   * compiler environment
+   *    
+   * @return {Promise}  Completion
+   */   
+  async saveConfiguration() {
+    let serializedCompilerOpts = _.reduce(Object.keys(this.compilersByMimeType), (acc, x) =&gt; {
+      let compiler = this.compilersByMimeType[x];
+      let Klass = Object.getPrototypeOf(compiler).constructor;
+      
+      let val = {
+        name: Klass.name,
+        inputMimeTypes: Klass.getInputMimeTypes(),
+        compilerOptions: compiler.compilerOptions,
+        compilerVersion: compiler.getCompilerVersion()
+      };
+      
+      acc[x] = val;
+      return acc;
+    }, {});
+    
+    let info = {
+      fileChangeCache: this.fileChangeCache.getSavedData(),
+      compilers: serializedCompilerOpts
+    };
+    
+    let target = path.join(this.rootCacheDir, &apos;compiler-info.json.gz&apos;);
+    let buf = await pzlib.gzip(new Buffer(JSON.stringify(info)));
+    await pfs.writeFile(target, buf);
+  }
+  
+  /**  
+   * Compiles a file and returns the compiled result.
+   *    
+   * @param  {string} filePath  The path to the file to compile
+   *
+   * @return {Promise&lt;object&gt;}  An Object with the compiled result
+   *
+   * @property {Object} hashInfo  The hash information returned from getHashForPath
+   * @property {string} code  The source code if the file was a text file
+   * @property {Buffer} binaryData  The file if it was a binary file
+   * @property {string} mimeType  The MIME type saved in the cache.
+   * @property {string[]} dependentFiles  The dependent files returned from 
+   *                                      compiling the file, if any.
+   */   
+  compile(filePath) {
+    return (this.readOnlyMode ? this.compileReadOnly(filePath) : this.fullCompile(filePath));
+  }
+  
+  
+  /**  
+   * Handles compilation in read-only mode
+   *
+   * @private
+   */   
+  async compileReadOnly(filePath) {
+    // We guarantee that node_modules are always shipped directly
+    let type = mimeTypes.lookup(filePath);
+    if (FileChangedCache.isInNodeModules(filePath)) {
+      return { 
+        mimeType: type || &apos;application/javascript&apos;,
+        code: await pfs.readFile(filePath, &apos;utf8&apos;) 
+      };    
+    }
+    
+    let hashInfo = await this.fileChangeCache.getHashForPath(filePath);
+
+    // NB: Here, we&apos;re basically only using the compiler here to find
+    // the appropriate CompileCache
+    let compiler = CompilerHost.shouldPassthrough(hashInfo) ?
+      this.getPassthroughCompiler() :
+      this.compilersByMimeType[type || &apos;__lolnothere&apos;];
+
+    if (!compiler) compiler = this.fallbackCompiler;
+
+    let cache = this.cachesForCompilers.get(compiler);
+    let {code, binaryData, mimeType} = await cache.get(filePath);
+
+    code = code || binaryData;
+    if (!code || !mimeType) {
+      throw new Error(`Asked to compile ${filePath} in production, is this file not precompiled?`);
+    }
+
+    return { code, mimeType };
+  }
+
+  /**  
+   * Handles compilation in read-write mode
+   *
+   * @private
+   */     
+  async fullCompile(filePath) {
+    d(`Compiling ${filePath}`);
+    
+    let hashInfo = await this.fileChangeCache.getHashForPath(filePath);
+    let type = mimeTypes.lookup(filePath);
+    
+    if (hashInfo.isInNodeModules) {
+      let code = hashInfo.sourceCode || await pfs.readFile(filePath, &apos;utf8&apos;);
+      return { code, mimeType: type };
+    }
+
+    let compiler = CompilerHost.shouldPassthrough(hashInfo) ?
+      this.getPassthroughCompiler() :
+      this.compilersByMimeType[type || &apos;__lolnothere&apos;];
+
+    if (!compiler) {
+      d(`Falling back to passthrough compiler for ${filePath}`);
+      compiler = this.fallbackCompiler;
+    }
+
+    if (!compiler) {
+      throw new Error(`Couldn&apos;t find a compiler for ${filePath}`);
+    }
+
+    let cache = this.cachesForCompilers.get(compiler);
+    return await cache.getOrFetch(
+      filePath,
+      (filePath, hashInfo) =&gt; this.compileUncached(filePath, hashInfo, compiler));
+  }
+
+  /**  
+   * Handles invoking compilers independent of caching
+   *
+   * @private
+   */
+  async compileUncached(filePath, hashInfo, compiler) {
+    let inputMimeType = mimeTypes.lookup(filePath);
+    
+    if (hashInfo.isFileBinary) {
+      return {
+        binaryData: hashInfo.binaryData || await pfs.readFile(filePath),
+        mimeType: inputMimeType,
+        dependentFiles: []
+      };
+    }
+    
+    let ctx = {};
+    let code = hashInfo.sourceCode || await pfs.readFile(filePath, &apos;utf8&apos;);
+
+    if (!(await compiler.shouldCompileFile(code, ctx))) {
+      d(`Compiler returned false for shouldCompileFile: ${filePath}`);
+      return { code, mimeType: mimeTypes.lookup(filePath), dependentFiles: [] };
+    }
+
+    let dependentFiles = await compiler.determineDependentFiles(code, filePath, ctx);
+
+    d(`Using compiler options: ${JSON.stringify(compiler.compilerOptions)}`);
+    let result = await compiler.compile(code, filePath, ctx);
+
+    let shouldInlineHtmlify = 
+      inputMimeType !== &apos;text/html&apos; &amp;&amp;
+      result.mimeType === &apos;text/html&apos;;
+    
+    let isPassthrough = 
+      result.mimeType === &apos;text/plain&apos; || 
+      !result.mimeType || 
+      CompilerHost.shouldPassthrough(hashInfo);
+      
+    if ((finalForms[result.mimeType] &amp;&amp; !shouldInlineHtmlify) || isPassthrough) {
+      // Got something we can use in-browser, let&apos;s return it
+      return _.assign(result, {dependentFiles});
+    } else {
+      d(`Recursively compiling result of ${filePath} with non-final MIME type ${result.mimeType}, input was ${inputMimeType}`);
+
+      hashInfo = _.assign({ sourceCode: result.code, mimeType: result.mimeType }, hashInfo);
+      compiler = this.compilersByMimeType[result.mimeType || &apos;__lolnothere&apos;];
+
+      if (!compiler) {
+        d(`Recursive compile failed - intermediate result: ${JSON.stringify(result)}`);
+
+        throw new Error(`Compiling ${filePath} resulted in a MIME type of ${result.mimeType}, which we don&apos;t know how to handle`);
+      }
+
+      return await this.compileUncached(
+        `${filePath}.${mimeTypes.extension(result.mimeType || &apos;txt&apos;)}`, 
+        hashInfo, compiler);
+    }
+  }
+  
+  /**  
+   * Pre-caches an entire directory of files recursively. Usually used for 
+   * building custom compiler tooling.
+   *    
+   * @param  {string} rootDirectory  The top-level directory to compile
+   *
+   * @param  {Function} shouldCompile (optional)  A Function which allows the 
+   *                                  caller to disable compiling certain files.
+   *                                  It takes a fully-qualified path to a file,
+   *                                  and should return a Boolean.
+   *
+   * @return {Promise}  Completion.
+   */   
+  async compileAll(rootDirectory, shouldCompile=null) {
+    let should = shouldCompile || function() {return true;};
+
+    await forAllFiles(rootDirectory, (f) =&gt; {
+      if (!should(f)) return;
+
+      d(`Compiling ${f}`);
+      return this.compile(f, this.compilersByMimeType);
+    });
+  }
+  
+  /*
+   * Sync Methods
+   */
+   
+  compileSync(filePath) {
+    return (this.readOnlyMode ? this.compileReadOnlySync(filePath) : this.fullCompileSync(filePath));
+  }
+  
+  static createReadonlyFromConfigurationSync(rootCacheDir, appRoot, fallbackCompiler=null) {
+    let target = path.join(rootCacheDir, &apos;compiler-info.json.gz&apos;);
+    let buf = fs.readFileSync(target);
+    let info = JSON.parse(zlib.gunzipSync(buf));
+    
+    let fileChangeCache = FileChangedCache.loadFromData(info.fileChangeCache, appRoot, true);
+    
+    let compilers = _.reduce(Object.keys(info.compilers), (acc, x) =&gt; {
+      let cur = info.compilers[x];
+      acc[x] = new ReadOnlyCompiler(cur.name, cur.compilerVersion, cur.compilerOptions, cur.inputMimeTypes);
+      
+      return acc;
+    }, {});
+    
+    return new CompilerHost(rootCacheDir, compilers, fileChangeCache, true, fallbackCompiler);
+  }
+  
+  static createFromConfigurationSync(rootCacheDir, appRoot, compilersByMimeType, fallbackCompiler=null) {
+    let target = path.join(rootCacheDir, &apos;compiler-info.json.gz&apos;);
+    let buf = fs.readFileSync(target);
+    let info = JSON.parse(zlib.gunzipSync(buf));
+    
+    let fileChangeCache = FileChangedCache.loadFromData(info.fileChangeCache, appRoot, false);
+    
+    _.each(Object.keys(info.compilers), (x) =&gt; {
+      let cur = info.compilers[x];
+      compilersByMimeType[x].compilerOptions = cur.compilerOptions;
+    });
+    
+    return new CompilerHost(rootCacheDir, compilersByMimeType, fileChangeCache, false, fallbackCompiler);
+  }
+   
+  saveConfigurationSync() {
+    let serializedCompilerOpts = _.reduce(Object.keys(this.compilersByMimeType), (acc, x) =&gt; {
+      let compiler = this.compilersByMimeType[x];
+      let Klass = Object.getPrototypeOf(compiler).constructor;
+      
+      let val = {
+        name: Klass.name,
+        inputMimeTypes: Klass.getInputMimeTypes(),
+        compilerOptions: compiler.compilerOptions,
+        compilerVersion: compiler.getCompilerVersion()
+      };
+      
+      acc[x] = val;
+      return acc;
+    }, {});
+    
+    let info = {
+      fileChangeCache: this.fileChangeCache.getSavedData(),
+      compilers: serializedCompilerOpts
+    };
+    
+    let target = path.join(this.rootCacheDir, &apos;compiler-info.json.gz&apos;);
+    let buf = zlib.gzipSync(new Buffer(JSON.stringify(info)));
+    fs.writeFileSync(target, buf);
+  }
+  
+  compileReadOnlySync(filePath) {
+    // We guarantee that node_modules are always shipped directly
+    let type = mimeTypes.lookup(filePath);
+    if (FileChangedCache.isInNodeModules(filePath)) {
+      return { 
+        mimeType: type || &apos;application/javascript&apos;,
+        code: fs.readFileSync(filePath, &apos;utf8&apos;) 
+      };    
+    }  
+
+    let hashInfo = this.fileChangeCache.getHashForPathSync(filePath);
+    
+    // We guarantee that node_modules are always shipped directly
+    if (hashInfo.isInNodeModules) {
+      return { 
+        mimeType: type, 
+        code: hashInfo.sourceCode || fs.readFileSync(filePath, &apos;utf8&apos;) 
+      };    
+    }
+
+    // NB: Here, we&apos;re basically only using the compiler here to find
+    // the appropriate CompileCache
+    let compiler = CompilerHost.shouldPassthrough(hashInfo) ?
+      this.getPassthroughCompiler() :
+      this.compilersByMimeType[type || &apos;__lolnothere&apos;];
+
+    if (!compiler) compiler = this.fallbackCompiler;
+
+    let cache = this.cachesForCompilers.get(compiler);
+    let {code, binaryData, mimeType} = cache.getSync(filePath);
+
+    code = code || binaryData;
+    if (!code || !mimeType) {
+      throw new Error(`Asked to compile ${filePath} in production, is this file not precompiled?`);
+    }
+
+    return { code, mimeType };
+  }
+
+  fullCompileSync(filePath) {
+    d(`Compiling ${filePath}`);
+
+    let hashInfo = this.fileChangeCache.getHashForPathSync(filePath);
+    let type = mimeTypes.lookup(filePath);
+    
+    if (hashInfo.isInNodeModules) {
+      let code = hashInfo.sourceCode || fs.readFileSync(filePath, &apos;utf8&apos;);
+      return { code, mimeType: type };
+    }
+
+    let compiler = CompilerHost.shouldPassthrough(hashInfo) ?
+      this.getPassthroughCompiler() :
+      this.compilersByMimeType[type || &apos;__lolnothere&apos;];
+
+    if (!compiler) {
+      d(`Falling back to passthrough compiler for ${filePath}`);
+      compiler = this.fallbackCompiler;
+    }
+
+    if (!compiler) {
+      throw new Error(`Couldn&apos;t find a compiler for ${filePath}`);
+    }
+
+    let cache = this.cachesForCompilers.get(compiler);
+    return cache.getOrFetchSync(
+      filePath,
+      (filePath, hashInfo) =&gt; this.compileUncachedSync(filePath, hashInfo, compiler));
+  }
+
+  compileUncachedSync(filePath, hashInfo, compiler) {
+    let inputMimeType = mimeTypes.lookup(filePath);
+    
+    if (hashInfo.isFileBinary) {
+      return {
+        binaryData: hashInfo.binaryData || fs.readFileSync(filePath),
+        mimeType: inputMimeType,
+        dependentFiles: []
+      };
+    }
+  
+    let ctx = {};
+    let code = hashInfo.sourceCode || fs.readFileSync(filePath, &apos;utf8&apos;);
+
+    if (!(compiler.shouldCompileFileSync(code, ctx))) {
+      d(`Compiler returned false for shouldCompileFile: ${filePath}`);
+      return { code, mimeType: mimeTypes.lookup(filePath), dependentFiles: [] };
+    }
+
+    let dependentFiles = compiler.determineDependentFilesSync(code, filePath, ctx);
+
+    let result = compiler.compileSync(code, filePath, ctx);
+
+    let shouldInlineHtmlify = 
+      inputMimeType !== &apos;text/html&apos; &amp;&amp;
+      result.mimeType === &apos;text/html&apos;;
+      
+    let isPassthrough = 
+      result.mimeType === &apos;text/plain&apos; || 
+      !result.mimeType || 
+      CompilerHost.shouldPassthrough(hashInfo);
+      
+    if ((finalForms[result.mimeType] &amp;&amp; !shouldInlineHtmlify) || isPassthrough) {
+      // Got something we can use in-browser, let&apos;s return it
+      return _.assign(result, {dependentFiles});
+    } else {
+      d(`Recursively compiling result of ${filePath} with non-final MIME type ${result.mimeType}, input was ${inputMimeType}`);
+
+      hashInfo = _.assign({ sourceCode: result.code, mimeType: result.mimeType }, hashInfo);
+      compiler = this.compilersByMimeType[result.mimeType || &apos;__lolnothere&apos;];
+
+      if (!compiler) {
+        d(`Recursive compile failed - intermediate result: ${JSON.stringify(result)}`);
+
+        throw new Error(`Compiling ${filePath} resulted in a MIME type of ${result.mimeType}, which we don&apos;t know how to handle`);
+      }
+
+      return this.compileUncachedSync(
+        `${filePath}.${mimeTypes.extension(result.mimeType || &apos;txt&apos;)}`, 
+        hashInfo, compiler);
+    }
+  }
+
+  compileAllSync(rootDirectory, shouldCompile=null) {
+    let should = shouldCompile || function() {return true;};
+
+    forAllFilesSync(rootDirectory, (f) =&gt; {
+      if (!should(f)) return;
+      return this.compileSync(f, this.compilersByMimeType);
+    });
+  }
+  
+  /*
+   * Other stuff
+   */
+
+
+  /**
+   * Returns the passthrough compiler 
+   *
+   * @private
+   */   
+  getPassthroughCompiler() {
+    return this.compilersByMimeType[&apos;text/plain&apos;];
+  }
+
+
+  /**
+   * Determines whether we should even try to compile the content. Note that in
+   * some cases, content will still be in cache even if this returns true, and
+   * in other cases (isInNodeModules), we&apos;ll know explicitly to not even bother
+   * looking in the cache.
+   *    
+   * @private
+   */   
+  static shouldPassthrough(hashInfo) {
+    return hashInfo.isMinified || hashInfo.isInNodeModules || hashInfo.hasSourceMap || hashInfo.isFileBinary;
+  }
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.4.3)</span></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

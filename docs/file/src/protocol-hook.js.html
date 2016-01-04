@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/protocol-hook.js | electron-compilers API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+  <script src="script/manual.js"></script>
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  <a href="test.html" data-ice="testLink">Test</a>
+  <a data-ice="repoURL" href="https://github.com/paulcbetts/electron-compile" class="repo-url-github">Repository</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/compile-cache.js~CompileCache.html">CompileCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/compiler-host.js~CompilerHost.html">CompilerHost</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/file-change-cache.js~FileChangedCache.html">FileChangedCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/read-only-compiler.js~ReadOnlyCompiler.html">ReadOnlyCompiler</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-calculateDefaultCompileCacheDirectory">calculateDefaultCompileCacheDirectory</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromBabelRc">createCompilerHostFromBabelRc</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromBabelRcSync">createCompilerHostFromBabelRcSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromConfigFile">createCompilerHostFromConfigFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromConfigFileSync">createCompilerHostFromConfigFileSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromProjectRoot">createCompilerHostFromProjectRoot</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromProjectRootSync">createCompilerHostFromProjectRootSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilers">createCompilers</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getDefaultConfiguration">getDefaultConfiguration</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-init">init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-initializeGlobalHooks">initializeGlobalHooks</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-forAllFilesSync">forAllFilesSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-initializeProtocolHook">initializeProtocolHook</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-registerRequireExtension">registerRequireExtension</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/protocol-hook.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import &apos;./babel-maybefill&apos;;
+import url from &apos;url&apos;;
+import fs from &apos;fs&apos;;
+import mime from &apos;mime-types&apos;;
+
+import CompilerHost from &apos;./compiler-host&apos;;
+
+const magicWords = &quot;__magic__file__to__help__electron__compile.js&quot;;
+const magicGlobalForRootCacheDir = &apos;__electron_compile_root_cache_dir&apos;;
+const magicGlobalForAppRootDir = &apos;__electron_compile_app_root_dir&apos;;
+
+const d = require(&apos;debug&apos;)(&apos;electron-compile:protocol-hook&apos;);
+
+let protocol = null;
+
+/**
+ * Adds our script header to the top of all HTML files
+ *  
+ * @private
+ */ 
+export function rigHtmlDocumentToInitializeElectronCompile(doc) {
+  let lines = doc.split(&quot;\n&quot;);
+  let replacement = `&lt;head&gt;&lt;script src=&quot;${magicWords}&quot;&gt;&lt;/script&gt;`;
+  let replacedHead = false;
+
+  for (let i=0; i &lt; lines.length; i++) {
+    if (!lines[i].match(/&lt;head&gt;/i)) continue;
+
+    lines[i] = (lines[i]).replace(/&lt;head&gt;/i, replacement);
+    replacedHead = true;
+    break;
+  }
+
+  if (!replacedHead) {
+    replacement = `&lt;html$1&gt;&lt;head&gt;&lt;script src=&quot;${magicWords}&quot;&gt;&lt;/script&gt;&lt;/head&gt;`;
+    for (let i=0; i &lt; lines.length; i++) {
+      if (!lines[i].match(/&lt;html/i)) continue;
+
+      lines[i] = (lines[i]).replace(/&lt;html([^&gt;]+)&gt;/i, replacement);
+      break;
+    }
+  }
+
+  return lines.join(&quot;\n&quot;);
+}
+
+function requestFileJob(filePath, finish) {
+  fs.readFile(filePath, (err, buf) =&gt; {
+    if (err) { 
+      if (err.errno === 34) {
+        finish(-6); // net::ERR_FILE_NOT_FOUND
+        return;
+      } else {
+        finish(-2); // net::FAILED
+        return;
+      }
+    }
+    
+    finish({
+      data: buf,
+      mimeType: mime.lookup(filePath) || &apos;text/plain&apos;
+    });
+  });
+}
+
+let rendererInitialized = false;
+
+/**
+ * Called by our rigged script file at the top of every HTML file to set up
+ * the same compilers as the browser process that created us
+ *  
+ * @private
+ */ 
+export function initializeRendererProcess(readOnlyMode) {
+  if (rendererInitialized) return;
+  
+  // NB: If we don&apos;t do this, we&apos;ll get a renderer crash if you enable debug
+  require(&apos;debug/browser&apos;);
+  
+  let rootCacheDir = require(&apos;remote&apos;).getGlobal(magicGlobalForRootCacheDir);
+  let appRoot = require(&apos;remote&apos;).getGlobal(magicGlobalForAppRootDir);
+  let compilerHost = null;
+  
+  // NB: This has to be synchronous because we need to block HTML parsing
+  // until we&apos;re set up
+  if (readOnlyMode) {
+    d(`Setting up electron-compile in precompiled mode with cache dir: ${rootCacheDir}`);
+    compilerHost = CompilerHost.createReadonlyFromConfigurationSync(rootCacheDir, appRoot);
+  } else {
+    d(`Setting up electron-compile in development mode with cache dir: ${rootCacheDir}`);
+    const { createCompilers } = require(&apos;./config-parser&apos;);
+    const compilersByMimeType = createCompilers();
+    
+    compilerHost = CompilerHost.createFromConfigurationSync(rootCacheDir, appRoot, compilersByMimeType);
+  }
+  
+  require(&apos;./x-require&apos;);
+  require(&apos;./require-hook&apos;).default(compilerHost);
+  rendererInitialized = true;
+}
+
+
+/**
+ * Initializes the protocol hook on file: that allows us to intercept files 
+ * loaded by Chromium and rewrite them. This method along with 
+ * {@link registerRequireExtension} are the top-level methods that electron-compile
+ * actually uses to intercept code that Electron loads.
+ *  
+ * @param  {CompilerHost} compilerHost  The compiler host to use for compilation.
+ */ 
+export function initializeProtocolHook(compilerHost) {
+  protocol = protocol || require(&apos;protocol&apos;);
+  
+  global[magicGlobalForRootCacheDir] = compilerHost.rootCacheDir;
+  global[magicGlobalForAppRootDir] = compilerHost.appRoot;
+  
+  const electronCompileSetupCode = `if (window.require) require(&apos;electron-compile/lib/protocol-hook&apos;).initializeRendererProcess(${compilerHost.readOnlyMode});`;
+
+  protocol.interceptBufferProtocol(&apos;file&apos;, async function(request, finish) {
+    let uri = url.parse(request.url);
+
+    d(`Intercepting url ${request.url}`);
+    if (request.url.indexOf(magicWords) &gt; -1) {
+      finish({
+        mimeType: &apos;application/javascript&apos;,
+        data: new Buffer(electronCompileSetupCode, &apos;utf8&apos;)
+      });
+      
+      return;
+    }
+
+    // This is a protocol-relative URL that has gone pear-shaped in Electron,
+    // let&apos;s rewrite it
+    if (uri.host &amp;&amp; uri.host.length &gt; 1) {
+      //let newUri = request.url.replace(/^file:/, &quot;https:&quot;);
+      // TODO: Jump off this bridge later
+      d(`TODO: Found bogus protocol-relative URL, can&apos;t fix it up!!`);
+      finish(-2);
+    }
+
+    let filePath = decodeURIComponent(uri.pathname);
+
+    // NB: pathname has a leading &apos;/&apos; on Win32 for some reason
+    if (process.platform === &apos;win32&apos;) {
+      filePath = filePath.slice(1);
+    }
+
+    // NB: Special-case files coming from atom.asar or node_modules
+    if (filePath.match(/[\/\\]atom.asar/) || filePath.match(/[\/\\]node_modules/)) {
+      requestFileJob(filePath, finish);
+      return;
+    }
+    
+    try {
+      let result = await compilerHost.compile(filePath);
+      
+      if (filePath.match(/\.html?$/i)) {
+        result.code = rigHtmlDocumentToInitializeElectronCompile(result.code);
+      }
+      
+      if (result.binaryData || result.code instanceof Buffer) {
+        finish({ data: result.binaryData || result.code, mimeType: result.mimeType });
+        return;
+      } else {
+        finish({ data: new Buffer(result.code), mimeType: result.mimeType });
+        return;
+      }
+    } catch (e) {
+      let err = `Failed to compile ${filePath}: ${e.message}\n${e.stack}`;
+      d(err);
+      
+      if (e.errno === 34 /*ENOENT*/) {
+        finish(-6); // net::ERR_FILE_NOT_FOUND
+        return;
+      }
+
+      finish({ mimeType: &apos;text/plain&apos;, data: new Buffer(err) });
+      return;
+    }
+  });
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.4.3)</span></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

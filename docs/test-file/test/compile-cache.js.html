@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">test/compile-cache.js | electron-compilers API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+  <script src="script/manual.js"></script>
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  <a href="test.html" data-ice="testLink">Test</a>
+  <a data-ice="repoURL" href="https://github.com/paulcbetts/electron-compile" class="repo-url-github">Repository</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/compile-cache.js~CompileCache.html">CompileCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/compiler-host.js~CompilerHost.html">CompilerHost</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/file-change-cache.js~FileChangedCache.html">FileChangedCache</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/read-only-compiler.js~ReadOnlyCompiler.html">ReadOnlyCompiler</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-calculateDefaultCompileCacheDirectory">calculateDefaultCompileCacheDirectory</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromBabelRc">createCompilerHostFromBabelRc</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromBabelRcSync">createCompilerHostFromBabelRcSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromConfigFile">createCompilerHostFromConfigFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromConfigFileSync">createCompilerHostFromConfigFileSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromProjectRoot">createCompilerHostFromProjectRoot</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilerHostFromProjectRootSync">createCompilerHostFromProjectRootSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createCompilers">createCompilers</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getDefaultConfiguration">getDefaultConfiguration</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-init">init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-initializeGlobalHooks">initializeGlobalHooks</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-forAllFilesSync">forAllFilesSync</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-initializeProtocolHook">initializeProtocolHook</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-registerRequireExtension">registerRequireExtension</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">test/compile-cache.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import &apos;./support.js&apos;;
+
+import fs from &apos;fs&apos;;
+import path from &apos;path&apos;;
+import rimraf from &apos;rimraf&apos;;
+import mkdirp from &apos;mkdirp&apos;;
+import FileChangeCache from &apos;../lib/file-change-cache&apos;;
+import CompileCache from &apos;../lib/compile-cache&apos;;
+import pify from &apos;pify&apos;;
+
+const pfs = pify(fs);
+
+let testCount=0;
+
+describe(&apos;The compile cache&apos;, function() {
+  beforeEach(function() {
+    this.appRootDir = path.join(__dirname, &apos;..&apos;);
+    this.fileChangeCache = new FileChangeCache(this.appRootDir);
+    
+    this.tempCacheDir = path.join(__dirname, `__compile_cache_${testCount++}`);
+    mkdirp.sync(this.tempCacheDir);
+    this.fixture = new CompileCache(this.tempCacheDir, this.fileChangeCache);
+  });
+  
+  afterEach(function() {
+    rimraf.sync(this.tempCacheDir);
+  });
+  
+  it(&apos;Should only call compile once for the same file&apos;, async function() {
+    let inputFile = path.resolve(__dirname, &apos;..&apos;, &apos;src&apos;, &apos;compile-cache.js&apos;);
+    let callCount = 0;
+    
+    let fetcher = async function(filePath, hashInfo) {
+      callCount++;
+      
+      let code = hashInfo.sourceCode || await pfs.readFile(filePath, &apos;utf8&apos;);
+      let mimeType = &apos;application/javascript&apos;;
+      return { code, mimeType };
+    };
+    
+    let result = await this.fixture.getOrFetch(inputFile, fetcher);
+    
+    expect(result.mimeType).to.equal(&apos;application/javascript&apos;);
+    expect(result.code.length &gt; 10).to.be.ok;
+    expect(callCount).to.equal(1);
+    
+    result = await this.fixture.getOrFetch(inputFile, fetcher);
+      
+    expect(result.mimeType).to.equal(&apos;application/javascript&apos;);
+    expect(result.code.length &gt; 10).to.be.ok;
+    expect(callCount).to.equal(1);
+    
+    this.fixture = new CompileCache(this.tempCacheDir, this.fileChangeCache);
+        
+    result = await this.fixture.getOrFetch(inputFile, fetcher);
+      
+    expect(result.mimeType).to.equal(&apos;application/javascript&apos;);
+    expect(result.code.length &gt; 10).to.be.ok;
+    expect(callCount).to.equal(1);
+  });
+    
+  it(&apos;Should roundtrip binary files&apos;, async function() {
+    let inputFile = path.resolve(__dirname, &apos;..&apos;, &apos;test&apos;, &apos;fixtures&apos;, &apos;binaryfile.zip&apos;);
+    let hashInfo = await this.fileChangeCache.getHashForPath(inputFile);
+    
+    await this.fixture.save(hashInfo, hashInfo.binaryData, &apos;application/zip&apos;);
+    
+    let fetcher = async function() {
+      throw new Error(&quot;No&quot;);
+    };
+    
+    let result = await this.fixture.getOrFetch(inputFile, fetcher);
+    expect(result.mimeType).to.equal(&apos;application/zip&apos;);
+    expect(result.binaryData.length).to.equal(hashInfo.binaryData.length);
+  
+    this.fixture = new CompileCache(this.tempCacheDir, this.fileChangeCache);
+        
+    result = await this.fixture.getOrFetch(inputFile, fetcher);
+    expect(result.mimeType).to.equal(&apos;application/zip&apos;);
+    expect(result.binaryData.length).to.equal(hashInfo.binaryData.length);  
+  });
+    
+  it(&apos;Should roundtrip binary files synchronously&apos;, function() {
+    let inputFile = path.resolve(__dirname, &apos;..&apos;, &apos;test&apos;, &apos;fixtures&apos;, &apos;binaryfile.zip&apos;);
+    let hashInfo = this.fileChangeCache.getHashForPathSync(inputFile);
+    
+    this.fixture.saveSync(hashInfo, hashInfo.binaryData, &apos;application/zip&apos;);
+    
+    let fetcher = function() {
+      throw new Error(&quot;No&quot;);
+    };
+    
+    let result = this.fixture.getOrFetchSync(inputFile, fetcher);
+    expect(result.mimeType).to.equal(&apos;application/zip&apos;);
+    expect(result.binaryData.length).to.equal(hashInfo.binaryData.length);
+  
+    this.fixture = new CompileCache(this.tempCacheDir, this.fileChangeCache);
+        
+    result = this.fixture.getOrFetchSync(inputFile, fetcher);
+    expect(result.mimeType).to.equal(&apos;application/zip&apos;);
+    expect(result.binaryData.length).to.equal(hashInfo.binaryData.length);  
+  });
+  
+  it(&apos;Should only call compile once for the same file synchronously&apos;, function() {
+    let inputFile = path.resolve(__dirname, &apos;..&apos;, &apos;src&apos;, &apos;compile-cache.js&apos;);
+    let callCount = 0;
+    
+    let fetcher = function(filePath, hashInfo) {
+      callCount++;
+      
+      let code = hashInfo.sourceCode || fs.readFileSync(filePath, &apos;utf8&apos;);
+      let mimeType = &apos;application/javascript&apos;;
+      
+      return { code, mimeType };
+    };
+    
+    let result = this.fixture.getOrFetchSync(inputFile, fetcher);
+    
+    expect(result.mimeType).to.equal(&apos;application/javascript&apos;);
+    expect(result.code.length &gt; 10).to.be.ok;
+    expect(callCount).to.equal(1);
+    
+    result = this.fixture.getOrFetchSync(inputFile, fetcher);
+      
+    expect(result.mimeType).to.equal(&apos;application/javascript&apos;);
+    expect(result.code.length &gt; 10).to.be.ok;
+    expect(callCount).to.equal(1);
+    
+    this.fixture = new CompileCache(this.tempCacheDir, this.fileChangeCache);
+        
+    result = this.fixture.getOrFetchSync(inputFile, fetcher);
+      
+    expect(result.mimeType).to.equal(&apos;application/javascript&apos;);
+    expect(result.code.length &gt; 10).to.be.ok;
+    expect(callCount).to.equal(1);
+  });
+
+  it(&apos;Shouldnt cache compile failures&apos;, async function() {
+    let inputFile = path.resolve(__dirname, &apos;..&apos;, &apos;lib&apos;, &apos;compile-cache.js&apos;);
+    let callCount = 0;
+    let weBlewUpCount = 0;
+    
+    let fetcher = async function() {
+      callCount++;
+      throw new Error(&quot;Lolz&quot;);
+    };
+    
+    try {
+      await this.fixture.getOrFetch(inputFile, fetcher);    
+    } catch (e) {
+      weBlewUpCount++;
+    }
+
+    expect(callCount).to.equal(1);
+    expect(weBlewUpCount).to.equal(1);
+
+    try {
+      await this.fixture.getOrFetch(inputFile, fetcher);    
+    } catch (e) {
+      weBlewUpCount++;
+    }
+    
+    expect(callCount).to.equal(2);
+    expect(weBlewUpCount).to.equal(2);
+  });
+});
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.4.3)</span></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
