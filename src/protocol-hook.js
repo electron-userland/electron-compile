@@ -128,14 +128,19 @@ export function initializeProtocolHook(compilerHost) {
     }
     
     try {
-      let { code, mimeType } = await compilerHost.compile(filePath);
+      let result = await compilerHost.compile(filePath);
       
       if (filePath.match(/\.html?$/i)) {
-        code = rigHtmlDocumentToInitializeElectronCompile(code);
+        result.code = rigHtmlDocumentToInitializeElectronCompile(result.code);
       }
-        
-      finish({ data: new Buffer(code), mimeType });
-      return;
+      
+      if (result.binaryData || result.code instanceof Buffer) {
+        finish({ data: result.binaryData || result.code, mimeType: result.mimeType });
+        return;
+      } else {
+        finish({ data: new Buffer(result.code), mimeType: result.mimeType });
+        return;
+      }
     } catch (e) {
       let err = `Failed to compile ${filePath}: ${e.message}\n${e.stack}`;
       d(err);
