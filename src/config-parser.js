@@ -306,7 +306,7 @@ export function calculateDefaultCompileCacheDirectory() {
 export function getDefaultConfiguration() {
   return {
     'application/javascript': {
-      "presets": ["stage-0", "es2015"],
+      "presets": ["stage-0", "es2015", "react"],
       "sourceMaps": "inline"
     }
   };
