@@ -8,7 +8,8 @@ import _ from 'lodash';
 
 const validInputs = [
   'inline-valid.html',
-  'inline-valid-2.html'
+  'inline-valid-2.html',
+  'inline-valid-3.html'
 ];
 
 const pfs = pify(fs);
@@ -58,6 +59,8 @@ describe('The inline HTML compiler', function() {
         let text = $(el).text();
         if (!text || text.length < 2) return;
 
+        if ($(el).attr('type').match(/handlebars/)) return;
+
         expect(_.find(text.split('\n'), (l) => l.match(/sourceMappingURL/))).to.be.ok;
       });
     });
@@ -83,6 +86,9 @@ describe('The inline HTML compiler', function() {
       $('script').map((__, el) => {
         let text = $(el).text();
         if (!text || text.length < 2) return;
+
+        d($(el).attr('type'));
+        if ($(el).attr('type').match(/handlebars/)) return;
 
         d(text);
         expect(_.find(text.split('\n'), (l) => l.match(/sourceMappingURL/))).to.be.ok;
