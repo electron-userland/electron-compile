@@ -104,8 +104,13 @@ export default class InlineHtmlCompiler extends CompilerBase {
         tag: 'style'
       }, compilerContext);
 
-      $(el).text(await that.compileBlock($(el).text(), filePath, mimeType, thisCtx));
-      $(el).attr('type', 'text/css');
+      let origText = $(el).text();
+      let newText = await that.compileBlock(origText, filePath, mimeType, thisCtx);
+      
+      if (origText !== newText) {
+        $(el).text(newText);
+        $(el).attr('type', 'text/css');
+      }
     }));
 
     let scriptCount = 0;
@@ -122,9 +127,13 @@ export default class InlineHtmlCompiler extends CompilerBase {
       }, compilerContext);
 
       let mimeType = $(el).attr('type') || 'application/javascript';
+      let origText = $(el).text();
+      let newText = await that.compileBlock(origText, filePath, mimeType, thisCtx);
 
-      $(el).text(await that.compileBlock($(el).text(), filePath, mimeType, thisCtx));
-      $(el).attr('type', 'application/javascript');
+      if (origText !== newText) {
+        $(el).text(newText);
+        $(el).attr('type', 'application/javascript');
+      }
     }));
 
     $('link').map((i, el) => {
@@ -177,9 +186,14 @@ export default class InlineHtmlCompiler extends CompilerBase {
         count: styleCount++,
         tag: 'style'
       }, compilerContext);
+      
+      let origText = $(el).text();
+      let newText = that.compileBlockSync(origText, filePath, mimeType, thisCtx);
 
-      $(el).text(that.compileBlockSync($(el).text(), filePath, mimeType, thisCtx));
-      $(el).attr('type', 'text/css');
+      if (origText !== newText) {
+        $(el).text(newText);
+        $(el).attr('type', 'text/css');
+      }
     });
 
     let scriptCount = 0;
@@ -196,9 +210,14 @@ export default class InlineHtmlCompiler extends CompilerBase {
       }, compilerContext);
 
       let mimeType = $(el).attr('type');
+      
+      let oldText = $(el).text();
+      let newText = that.compileBlockSync(oldText, filePath, mimeType, thisCtx);
 
-      $(el).text(that.compileBlockSync($(el).text(), filePath, mimeType, thisCtx));
-      $(el).attr('type', 'application/javascript');
+      if (oldText !== newText) {
+        $(el).text(newText);
+        $(el).attr('type', 'application/javascript');
+      }
     });
 
     $('link').map((i, el) => {
