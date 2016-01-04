@@ -24,6 +24,19 @@ export default class FileChangedCache {
     this.changeCache = {};
   }
   
+  /**  
+   * Allows you to create a FileChangedCache from serialized data saved from 
+   * {@link getSavedData}.
+   *    
+   * @param  {Object} data  Saved data from getSavedData.
+   * 
+   * @param  {string} appRoot  The top-level directory for your application (i.e.
+   *                           the one which has your package.json).
+   * 
+   * @param  {boolean} failOnCacheMiss (optional)  If True, cache misses will throw.
+   * 
+   * @return {FileChangedCache}
+   */   
   static loadFromData(data, appRoot, failOnCacheMiss=true) {
     let ret = new FileChangedCache(appRoot, failOnCacheMiss);
     ret.changeCache = data.changeCache;
@@ -32,6 +45,20 @@ export default class FileChangedCache {
     return ret;
   }
 
+
+  /**  
+   * Allows you to create a FileChangedCache from serialized data saved from 
+   * {@link save}.
+   *    
+   * @param  {string} file  Saved data from save.
+   * 
+   * @param  {string} appRoot  The top-level directory for your application (i.e.
+   *                           the one which has your package.json).
+   * 
+   * @param  {boolean} failOnCacheMiss (optional)  If True, cache misses will throw.
+   * 
+   * @return {Promise<FileChangedCache>}
+   */
   static async loadFromFile(file, appRoot, failOnCacheMiss=true) {
     d(`Loading canned FileChangedCache from ${file}`);
   
@@ -39,6 +66,25 @@ export default class FileChangedCache {
     return FileChangedCache.loadFromData(JSON.parse(await pzlib.gunzip(buf)), appRoot, failOnCacheMiss);
   }
   
+  
+  /**  
+   * Returns information about a given file, including its hash. This method is
+   * the main method for this cache.
+   *    
+   * @param  {string} absoluteFilePath  The path to a file to retrieve info on.
+   * 
+   * @return {Promise<Object>}
+   * 
+   * @property {string} hash  The SHA1 hash of the file
+   * @property {boolean} isMinified  True if the file is minified
+   * @property {boolean} isInNodeModules  True if the file is in a library directory
+   * @property {boolean} hasSourceMap  True if the file has a source map
+   * @property {boolean} isFileBinary  True if the file is not a text file
+   * @property {Buffer} binaryData (optional)  The buffer that was read if the file
+   *                                           was binary and there was a cache miss.
+   * @property {string} code (optional)  The string that was read if the file
+   *                                     was text and there was a cache miss
+   */   
   async getHashForPath(absoluteFilePath) {
     let cacheKey = absoluteFilePath;
     if (this.appRoot) {
@@ -97,10 +143,23 @@ export default class FileChangedCache {
     }
   }
   
+  
+  /**  
+   * Returns data that can passed to {@link loadFromData} to rehydrate this cache.
+   *    
+   * @return {Object}
+   */   
   getSavedData() {
     return { changeCache: this.changeCache, appRoot: this.appRoot };
   }
-  
+    
+  /**  
+   * Serializes this object's data to a file.
+   *
+   * @param {string} filePath  The path to save data to.
+   *    
+   * @return {Promise} Completion.
+   */   
   async save(filePath) {
     let toSave = this.getSavedData();
     
@@ -193,6 +252,12 @@ export default class FileChangedCache {
     return {sourceCode, digest, binaryData: null};  
   }
   
+  
+  /**  
+   * Determines via some statistics whether a file is likely to be minified.
+   *
+   * @private
+   */   
   static contentsAreMinified(source) {
     let length = source.length;
     if (length > 1024) length = 1024;
@@ -213,14 +278,32 @@ export default class FileChangedCache {
     return (avgLineLength > 80);
   }
 
+  
+  /**  
+   * Determines whether a path is in node_modules or the Electron init code
+   *    
+   * @private
+   */   
   static isInNodeModules(filePath) {
     return !!(filePath.match(/node_modules[\\\/]/i) || filePath.match(/atom\.asar/));
   }
 
+
+  /**
+   * Returns whether a file has an inline source map
+   *    
+   * @private
+   */   
   static hasSourceMap(sourceCode) {
     return sourceCode.lastIndexOf('//# sourceMap') > sourceCode.lastIndexOf('\n');
   }
   
+  /**  
+   * Determines the encoding of a file from the two most common encodings by trying
+   * to decode it then looking for encoding errors
+   *
+   * @private
+   */   
   static detectFileEncoding(buffer) {
     if (buffer.length < 1) return false;
     let buf = (buffer.length < 4096 ? buffer : buffer.slice(0, 4096));
@@ -234,6 +317,12 @@ export default class FileChangedCache {
     return encoding;
   }
   
+  /**  
+   * Determines whether a string is likely to be poorly encoded by looking for
+   * control characters above a certain threshold
+   *
+   * @private
+   */   
   static containsControlCharacters(str) {
     let controlCount = 0;
     let threshold = (str.length < 64 ? 2 : 16);

@@ -86,12 +86,6 @@ export default class CompilerHost {
    *
    * @param  {string} appRoot  The top-level directory for your application (i.e.
    *                           the one which has your package.json).
-   * 
-   * @param  {Object} compilersByMimeType  an Object whose keys are input MIME 
-   *                                       types and whose values are instances 
-   *                                       of CompilerBase. Create this via the 
-   *                                       {@link createCompilers} method in 
-   *                                       config-parser. 
    *
    * @param  {CompilerBase} fallbackCompiler (optional)  When a file is compiled
    *                                         which doesn't have a matching compiler,
@@ -131,6 +125,12 @@ export default class CompilerHost {
    * @param  {string} appRoot  The top-level directory for your application (i.e.
    *                           the one which has your package.json).
    *
+   * @param  {Object} compilersByMimeType  an Object whose keys are input MIME 
+   *                                       types and whose values are instances 
+   *                                       of CompilerBase. Create this via the 
+   *                                       {@link createCompilers} method in 
+   *                                       config-parser.
+   * 
    * @param  {CompilerBase} fallbackCompiler (optional)  When a file is compiled
    *                                         which doesn't have a matching compiler,
    *                                         this compiler will be used instead. If
