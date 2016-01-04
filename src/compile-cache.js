@@ -20,6 +20,7 @@ export default class CompileCache {
    * Creates an instance, usually used for testing only.
    *    
    * @param  {string} cachePath  The root directory to use as a cache path
+   *
    * @param  {FileChangedCache} fileChangeCache  A file-change cache that is 
    *                                             optionally pre-loaded.
    */   
@@ -36,10 +37,13 @@ export default class CompileCache {
    * @param  {string} cachePath  The root path to use for the cache, a directory
    *                             representing the hash of the compiler parameters
    *                             will be created here.
+   *
    * @param  {CompilerBase} compiler  The compiler to use for version / option
    *                                  information.
+   *
    * @param  {FileChangedCache} fileChangeCache  A file-change cache that is 
    *                                             optionally pre-loaded.
+   *
    * @return {CompileCache}  A configured CompileCache instance.
    */   
   static createFromCompiler(cachePath, compiler, fileChangeCache) {
@@ -72,6 +76,7 @@ export default class CompileCache {
    *    
    * @param  {string} filePath  The path to the file. FileChangedCache will look
    *                            up the hash and use that as the key in the cache.
+   *
    * @return {Promise<Object>}  An object with all kinds of information
    *
    * @property {Object} hashInfo  The hash information returned from getHashForPath
@@ -127,9 +132,11 @@ export default class CompileCache {
    * Saves a compiled result to cache
    *    
    * @param  {Object} hashInfo  The hash information returned from getHashForPath   
+   *
    * @param  {string / Buffer} codeOrBinaryData   The file's contents, either as
    *                                              a string or a Buffer.
    * @param  {string} mimeType  The MIME type returned by the compiler.
+   *
    * @param  {string[]} dependentFiles  The list of dependent files returned by
    *                                    the compiler.
    * @return {Promise}  Completion.
@@ -167,7 +174,9 @@ export default class CompileCache {
    *
    * @param  {string} filePath  The path to the file. FileChangedCache will look
    *                            up the hash and use that as the key in the cache.
+   *
    * @param  {Function} fetcher  A method which conforms to the description above.
+   *
    * @return {Promise<Object>}  An Object which has the same fields as the 
    *                            {@link get} method return result.
    */   
@@ -273,6 +282,7 @@ export default class CompileCache {
    * saved verbatim instead of trying to find an appropriate compiler.
    *    
    * @param  {Object} hashInfo  The hash information returned from getHashForPath   
+   *
    * @return {boolean}  True if a file should be ignored
    */   
   static shouldPassthrough(hashInfo) {

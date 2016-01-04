@@ -21,7 +21,47 @@ const finalForms = {
   'image/svg+xml': true
 };
 
+/**
+ * This class is the top-level class that encapsulates all of the logic of 
+ * compiling and caching application code. If you're looking for a "Main class",
+ * this is it.
+ * 
+ * This class can be created directly but it is usually created via the methods
+ * in config-parser, which will among other things, set up the compiler options
+ * given a project root.
+ * 
+ * CompilerHost is also the top-level class that knows how to serialize all of the
+ * information necessary to recreate itself, either as a development host (i.e.
+ * will allow cache misses and actual compilation), or as a read-only version of
+ * itself for production.
+ */ 
 export default class CompilerHost {
+  /**  
+   * Creates an instance of CompilerHost. You probably want to use the methods
+   * in config-parser for development, or {@link createReadonlyFromConfiguration}
+   * for production instead.
+   *    
+   * @param  {string} rootCacheDir  The root directory to use for the cache
+   * 
+   * @param  {Object} compilers  an Object whose keys are input MIME types and
+   *                             whose values are instances of CompilerBase. Create
+   *                             this via the {@link createCompilers} method in
+   *                             config-parser.
+   * 
+   * @param  {FileChangedCache} fileChangeCache  A file-change cache that is 
+   *                                             optionally pre-loaded.
+   * 
+   * @param  {boolean} readOnlyMode  If True, cache misses will fail and 
+   *                                 compilation will not be attempted.
+   * 
+   * @param  {CompilerBase} fallbackCompiler (optional)  When a file is compiled
+   *                                         which doesn't have a matching compiler,
+   *                                         this compiler will be used instead. If
+   *                                         null, will fail compilation. A good
+   *                                         alternate fallback is the compiler for
+   *                                         'text/plain', which is guaranteed to be
+   *                                         present.
+   */   
   constructor(rootCacheDir, compilers, fileChangeCache, readOnlyMode, fallbackCompiler = null) {
     let compilersByMimeType = _.assign({}, compilers);
     _.assign(this, {rootCacheDir, compilersByMimeType, fileChangeCache, readOnlyMode, fallbackCompiler});
@@ -35,6 +75,30 @@ export default class CompilerHost {
     }, new Map());
   }
     
+  /**    
+   * Creates a production-mode CompilerHost from the previously saved 
+   * configuration
+   *    
+   * @param  {string} rootCacheDir  The root directory to use for the cache. This
+   *                                cache must have cache information saved via
+   *                                {@link saveConfiguration}
+   * 
+   * @param  {Object} compilersByMimeType  an Object whose keys are input MIME 
+   *                                       types and whose values are instances 
+   *                                       of CompilerBase. Create this via the 
+   *                                       {@link createCompilers} method in 
+   *                                       config-parser. 
+   *
+   * @param  {CompilerBase} fallbackCompiler (optional)  When a file is compiled
+   *                                         which doesn't have a matching compiler,
+   *                                         this compiler will be used instead. If
+   *                                         null, will fail compilation. A good
+   *                                         alternate fallback is the compiler for
+   *                                         'text/plain', which is guaranteed to be
+   *                                         present. 
+   *
+   * @return {Promise<CompilerHost>}  A read-only CompilerHost
+   */   
   static async createReadonlyFromConfiguration(rootCacheDir, fallbackCompiler=null) {
     let target = path.join(rootCacheDir, 'compiler-info.json.gz');
     let buf = await pfs.readFile(target);
@@ -50,7 +114,25 @@ export default class CompilerHost {
     
     return new CompilerHost(rootCacheDir, compilers, fileChangeCache, true, fallbackCompiler);
   }
-  
+
+  /**    
+   * Creates a development-mode CompilerHost from the previously saved 
+   * configuration.
+   *    
+   * @param  {string} rootCacheDir  The root directory to use for the cache. This
+   *                                cache must have cache information saved via
+   *                                {@link saveConfiguration}
+   *
+   * @param  {CompilerBase} fallbackCompiler (optional)  When a file is compiled
+   *                                         which doesn't have a matching compiler,
+   *                                         this compiler will be used instead. If
+   *                                         null, will fail compilation. A good
+   *                                         alternate fallback is the compiler for
+   *                                         'text/plain', which is guaranteed to be
+   *                                         present. 
+   *
+   * @return {Promise<CompilerHost>}  A read-only CompilerHost
+   */   
   static async createFromConfiguration(rootCacheDir, compilersByMimeType, fallbackCompiler=null) {
     let target = path.join(rootCacheDir, 'compiler-info.json.gz');
     let buf = await pfs.readFile(target);
@@ -66,6 +148,14 @@ export default class CompilerHost {
     return new CompilerHost(rootCacheDir, compilersByMimeType, fileChangeCache, false, fallbackCompiler);
   }
   
+  
+  /**  
+   * Saves the current compiler configuration to a file that 
+   * {@link createReadonlyFromConfiguration} can use to recreate the current 
+   * compiler environment
+   *    
+   * @return {Promise}  Completion
+   */   
   async saveConfiguration() {
     let serializedCompilerOpts = _.reduce(Object.keys(this.compilersByMimeType), (acc, x) => {
       let compiler = this.compilersByMimeType[x];
@@ -92,16 +182,30 @@ export default class CompilerHost {
     await pfs.writeFile(target, buf);
   }
   
-  // Public: Compiles a single file given its path.
-  //
-  // filePath: The path on disk to the file
-  //
-  // Returns a {String} with the compiled output, or will throw an {Error}
-  // representing the compiler errors encountered.
+  /**  
+   * Compiles a file and returns the compiled result.
+   *    
+   * @param  {string} filePath  The path to the file to compile
+   *
+   * @return {Promise<object>}  An Object with the compiled result
+   *
+   * @property {Object} hashInfo  The hash information returned from getHashForPath
+   * @property {string} code  The source code if the file was a text file
+   * @property {Buffer} binaryData  The file if it was a binary file
+   * @property {string} mimeType  The MIME type saved in the cache.
+   * @property {string[]} dependentFiles  The dependent files returned from 
+   *                                      compiling the file, if any.
+   */   
   compile(filePath) {
     return (this.readOnlyMode ? this.compileReadOnly(filePath) : this.fullCompile(filePath));
   }
   
+  
+  /**  
+   * Handles compilation in read-only mode
+   *
+   * @private
+   */   
   async compileReadOnly(filePath) {
     // We guarantee that node_modules are always shipped directly
     let type = mimeTypes.lookup(filePath);
@@ -133,6 +237,11 @@ export default class CompilerHost {
     return { code, mimeType };
   }
 
+  /**  
+   * Handles compilation in read-write mode
+   *
+   * @private
+   */     
   async fullCompile(filePath) {
     d(`Compiling ${filePath}`);
     
@@ -163,6 +272,11 @@ export default class CompilerHost {
       (filePath, hashInfo) => this.compileUncached(filePath, hashInfo, compiler));
   }
 
+  /**  
+   * Handles invoking compilers independent of caching
+   *
+   * @private
+   */
   async compileUncached(filePath, hashInfo, compiler) {
     let inputMimeType = mimeTypes.lookup(filePath);
     
@@ -217,15 +331,19 @@ export default class CompilerHost {
     }
   }
   
-  // Public: Recursively compiles an entire directory of files.
-  //
-  // rootDirectory: The path on disk to the directory of files to compile.
-  //
-  // shouldCompile: (optional) - A {Function} that determines whether to skip a
-  //                             file given its full path as a parameter. If this
-  //                             function returns 'false', the file is skipped.
-  //
-  // Returns nothing.
+  /**  
+   * Pre-caches an entire directory of files recursively. Usually used for 
+   * building custom compiler tooling.
+   *    
+   * @param  {string} rootDirectory  The top-level directory to compile
+   *
+   * @param  {Function} shouldCompile (optional)  A Function which allows the 
+   *                                  caller to disable compiling certain files.
+   *                                  It takes a fully-qualified path to a file,
+   *                                  and should return a Boolean.
+   *
+   * @return {Promise}  Completion.
+   */   
   async compileAll(rootDirectory, shouldCompile=null) {
     let should = shouldCompile || function() {return true;};
 
@@ -241,12 +359,6 @@ export default class CompilerHost {
    * Sync Methods
    */
    
-  // Public: Compiles a single file given its path.
-  //
-  // filePath: The path on disk to the file
-  //
-  // Returns a {String} with the compiled output, or will throw an {Error}
-  // representing the compiler errors encountered.
   compileSync(filePath) {
     return (this.readOnlyMode ? this.compileReadOnlySync(filePath) : this.fullCompileSync(filePath));
   }
@@ -430,15 +542,6 @@ export default class CompilerHost {
     }
   }
 
-  // Public: Recursively compiles an entire directory of files.
-  //
-  // rootDirectory: The path on disk to the directory of files to compile.
-  //
-  // shouldCompile: (optional) - A {Function} that determines whether to skip a
-  //                             file given its full path as a parameter. If this
-  //                             function returns 'false', the file is skipped.
-  //
-  // Returns nothing.
   compileAllSync(rootDirectory, shouldCompile=null) {
     let should = shouldCompile || function() {return true;};
 
@@ -452,10 +555,25 @@ export default class CompilerHost {
    * Other stuff
    */
 
+
+  /**
+   * Returns the passthrough compiler 
+   *
+   * @private
+   */   
   getPassthroughCompiler() {
     return this.compilersByMimeType['text/plain'];
   }
 
+
+  /**
+   * Determines whether we should even try to compile the content. Note that in
+   * some cases, content will still be in cache even if this returns true, and
+   * in other cases (isInNodeModules), we'll know explicitly to not even bother
+   * looking in the cache.
+   *    
+   * @private
+   */   
   static shouldPassthrough(hashInfo) {
     return hashInfo.isMinified || hashInfo.isInNodeModules || hashInfo.hasSourceMap || hashInfo.isFileBinary;
   }
