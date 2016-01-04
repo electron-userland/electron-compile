@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Electron-compile : Electron supporting package to compile JS and CSS in Electron applications">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Electron-compile</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/electronjs/electron-compile">View on GitHub</a>
+
+          <h1 id="project_title">Electron-compile</h1>
+          <h2 id="project_tagline">Electron supporting package to compile JS and CSS in Electron applications</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/electronjs/electron-compile/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/electronjs/electron-compile/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h2>
+<a id="electron-compile" class="anchor" href="#electron-compile" aria-hidden="true"><span class="octicon octicon-link"></span></a>electron-compile</h2>
+
+<p>electron-compile compiles JS and CSS on the fly with a single call in your app's 'ready' function.</p>
+
+<p>For JavaScript:</p>
+
+<ul>
+<li>JavaScript ES6/ES7 (via Babel)</li>
+<li>TypeScript</li>
+<li>CoffeeScript</li>
+</ul>
+
+<p>For CSS:</p>
+
+<ul>
+<li>LESS</li>
+</ul>
+
+<p>For HTML:</p>
+
+<ul>
+<li>Jade</li>
+</ul>
+
+<h3>
+<a id="how-does-it-work-easiest-way" class="anchor" href="#how-does-it-work-easiest-way" aria-hidden="true"><span class="octicon octicon-link"></span></a>How does it work? (Easiest Way)</h3>
+
+<p>Change your reference to <code>electron-prebuilt</code> to <code>electron-prebuilt-compile</code>. Tada! You did it.</p>
+
+<h3>
+<a id="wait-seriously" class="anchor" href="#wait-seriously" aria-hidden="true"><span class="octicon octicon-link"></span></a>Wait, seriously?</h3>
+
+<p>Yeah. <code>electron-prebuilt-compile</code> is like an <code>electron-prebuilt</code> that Just Works with all of these languages above.</p>
+
+<h3>
+<a id="how-does-it-work-slightly-harder-way" class="anchor" href="#how-does-it-work-slightly-harder-way" aria-hidden="true"><span class="octicon octicon-link"></span></a>How does it work? (Slightly Harder Way)</h3>
+
+<p>First, add <code>electron-compile</code> and <code>electron-compilers</code> as a <code>devDependency</code>.</p>
+
+<div class="highlight highlight-source-shell"><pre>npm install --save electron-compile
+npm install --save-dev electron-compilers</pre></div>
+
+<p>Create a new file that will be the entry point of your app (perhaps changing 'main' in package.json) - you need to pass in the root directory of your application, which will vary based on your setup. The root directory is the directory that your <code>package.json</code> is in.</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-c">// Assuming this file is ./src/es6-init.js</span>
+<span class="pl-k">var</span> appRoot <span class="pl-k">=</span> <span class="pl-smi">path</span>.<span class="pl-c1">join</span>(<span class="pl-c1">__dirname</span>, <span class="pl-s"><span class="pl-pds">'</span>..<span class="pl-pds">'</span></span>);
+
+<span class="pl-c">// ...and that your main app is called ./src/main.js. This is written as if</span>
+<span class="pl-c">// you were going to `require` the file from here.</span>
+<span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>electron-compile<span class="pl-pds">'</span></span>).<span class="pl-en">init</span>(appRoot, <span class="pl-s"><span class="pl-pds">'</span>./main<span class="pl-pds">'</span></span>);</pre></div>
+
+<h3>
+<a id="i-did-it-now-what" class="anchor" href="#i-did-it-now-what" aria-hidden="true"><span class="octicon octicon-link"></span></a>I did it, now what?</h3>
+
+<p>From then on, you can now simply include files directly in your HTML, no need for cross-compilation:</p>
+
+<div class="highlight highlight-text-html-basic"><pre>&lt;<span class="pl-ent">head</span>&gt;
+  &lt;<span class="pl-ent">script</span> <span class="pl-e">type</span>=<span class="pl-s"><span class="pl-pds">"</span>text/coffeescript<span class="pl-pds">"</span></span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>main.coffee<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;
+  &lt;<span class="pl-ent">link</span> <span class="pl-e">rel</span>=<span class="pl-s"><span class="pl-pds">"</span>stylesheet<span class="pl-pds">"</span></span> <span class="pl-e">type</span>=<span class="pl-s"><span class="pl-pds">"</span>text/less<span class="pl-pds">"</span></span> <span class="pl-e">href</span>=<span class="pl-s"><span class="pl-pds">"</span>main.less<span class="pl-pds">"</span></span> /&gt;
+&lt;/<span class="pl-ent">head</span>&gt;</pre></div>
+
+<p>or just require them in:</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>./mylib<span class="pl-pds">'</span></span>)   <span class="pl-c">// mylib.ts</span></pre></div>
+
+<h3>
+<a id="how-do-i-set-up-babel--less--whatever-the-way-i-want" class="anchor" href="#how-do-i-set-up-babel--less--whatever-the-way-i-want" aria-hidden="true"><span class="octicon octicon-link"></span></a>How do I set up (Babel / LESS / whatever) the way I want?</h3>
+
+<p>If you've got a .babelrc and that's all you want to customize, you can simply use it directly. electron-compile will respect it, even the environment-specific settings. If you want to customize other compilers, use a <code>.compilerc</code> file. Here's an example:</p>
+
+<div class="highlight highlight-source-js"><pre>{
+  <span class="pl-s"><span class="pl-pds">"</span>application/javascript<span class="pl-pds">"</span></span><span class="pl-k">:</span> {
+    <span class="pl-s"><span class="pl-pds">"</span>presets<span class="pl-pds">"</span></span><span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">"</span>stage-0<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>es2015<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>react<span class="pl-pds">"</span></span>],
+    <span class="pl-s"><span class="pl-pds">"</span>sourceMaps<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>inline<span class="pl-pds">"</span></span>
+  },
+  <span class="pl-s"><span class="pl-pds">"</span>text/less<span class="pl-pds">"</span></span><span class="pl-k">:</span> {
+    <span class="pl-s"><span class="pl-pds">"</span>dumpLineNumbers<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>comments<span class="pl-pds">"</span></span>
+  }
+}</pre></div>
+
+<p>The opening Object is a list of MIME Types, and options passed to the compiler implementation. These parameters are documented here:</p>
+
+<ul>
+<li>Babel - <a href="http://babeljs.io/docs/usage/options">http://babeljs.io/docs/usage/options</a>
+</li>
+<li>CoffeeScript - <a href="http://coffeescript.org/documentation/docs/coffee-script.html#section-5">http://coffeescript.org/documentation/docs/coffee-script.html#section-5</a>
+</li>
+<li>TypeScript - <a href="https://github.com/Microsoft/TypeScript/blob/v1.5.0-beta/bin/typescriptServices.d.ts#L1076">https://github.com/Microsoft/TypeScript/blob/v1.5.0-beta/bin/typescriptServices.d.ts#L1076</a> </li>
+<li>LESS - <a href="http://lesscss.org/usage/index.html#command-line-usage-options">http://lesscss.org/usage/index.html#command-line-usage-options</a>
+</li>
+<li>Jade - <a href="http://jade-lang.com/api">http://jade-lang.com/api</a>
+</li>
+</ul>
+
+<h2>
+<a id="how-can-i-precompile-my-code-for-release-time" class="anchor" href="#how-can-i-precompile-my-code-for-release-time" aria-hidden="true"><span class="octicon octicon-link"></span></a>How can I precompile my code for release-time?</h2>
+
+<p>electron-compile comes with a command-line application to pre-create a cache for you.</p>
+
+<div class="highlight highlight-source-shell"><pre>Usage: electron-compile --appDir [root-app-dir] paths...
+
+Options:
+  -a, --appdir  The top-level application directory (i.e. where your
+                package.json is)
+  -v, --verbose  Print verbose information
+  -h, --help     Show <span class="pl-c1">help</span></pre></div>
+
+<p>Run <code>electron-compile</code> on all of your application assets, even if they aren't strictly code (i.e. your static assets like PNGs). electron-compile will recursively walk the given directories.</p>
+
+<div class="highlight highlight-source-shell"><pre>electron-compile --appDir <span class="pl-c1">.</span> ./src ./static</pre></div>
+
+<p>Compilation also has its own API, check out the <a href="LINK%20HERE">documentation</a> for more information.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Electron-compile maintained by <a href="https://github.com/electronjs">electronjs</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
