@@ -12,7 +12,19 @@ For CSS:
 
 * LESS
 
-### How does it work?
+For HTML:
+
+* Jade
+
+### How does it work? (Easiest Way)
+
+Change your reference to `electron-prebuilt` to `electron-prebuilt-compile`. Tada! You did it.
+
+### Wait, seriously?
+
+Yeah. `electron-prebuilt-compile` is like an `electron-prebuilt` that Just Works with all of these languages above.
+
+### How does it work? (Slightly Harder Way)
 
 First, add `electron-compile` and `electron-compilers` as a `devDependency`.
 
@@ -21,18 +33,26 @@ npm install --save electron-compile
 npm install --save-dev electron-compilers
 ```
 
-Then, put this at the top of your Electron app:
+Create a new file that will be the entry point of your app (perhaps changing 'main' in package.json) - you need to pass in the root directory of your application, which will vary based on your setup. The root directory is the directory that your `package.json` is in.
 
 ```js
-require('electron-compile').init();
+// Assuming this file is ./src/es6-init.js
+var appRoot = path.join(__dirname, '..');
+
+// ...and that your main app is called ./src/main.js. This is written as if
+// you were going to `require` the file from here.
+require('electron-compile').init(appRoot, './main');
 ```
+
+
+### I did it, now what?
 
 From then on, you can now simply include files directly in your HTML, no need for cross-compilation:
 
 ```html
 <head>
-  <script src="main.coffee"></script>
-  <link rel="stylesheet" type="text/css" href="main.less" />
+  <script type="text/coffeescript" src="main.coffee"></script>
+  <link rel="stylesheet" type="text/less" href="main.less" />
 </head>
 ```
 
@@ -42,95 +62,48 @@ or just require them in:
 require('./mylib')   // mylib.ts
 ```
 
-### Does this work in node.js / io.js too?
-
-The JavaScript compilers will register with module.register, but CSS of course will not
-
-### Babel keeps running on my ES5 source
-
-Add `'use nobabel';` to the top of your file to opt-out of Babel compilation.
-
-### Hey, why doesn't this work in my main.js file?
-
-Unfortunately, the very first file that you set up electron-compile in must be written in ES5. Of course, you can always make this file exactly two lines, the 'init' statement, then require your real main.js in.
-
 ### How do I set up (Babel / LESS / whatever) the way I want?
 
-In order to configure individual compilers, use the `initWithOptions` method:
+If you've got a .babelrc and that's all you want to customize, you can simply use it directly. electron-compile will respect it, even the environment-specific settings. If you want to customize other compilers, use a `.compilerc` file. Here's an example:
 
 ```js
-let babelOpts = {
-  stage: 2
-};
-
-initWithOptions({
-  cacheDir: '/path/to/my/cache',
-  compilerOpts: {
-    // Compiler options are a map of extension <=> options for compiler
-    js: babelOpts
+{
+  "application/javascript": {
+    "presets": ["stage-0", "es2015", "react"],
+    "sourceMaps": "inline"
+  },
+  "text/less": {
+    "dumpLineNumbers": "comments"
   }
-});
+}
 ```
+
+The opening Object is a list of MIME Types, and options passed to the compiler implementation. These parameters are documented here:
+
+* Babel - http://babeljs.io/docs/usage/options
+* CoffeeScript - http://coffeescript.org/documentation/docs/coffee-script.html#section-5
+* TypeScript - https://github.com/Microsoft/TypeScript/blob/v1.5.0-beta/bin/typescriptServices.d.ts#L1076 
+* LESS - http://lesscss.org/usage/index.html#command-line-usage-options
+* Jade - http://jade-lang.com/api
 
 ## How can I precompile my code for release-time?
 
 electron-compile comes with a command-line application to pre-create a cache for you.
 
 ```sh
-Usage: electron-compile --target [target-path] paths...
+Usage: electron-compile --appDir [root-app-dir] paths...
 
 Options:
-  -t, --target   The target directory to write a cache directory to
+  -a, --appdir  The top-level application directory (i.e. where your
+                package.json is)
   -v, --verbose  Print verbose information
   -h, --help     Show help
 ```
 
-Once you create a cache folder, pass it in as a parameter to `initForProduction()`. Ship the cache folder with your application, and you won't need to compile the app on first-run:
-
-```js
-require('electron-compile').initForProduction('path/to/precompiled/cache/folder');
-```
-
-In order to save space in your application, you can build your application with `NODE_ENV=production`, which will remove the `electron-compilers` dependency and save your app quite a bit of disk usage.
-
-Compilation also has its own API:
-
-```js
-// Public: Compiles a single file given its path.
-//
-// filePath: The path on disk to the file
-// compilers: (optional) - An {Array} of objects conforming to {CompileCache}
-//                         that will be tried in-order to compile code. You must
-//                         call init() first if this parameter is null.
-//
-// Returns a {String} with the compiled output, or will throw an {Error}
-// representing the compiler errors encountered.
-export function compile(filePath, compilers=null)
-
-// Public: Recursively compiles an entire directory of files.
-//
-// rootDirectory: The path on disk to the directory of files to compile.
-// compilers: (optional) - An {Array} of objects conforming to {CompileCache}
-//                         that will be tried in-order to compile code.
-//
-// Returns nothing.
-export function compileAll(rootDirectory, compilers=null)
-
-// Public: Allows you to create new instances of all compilers that are
-// supported by electron-compile and use them directly. Currently supports
-// Babel, CoffeeScript, TypeScript, LESS, and Sass/SCSS.
-//
-// Returns an {Array} of {CompileCache} objects.
-export function createAllCompilers()
-```
-
-
-### Help! I get this message, "Electron compilers not found but were requested to be loaded"
-
-First, make sure to:
+Run `electron-compile` on all of your application assets, even if they aren't strictly code (i.e. your static assets like PNGs). electron-compile will recursively walk the given directories.
 
 ```sh
-npm install --save-dev electron-compilers
+electron-compile --appDir . ./src ./static
 ```
 
-If you're seeing this message in your compiled production application, this means you needed to call `initForProduction` on startup and not `init` / `initWithOptions`.
+Compilation also has its own API, check out the [documentation](LINK HERE) for more information.

@@ -8,7 +8,7 @@ const pfs = pify(fs);
 
 describe('The file changed cache', function() {
   beforeEach(function() {
-    this.fixture = new FileChangeCache();
+    this.fixture = new FileChangeCache(null);
   });
 
   it("Correctly computes a file hash for a canned file", async function() {
@@ -104,7 +104,7 @@ describe('The file changed cache', function() {
     try {
       await this.fixture.save(targetCache);
 
-      this.fixture = await FileChangeCache.loadFromFile(targetCache);
+      this.fixture = await FileChangeCache.loadFromFile(targetCache, null);
 
       this.fixture.calculateHashForFile = () => Promise.reject(new Error("Didn't work"));
       await this.fixture.getHashForPath(input);

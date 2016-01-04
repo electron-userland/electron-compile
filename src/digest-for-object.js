@@ -50,6 +50,12 @@ function updateDigestForJsonValue(shasum, value) {
   shasum.update('}', 'utf8');
 }
 
+
+/**
+ * Creates a hash from a JS object
+ * 
+ * @private  
+ */ 
 export default function createDigestForObject(obj) {
   let sha1 = crypto.createHash('sha1');
   updateDigestForJsonValue(sha1, obj);

@@ -1,4 +1,4 @@
-import 'babel-polyfill';
+import './babel-maybefill';
 import _ from 'lodash';
 
 import * as configParser from './config-parser';
