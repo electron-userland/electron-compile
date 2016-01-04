@@ -19,6 +19,9 @@ function requireModule(href) {
   require(filePath);
 }
 
+/**
+ * @private
+ */ 
 export default (() => {
   if (process.type !== 'renderer' || !window || !window.document) return null;
   

@@ -13,6 +13,11 @@ const d = require('debug')('electron-compile:protocol-hook');
 
 let protocol = null;
 
+/**
+ * Adds our script header to the top of all HTML files
+ *  
+ * @private
+ */ 
 export function rigHtmlDocumentToInitializeElectronCompile(doc) {
   let lines = doc.split("\n");
   let replacement = `<head><script src="${magicWords}"></script>`;
@@ -59,6 +64,13 @@ function requestFileJob(filePath, finish) {
 }
 
 let rendererInitialized = false;
+
+/**
+ * Called by our rigged script file at the top of every HTML file to set up
+ * the same compilers as the browser process that created us
+ *  
+ * @private
+ */ 
 export function initializeRendererProcess(readOnlyMode) {
   if (rendererInitialized) return;
   
@@ -87,6 +99,15 @@ export function initializeRendererProcess(readOnlyMode) {
   rendererInitialized = true;
 }
 
+
+/**
+ * Initializes the protocol hook on file: that allows us to intercept files 
+ * loaded by Chromium and rewrite them. This method along with 
+ * {@link registerRequireExtension} are the top-level methods that electron-compile
+ * actually uses to intercept code that Electron loads.
+ *  
+ * @param  {CompilerHost} compilerHost  The compiler host to use for compilation.
+ */ 
 export function initializeProtocolHook(compilerHost) {
   protocol = protocol || require('protocol');
   

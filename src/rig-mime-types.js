@@ -6,6 +6,12 @@ const typesToRig = {
   'text/jade': 'jade'
 };
 
+
+/**
+ * Adds MIME types for types not in the mime-types package
+ *  
+ * @private
+ */ 
 export function init() {
   _.each(Object.keys(typesToRig), (type) => {
     let ext = typesToRig[type];

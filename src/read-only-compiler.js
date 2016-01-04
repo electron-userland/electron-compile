@@ -1,6 +1,17 @@
 import _ from 'lodash';
 
+
+/**
+ * ReadOnlyCompiler is a compiler which allows the host to inject all of the compiler
+ * metadata information so that {@link CompileCache} et al are able to recreate the
+ * hash without having two separate code paths.
+ */ 
 export default class ReadOnlyCompiler {
+  /**  
+   * Creates a ReadOnlyCompiler instance
+   *    
+   * @private
+   */   
   constructor(name, compilerVersion, compilerOptions, inputMimeTypes) {
     _.assign(this, { name, compilerVersion, compilerOptions, inputMimeTypes });
   }
