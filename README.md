@@ -1,8 +1,6 @@
 ## electron-compile
 
-<a href="http://electronjs.github.io/electron-compile/docs">
-![](http://electronjs.github.io/electron-compile/docs/badge.svg)
-</a>
+![](https://img.shields.io/npm/dm/electron-compile.svg) <a href="http://electronjs.github.io/electron-compile/docs">![](http://electronjs.github.io/electron-compile/docs/badge.svg)</a>
 
 electron-compile compiles JS and CSS on the fly with a single call in your app's 'ready' function.
 
