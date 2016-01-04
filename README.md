@@ -66,6 +66,18 @@ or just require them in:
 require('./mylib')   // mylib.ts
 ```
 
+### Something isn't working / I'm getting weird errors
+
+electron-compile uses the [debug module](https://github.com/visionmedia/debug), set the DEBUG environment variable to debug what electron-compile is doing:
+
+```sh
+## Debug just electron-compile
+DEBUG=electron-compile:* npm start
+
+## Grab everything except for Babel which is very noisy
+DEBUG=*,-babel npm start
+```
+
 ### How do I set up (Babel / LESS / whatever) the way I want?
 
 If you've got a `.babelrc` and that's all you want to customize, you can simply use it directly. electron-compile will respect it, even the environment-specific settings. If you want to customize other compilers, use a `.compilerc` file. Here's an example:
