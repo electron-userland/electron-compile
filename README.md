@@ -68,7 +68,7 @@ require('./mylib')   // mylib.ts
 
 ### How do I set up (Babel / LESS / whatever) the way I want?
 
-If you've got a .babelrc and that's all you want to customize, you can simply use it directly. electron-compile will respect it, even the environment-specific settings. If you want to customize other compilers, use a `.compilerc` file. Here's an example:
+If you've got a `.babelrc` and that's all you want to customize, you can simply use it directly. electron-compile will respect it, even the environment-specific settings. If you want to customize other compilers, use a `.compilerc` file. Here's an example:
 
 ```js
 {
@@ -78,6 +78,30 @@ If you've got a .babelrc and that's all you want to customize, you can simply us
   },
   "text/less": {
     "dumpLineNumbers": "comments"
+  }
+}
+```
+
+`.compilerc` also accepts environments with the same syntax as `.babelrc`:
+
+```js
+{
+  "env": {
+    "development": {
+      "application/javascript": {
+        "presets": ["stage-0", "es2015", "react"],
+        "sourceMaps": "inline"
+      },
+      "text/less": {
+        "dumpLineNumbers": "comments"
+      }
+    },
+    "production": {
+      "application/javascript": {
+        "presets": ["stage-0", "es2015", "react"]
+        "sourceMaps": "none"
+      }
+    }
   }
 }
 ```
