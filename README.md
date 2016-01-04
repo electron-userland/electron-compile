@@ -143,7 +143,7 @@ Options:
 Run `electron-compile` on all of your application assets, even if they aren't strictly code (i.e. your static assets like PNGs). electron-compile will recursively walk the given directories.
 
 ```sh
-electron-compile --appDir . ./src ./static
+electron-compile --appDir /path/to/my/app ./src ./static
 ```
 
 ### But I use Grunt / Gulp / I want to do Something Interesting
