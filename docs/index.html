@@ -55,6 +55,7 @@
 </nav>
 
 <div class="content" data-ice="content"><div data-ice="index" class="github-markdown"><h2 id="electron-compile">electron-compile</h2>
+<p><img src="https://img.shields.io/npm/dm/electron-compile.svg" alt=""> <a href="http://electronjs.github.io/electron-compile/docs"><img src="http://electronjs.github.io/electron-compile/docs/badge.svg" alt=""></a></p>
 <p>electron-compile compiles JS and CSS on the fly with a single call in your app&apos;s &apos;ready&apos; function.</p>
 <p>For JavaScript:</p>
 <ul>
@@ -97,8 +98,16 @@ require(&apos;electron-compile&apos;).init(appRoot, &apos;./main&apos;);</code>
 <p>or just require them in:</p>
 <pre><code class="lang-js"><code class="source-code prettyprint">require(&apos;./mylib&apos;)   // mylib.ts</code>
 </code></pre>
+<h3 id="something-isn-t-working-i-m-getting-weird-errors">Something isn&apos;t working / I&apos;m getting weird errors</h3>
+<p>electron-compile uses the <a href="https://github.com/visionmedia/debug">debug module</a>, set the DEBUG environment variable to debug what electron-compile is doing:</p>
+<pre><code class="lang-sh"><code class="source-code prettyprint">## Debug just electron-compile
+DEBUG=electron-compile:* npm start
+
+## Grab everything except for Babel which is very noisy
+DEBUG=*,-babel npm start</code>
+</code></pre>
 <h3 id="how-do-i-set-up-babel-less-whatever-the-way-i-want-">How do I set up (Babel / LESS / whatever) the way I want?</h3>
-<p>If you&apos;ve got a .babelrc and that&apos;s all you want to customize, you can simply use it directly. electron-compile will respect it, even the environment-specific settings. If you want to customize other compilers, use a <code>.compilerc</code> file. Here&apos;s an example:</p>
+<p>If you&apos;ve got a <code>.babelrc</code> and that&apos;s all you want to customize, you can simply use it directly. electron-compile will respect it, even the environment-specific settings. If you want to customize other compilers, use a <code>.compilerc</code> file. Here&apos;s an example:</p>
 <pre><code class="lang-js"><code class="source-code prettyprint">{
   &quot;application/javascript&quot;: {
     &quot;presets&quot;: [&quot;stage-0&quot;, &quot;es2015&quot;, &quot;react&quot;],
@@ -106,6 +115,27 @@ require(&apos;electron-compile&apos;).init(appRoot, &apos;./main&apos;);</code>
   },
   &quot;text/less&quot;: {
     &quot;dumpLineNumbers&quot;: &quot;comments&quot;
+  }
+}</code>
+</code></pre>
+<p><code>.compilerc</code> also accepts environments with the same syntax as <code>.babelrc</code>:</p>
+<pre><code class="lang-js"><code class="source-code prettyprint">{
+  &quot;env&quot;: {
+    &quot;development&quot;: {
+      &quot;application/javascript&quot;: {
+        &quot;presets&quot;: [&quot;stage-0&quot;, &quot;es2015&quot;, &quot;react&quot;],
+        &quot;sourceMaps&quot;: &quot;inline&quot;
+      },
+      &quot;text/less&quot;: {
+        &quot;dumpLineNumbers&quot;: &quot;comments&quot;
+      }
+    },
+    &quot;production&quot;: {
+      &quot;application/javascript&quot;: {
+        &quot;presets&quot;: [&quot;stage-0&quot;, &quot;es2015&quot;, &quot;react&quot;]
+        &quot;sourceMaps&quot;: &quot;none&quot;
+      }
+    }
   }
 }</code>
 </code></pre>
@@ -128,9 +158,10 @@ Options:
   -h, --help     Show help</code>
 </code></pre>
 <p>Run <code>electron-compile</code> on all of your application assets, even if they aren&apos;t strictly code (i.e. your static assets like PNGs). electron-compile will recursively walk the given directories.</p>
-<pre><code class="lang-sh"><code class="source-code prettyprint">electron-compile --appDir . ./src ./static</code>
+<pre><code class="lang-sh"><code class="source-code prettyprint">electron-compile --appDir /path/to/my/app ./src ./static</code>
 </code></pre>
-<p>Compilation also has its own API, check out the <a href="LINK HERE">documentation</a> for more information.</p>
+<h3 id="but-i-use-grunt-gulp-i-want-to-do-something-interesting">But I use Grunt / Gulp / I want to do Something Interesting</h3>
+<p>Compilation also has its own API, check out the <a href="http://electronjs.github.io/electron-compile/docs/badge.svg">documentation</a> for more information.</p>
 </div>
 </div>
 
