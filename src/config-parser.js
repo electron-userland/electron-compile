@@ -77,7 +77,7 @@ export function init(appRoot, mainModule, productionMode = null) {
   
   if (productionMode) {
     // In read-only mode, we'll assume that everything is in `appRoot/.cache`
-    compilerHost = CompilerHost.createReadonlyFromConfigurationSync(cacheDir);
+    compilerHost = CompilerHost.createReadonlyFromConfigurationSync(cacheDir, appRoot);
   } else {
     compilerHost = createCompilerHostFromProjectRootSync(appRoot);
   }
@@ -93,7 +93,7 @@ export function init(appRoot, mainModule, productionMode = null) {
  *  
  * @private
  */ 
-function createCompilerHostFromConfiguration(info) {
+export function createCompilerHostFromConfiguration(info) {
   let compilers = createCompilers();
   let rootCacheDir = info.rootCacheDir || calculateDefaultCompileCacheDirectory();
   

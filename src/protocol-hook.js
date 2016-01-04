@@ -7,6 +7,7 @@ import CompilerHost from './compiler-host';
 
 const magicWords = "__magic__file__to__help__electron__compile.js";
 const magicGlobalForRootCacheDir = '__electron_compile_root_cache_dir';
+const magicGlobalForAppRootDir = '__electron_compile_app_root_dir';
 
 const d = require('debug')('electron-compile:protocol-hook');
 
@@ -65,19 +66,20 @@ export function initializeRendererProcess(readOnlyMode) {
   require('debug/browser');
   
   let rootCacheDir = require('remote').getGlobal(magicGlobalForRootCacheDir);
+  let appRoot = require('remote').getGlobal(magicGlobalForAppRootDir);
   let compilerHost = null;
   
   // NB: This has to be synchronous because we need to block HTML parsing
   // until we're set up
   if (readOnlyMode) {
     d(`Setting up electron-compile in precompiled mode with cache dir: ${rootCacheDir}`);
-    compilerHost = CompilerHost.createReadonlyFromConfigurationSync(rootCacheDir);
+    compilerHost = CompilerHost.createReadonlyFromConfigurationSync(rootCacheDir, appRoot);
   } else {
     d(`Setting up electron-compile in development mode with cache dir: ${rootCacheDir}`);
     const { createCompilers } = require('./config-parser');
     const compilersByMimeType = createCompilers();
     
-    compilerHost = CompilerHost.createFromConfigurationSync(rootCacheDir, compilersByMimeType);
+    compilerHost = CompilerHost.createFromConfigurationSync(rootCacheDir, appRoot, compilersByMimeType);
   }
   
   require('./x-require');
@@ -89,6 +91,7 @@ export function initializeProtocolHook(compilerHost) {
   protocol = protocol || require('protocol');
   
   global[magicGlobalForRootCacheDir] = compilerHost.rootCacheDir;
+  global[magicGlobalForAppRootDir] = compilerHost.appRoot;
   
   const electronCompileSetupCode = `if (window.require) require('electron-compile/lib/protocol-hook').initializeRendererProcess(${compilerHost.readOnlyMode});`;
 
@@ -98,7 +101,7 @@ export function initializeProtocolHook(compilerHost) {
     d(`Intercepting url ${request.url}`);
     if (request.url.indexOf(magicWords) > -1) {
       finish({
-        mimeType: 'text/javascript',
+        mimeType: 'application/javascript',
         data: new Buffer(electronCompileSetupCode, 'utf8')
       });
       

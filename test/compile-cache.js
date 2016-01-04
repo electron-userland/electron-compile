@@ -101,7 +101,7 @@ describe('The compile cache', function() {
     expect(result.binaryData.length).to.equal(hashInfo.binaryData.length);  
   });
   
-  it.only('Should only call compile once for the same file synchronously', function() {
+  it('Should only call compile once for the same file synchronously', function() {
     let inputFile = path.resolve(__dirname, '..', 'src', 'compile-cache.js');
     let callCount = 0;
     

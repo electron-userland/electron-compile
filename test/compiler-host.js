@@ -166,7 +166,7 @@ describe('The compiler host', function() {
     await this.fixture.saveConfiguration();
     
     d("Recreating from said configuration");
-    this.fixture = await CompilerHost.createReadonlyFromConfiguration(this.tempCacheDir);
+    this.fixture = await CompilerHost.createReadonlyFromConfiguration(this.tempCacheDir, this.appRootDir);
     this.fixture.compileUncached = () => Promise.reject(new Error("Fail!"));
 
     d("Recompiling everything from cached data");
@@ -201,7 +201,7 @@ describe('The compiler host', function() {
     this.fixture.saveConfigurationSync();
     
     d("Recreating from said configuration");
-    this.fixture = CompilerHost.createReadonlyFromConfigurationSync(this.tempCacheDir);
+    this.fixture = CompilerHost.createReadonlyFromConfigurationSync(this.tempCacheDir, this.appRootDir);
     this.fixture.compileUncached = () => Promise.reject(new Error("Fail!"));
 
     d("Recompiling everything from cached data");

@@ -65,6 +65,7 @@ export default class CompilerHost {
   constructor(rootCacheDir, compilers, fileChangeCache, readOnlyMode, fallbackCompiler = null) {
     let compilersByMimeType = _.assign({}, compilers);
     _.assign(this, {rootCacheDir, compilersByMimeType, fileChangeCache, readOnlyMode, fallbackCompiler});
+    this.appRoot = this.fileChangeCache.appRoot;
     
     this.cachesForCompilers = _.reduce(Object.keys(compilersByMimeType), (acc, x) => {
       let compiler = compilersByMimeType[x];
@@ -82,6 +83,9 @@ export default class CompilerHost {
    * @param  {string} rootCacheDir  The root directory to use for the cache. This
    *                                cache must have cache information saved via
    *                                {@link saveConfiguration}
+   *
+   * @param  {string} appRoot  The top-level directory for your application (i.e.
+   *                           the one which has your package.json).
    * 
    * @param  {Object} compilersByMimeType  an Object whose keys are input MIME 
    *                                       types and whose values are instances 
@@ -99,12 +103,13 @@ export default class CompilerHost {
    *
    * @return {Promise<CompilerHost>}  A read-only CompilerHost
    */   
-  static async createReadonlyFromConfiguration(rootCacheDir, fallbackCompiler=null) {
+  static async createReadonlyFromConfiguration(rootCacheDir, appRoot, fallbackCompiler=null) {
     let target = path.join(rootCacheDir, 'compiler-info.json.gz');
     let buf = await pfs.readFile(target);
     let info = JSON.parse(await pzlib.gunzip(buf));
     
-    let fileChangeCache = FileChangedCache.loadFromData(info.fileChangeCache);
+    let fileChangeCache = FileChangedCache.loadFromData(info.fileChangeCache, appRoot, true);
+
     let compilers = _.reduce(Object.keys(info.compilers), (acc, x) => {
       let cur = info.compilers[x];
       acc[x] = new ReadOnlyCompiler(cur.name, cur.compilerVersion, cur.compilerOptions, cur.inputMimeTypes);
@@ -123,6 +128,9 @@ export default class CompilerHost {
    *                                cache must have cache information saved via
    *                                {@link saveConfiguration}
    *
+   * @param  {string} appRoot  The top-level directory for your application (i.e.
+   *                           the one which has your package.json).
+   *
    * @param  {CompilerBase} fallbackCompiler (optional)  When a file is compiled
    *                                         which doesn't have a matching compiler,
    *                                         this compiler will be used instead. If
@@ -133,12 +141,12 @@ export default class CompilerHost {
    *
    * @return {Promise<CompilerHost>}  A read-only CompilerHost
    */   
-  static async createFromConfiguration(rootCacheDir, compilersByMimeType, fallbackCompiler=null) {
+  static async createFromConfiguration(rootCacheDir, appRoot, compilersByMimeType, fallbackCompiler=null) {
     let target = path.join(rootCacheDir, 'compiler-info.json.gz');
     let buf = await pfs.readFile(target);
     let info = JSON.parse(await pzlib.gunzip(buf));
     
-    let fileChangeCache = new FileChangedCache(info.fileChangeCache, false);
+    let fileChangeCache = FileChangedCache.loadFromData(info.fileChangeCache, appRoot, false);
     
     _.each(Object.keys(info.compilers), (x) => {
       let cur = info.compilers[x];
@@ -363,12 +371,13 @@ export default class CompilerHost {
     return (this.readOnlyMode ? this.compileReadOnlySync(filePath) : this.fullCompileSync(filePath));
   }
   
-  static createReadonlyFromConfigurationSync(rootCacheDir, fallbackCompiler=null) {
+  static createReadonlyFromConfigurationSync(rootCacheDir, appRoot, fallbackCompiler=null) {
     let target = path.join(rootCacheDir, 'compiler-info.json.gz');
     let buf = fs.readFileSync(target);
     let info = JSON.parse(zlib.gunzipSync(buf));
     
-    let fileChangeCache = FileChangedCache.loadFromData(info.fileChangeCache);
+    let fileChangeCache = FileChangedCache.loadFromData(info.fileChangeCache, appRoot, true);
+    
     let compilers = _.reduce(Object.keys(info.compilers), (acc, x) => {
       let cur = info.compilers[x];
       acc[x] = new ReadOnlyCompiler(cur.name, cur.compilerVersion, cur.compilerOptions, cur.inputMimeTypes);
@@ -379,12 +388,12 @@ export default class CompilerHost {
     return new CompilerHost(rootCacheDir, compilers, fileChangeCache, true, fallbackCompiler);
   }
   
-  static createFromConfigurationSync(rootCacheDir, compilersByMimeType, fallbackCompiler=null) {
+  static createFromConfigurationSync(rootCacheDir, appRoot, compilersByMimeType, fallbackCompiler=null) {
     let target = path.join(rootCacheDir, 'compiler-info.json.gz');
     let buf = fs.readFileSync(target);
     let info = JSON.parse(zlib.gunzipSync(buf));
     
-    let fileChangeCache = new FileChangedCache(info.fileChangeCache, false);
+    let fileChangeCache = FileChangedCache.loadFromData(info.fileChangeCache, appRoot, false);
     
     _.each(Object.keys(info.compilers), (x) => {
       let cur = info.compilers[x];

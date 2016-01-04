@@ -6,6 +6,17 @@ import _ from 'lodash';
 
 const d = require('debug')('electron-compile:file-change-cache');
 
+/**
+ * This class caches information about files and determines whether they have
+ * changed contents or not. Most importantly, this class caches the hash of seen
+ * files so that at development time, we don't have to recalculate them constantly.
+ * 
+ * This class is also the core of how electron-compile runs quickly in production
+ * mode - after precompilation, the cache is serialized along with the rest of the
+ * data in {@link CompilerHost}, so that when we load the app in production mode,
+ * we don't end up calculating hashes of file content at all, only using the contents
+ * of this cache.
+ */ 
 export default class FileChangedCache {
   constructor(appRoot, failOnCacheMiss=false) {
     this.appRoot = appRoot;
@@ -13,19 +24,19 @@ export default class FileChangedCache {
     this.changeCache = {};
   }
   
-  static loadFromData(data, failOnCacheMiss=true) {
-    let ret = new FileChangedCache(data.appRoot, failOnCacheMiss);
+  static loadFromData(data, appRoot, failOnCacheMiss=true) {
+    let ret = new FileChangedCache(appRoot, failOnCacheMiss);
     ret.changeCache = data.changeCache;
     ret.originalAppRoot = data.appRoot;
 
     return ret;
   }
 
-  static async loadFromFile(file, failOnCacheMiss=true) {
+  static async loadFromFile(file, appRoot, failOnCacheMiss=true) {
     d(`Loading canned FileChangedCache from ${file}`);
   
     let buf = await pfs.readFile(file);
-    return FileChangedCache.loadFromData(JSON.parse(await pzlib.gunzip(buf)), failOnCacheMiss);
+    return FileChangedCache.loadFromData(JSON.parse(await pzlib.gunzip(buf)), appRoot, failOnCacheMiss);
   }
   
   async getHashForPath(absoluteFilePath) {
@@ -45,6 +56,7 @@ export default class FileChangedCache {
     if (this.failOnCacheMiss) {
       if (!cacheEntry) {
         d(`Tried to read file cache entry for ${absoluteFilePath}`);
+        d(`cacheKey: ${cacheKey}, appRoot: ${this.appRoot}, originalAppRoot: ${this.originalAppRoot}`);
         throw new Error(`Asked for ${absoluteFilePath} but it was not precompiled!`);
       }
 
@@ -118,6 +130,7 @@ export default class FileChangedCache {
     if (this.failOnCacheMiss) {
       if (!cacheEntry) {
         d(`Tried to read file cache entry for ${absoluteFilePath}`);
+        d(`cacheKey: ${cacheKey}, appRoot: ${this.appRoot}, originalAppRoot: ${this.originalAppRoot}`);
         throw new Error(`Asked for ${absoluteFilePath} but it was not precompiled!`);
       }
 
