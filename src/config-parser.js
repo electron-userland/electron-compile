@@ -37,15 +37,17 @@ function statSyncNoException(fsPath) {
  *  
  */ 
 export function initializeGlobalHooks(compilerHost) {
-  const { app } = require('electron');
-  
   registerRequireExtension(compilerHost);
 
-  let protoify = function() { initializeProtocolHook(compilerHost); };
-  if (app.isReady()) {
-    protoify();
-  } else {
-    app.on('ready', protoify);
+  if ('type' in process && process.type === 'browser') {
+    const { app } = require('electron');
+
+    let protoify = function() { initializeProtocolHook(compilerHost); };
+    if (app.isReady()) {
+      protoify();
+    } else {
+      app.on('ready', protoify);
+    }
   }
 }
 
