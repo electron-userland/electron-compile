@@ -86,7 +86,6 @@ export default class BabelCompiler extends CompilerBase {
       if (presets) opts.presets = presets;
     }
 
-    d(`Final opts: ${JSON.stringify(opts)}`);
     return {
       code: babel.transform(sourceCode, opts).code,
       mimeType: 'application/javascript'
