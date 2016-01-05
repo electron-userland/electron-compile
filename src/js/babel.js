@@ -4,9 +4,11 @@ import {CompilerBase} from '../compiler-base';
 const mimeTypes = ['text/jsx', 'application/javascript'];
 let babel = null;
 
+let d = require('debug')('electron-compile:babel');
+
 /**
  * @access private
- */ 
+ */
 export default class BabelCompiler extends CompilerBase {
   constructor() {
     super();
@@ -24,6 +26,20 @@ export default class BabelCompiler extends CompilerBase {
     return [];
   }
 
+  // NB: This method exists to stop Babel from trying to load plugins from the
+  // app's node_modules directory, which in a production app doesn't have Babel
+  // installed in it. Instead, we try to load from our entry point's node_modules
+  // directory (i.e. Grunt perhaps), and if it doesn't work, just keep going.
+  attemptToPreload(names, prefix) {
+    d(`Attempting to preload: ${JSON.stringify(names)}, ${prefix}`);
+    try {
+      return _.map(names, (x) => require.main.require(`babel-${prefix}-${x}`))
+    } catch (e) {
+      d(`Failed! ${e.message}\n${e.stack}`);
+      return null;
+    }
+  }
+
   async compile(sourceCode, filePath, compilerContext) {
     babel = babel || require('babel-core');
 
@@ -31,6 +47,16 @@ export default class BabelCompiler extends CompilerBase {
       filename: filePath,
       ast: false
     });
+
+    if ('plugins' in opts) {
+      let plugins = this.attemptToPreload(opts.plugins, 'plugin');
+      if (plugins) opts.plugins = plugins;
+    }
+
+    if ('presets' in opts) {
+      let presets = this.attemptToPreload(opts.plugins, 'preset');
+      if (presets) opts.presets = presets;
+    }
 
     return {
       code: babel.transform(sourceCode, opts).code,
@@ -54,6 +80,17 @@ export default class BabelCompiler extends CompilerBase {
       ast: false
     });
 
+    if ('plugins' in opts) {
+      let plugins = this.attemptToPreload(opts.plugins, 'plugin');
+      if (plugins) opts.plugins = plugins;
+    }
+
+    if ('presets' in opts) {
+      let presets = this.attemptToPreload(opts.presets, 'preset');
+      if (presets) opts.presets = presets;
+    }
+
+    d(`Final opts: ${JSON.stringify(opts)}`);
     return {
       code: babel.transform(sourceCode, opts).code,
       mimeType: 'application/javascript'
