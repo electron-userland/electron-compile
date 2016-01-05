@@ -44,9 +44,11 @@ export default class CompileCache {
    * @param  {FileChangedCache} fileChangeCache  A file-change cache that is 
    *                                             optionally pre-loaded.
    *
+   * @param  {boolean} readOnlyMode  Don't attempt to create the cache directory.
+   *
    * @return {CompileCache}  A configured CompileCache instance.
    */   
-  static createFromCompiler(cachePath, compiler, fileChangeCache) {
+  static createFromCompiler(cachePath, compiler, fileChangeCache, readOnlyMode=false) {
     let newCachePath = null;
     let getCachePath = () => {
       if (newCachePath) return newCachePath;
@@ -61,7 +63,8 @@ export default class CompileCache {
 
       d(`Path for ${digestObj.name}: ${newCachePath}`);
       d(`Set up with parameters: ${JSON.stringify(digestObj)}`);
-      mkdirp.sync(newCachePath);
+      
+      if (!readOnlyMode) mkdirp.sync(newCachePath);
       return newCachePath;
     };
     

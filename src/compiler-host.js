@@ -71,7 +71,9 @@ export default class CompilerHost {
       let compiler = compilersByMimeType[x];
       if (acc.has(compiler)) return acc;
 
-      acc.set(compiler, CompileCache.createFromCompiler(rootCacheDir, compiler, fileChangeCache));
+      acc.set(
+        compiler, 
+        CompileCache.createFromCompiler(rootCacheDir, compiler, fileChangeCache, readOnlyMode));
       return acc;
     }, new Map());
   }
