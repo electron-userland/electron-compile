@@ -30,7 +30,7 @@ export default class BabelCompiler extends CompilerBase {
   // directory (i.e. Grunt perhaps), and if it doesn't work, just keep going.
   attemptToPreload(names, prefix) {
     try {
-      return _.map(names, (x) => require.main.require(`babel-${prefix}-${x}`))
+      return _.map(names, (x) => require.main.require(`babel-${prefix}-${x}`));
     } catch (e) {
       return null;
     }
