@@ -41,7 +41,7 @@ export function initializeGlobalHooks(compilerHost) {
 
   if ('type' in process && process.type === 'browser') {
     const { app } = require('electron');
-
+    
     let protoify = function() { initializeProtocolHook(compilerHost); };
     if (app.isReady()) {
       protoify();

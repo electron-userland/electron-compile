@@ -232,7 +232,7 @@ export default class CompilerHost {
       this.getPassthroughCompiler() :
       this.compilersByMimeType[type || '__lolnothere'];
 
-    if (!compiler) {
+    if (!compiler) { 
       compiler = this.fallbackCompiler;
 
       let { code, binaryData, mimeType } = await compiler.get(filePath);
@@ -460,7 +460,7 @@ export default class CompilerHost {
       this.getPassthroughCompiler() :
       this.compilersByMimeType[type || '__lolnothere'];
 
-    if (!compiler) {
+    if (!compiler) { 
       compiler = this.fallbackCompiler;
 
       let { code, binaryData, mimeType } = compiler.getSync(filePath);
