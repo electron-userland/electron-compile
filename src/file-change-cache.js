@@ -184,7 +184,17 @@ export default class FileChangedCache {
   }
   
   getHashForPathSync(absoluteFilePath) {
-    let cacheKey = this.appRoot ? absoluteFilePath.replace(this.appRoot, '') : absoluteFilePath;
+    let cacheKey = sanitizeFilePath(absoluteFilePath);
+    if (this.appRoot) {
+      cacheKey = absoluteFilePath.replace(this.appRoot, '');
+    } 
+    
+    // NB: We do this because x-require will include an absolute path from the 
+    // original built app and we need to still grok it
+    if (this.originalAppRoot) {
+      cacheKey = cacheKey.replace(this.originalAppRoot, '');
+    }
+    
     let cacheEntry = this.changeCache[cacheKey];
     
     if (this.failOnCacheMiss) {
@@ -228,7 +238,7 @@ export default class FileChangedCache {
       return _.extend({binaryData}, info);
     } else {
       return _.extend({sourceCode}, info);
-    }  
+    }
   }
     
   saveSync(filePath) {
