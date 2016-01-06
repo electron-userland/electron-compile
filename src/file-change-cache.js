@@ -3,6 +3,7 @@ import zlib from 'zlib';
 import crypto from 'crypto';
 import {pfs, pzlib} from './promise';
 import _ from 'lodash';
+import sanitizeFilePath from './sanitize-paths';
 
 const d = require('debug')('electron-compile:file-change-cache');
 
@@ -19,7 +20,7 @@ const d = require('debug')('electron-compile:file-change-cache');
  */ 
 export default class FileChangedCache {
   constructor(appRoot, failOnCacheMiss=false) {
-    this.appRoot = appRoot;
+    this.appRoot = sanitizeFilePath(appRoot);
     this.failOnCacheMiss = failOnCacheMiss;
     this.changeCache = {};
   }
@@ -86,7 +87,7 @@ export default class FileChangedCache {
    *                                     was text and there was a cache miss
    */   
   async getHashForPath(absoluteFilePath) {
-    let cacheKey = absoluteFilePath;
+    let cacheKey = sanitizeFilePath(absoluteFilePath);
     if (this.appRoot) {
       cacheKey = absoluteFilePath.replace(this.appRoot, '');
     } 
