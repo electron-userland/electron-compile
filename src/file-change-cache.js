@@ -89,7 +89,7 @@ export default class FileChangedCache {
   async getHashForPath(absoluteFilePath) {
     let cacheKey = sanitizeFilePath(absoluteFilePath);
     if (this.appRoot) {
-      cacheKey = absoluteFilePath.replace(this.appRoot, '');
+      cacheKey = cacheKey.replace(this.appRoot, '');
     } 
     
     // NB: We do this because x-require will include an absolute path from the 
@@ -186,7 +186,7 @@ export default class FileChangedCache {
   getHashForPathSync(absoluteFilePath) {
     let cacheKey = sanitizeFilePath(absoluteFilePath);
     if (this.appRoot) {
-      cacheKey = absoluteFilePath.replace(this.appRoot, '');
+      cacheKey = cacheKey.replace(this.appRoot, '');
     } 
     
     // NB: We do this because x-require will include an absolute path from the 
