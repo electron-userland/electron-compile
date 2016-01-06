@@ -37,6 +37,9 @@ function statSyncNoException(fsPath) {
  *  
  */ 
 export function initializeGlobalHooks(compilerHost) {
+  let globalVar = (global || window);
+  globalVar.globalCompilerHost = compilerHost;
+
   registerRequireExtension(compilerHost);
 
   if ('type' in process && process.type === 'browser') {
