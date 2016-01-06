@@ -89,7 +89,7 @@ describe('The file changed cache', function() {
   });
 
   it("Throws on cache misses in production mode", function() {
-    this.fixture = new FileChangeCache(true);
+    this.fixture = new FileChangeCache(null, true);
 
     let input = path.join(__dirname, '..', 'test', 'fixtures', 'valid.js');
     expect(this.fixture.getHashForPath(input)).to.eventually.throw(Error);
