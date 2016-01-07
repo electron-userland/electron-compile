@@ -17,7 +17,7 @@ global.AssertionError = chai.AssertionError;
 global.Assertion = chai.Assertion;
 global.assert = chai.assert;
 
-require('../lib/rig-mime-types').init();
+require('../src/rig-mime-types').init();
 
 global.compilersByMimeType = _.reduce(allCompilerClasses, (acc,x) => {
   acc = acc || {};

@@ -8,7 +8,7 @@ import {
   createCompilerHostFromConfiguration, 
   createCompilerHostFromConfigFile,
   createCompilerHostFromBabelRc
-} from '../lib/config-parser';
+} from '../src/config-parser';
 
 const d = require('debug')('test:config-parser');
 

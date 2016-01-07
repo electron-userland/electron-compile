@@ -4,7 +4,7 @@ import _ from 'lodash';
 import path from 'path';
 import fs from 'fs';
 
-import {rigHtmlDocumentToInitializeElectronCompile} from '../lib/protocol-hook';
+import {rigHtmlDocumentToInitializeElectronCompile} from '../src/protocol-hook';
 
 describe('protocol hook library', function() {
   describe('The HTML include rigging', function() {

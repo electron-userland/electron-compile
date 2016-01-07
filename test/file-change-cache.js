@@ -1,6 +1,6 @@
 import './support.js';
 
-import FileChangeCache from '../lib/file-change-cache';
+import FileChangeCache from '../src/file-change-cache';
 import path from 'path';
 import fs from 'fs';
 import pify from 'pify';

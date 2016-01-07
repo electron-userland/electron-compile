@@ -6,8 +6,8 @@ import fs from 'fs';
 import rimraf from 'rimraf';
 import mkdirp from 'mkdirp';
 import mimeTypes from 'mime-types';
-import FileChangeCache from '../lib/file-change-cache';
-import CompilerHost from '../lib/compiler-host';
+import FileChangeCache from '../src/file-change-cache';
+import CompilerHost from '../src/compiler-host';
 
 const d = require('debug')('test:compiler-host');
 
