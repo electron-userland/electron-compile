@@ -53,8 +53,8 @@ From then on, you can now simply include files directly in your HTML, no need fo
 
 ```html
 <head>
-  <script type="text/coffeescript" src="main.coffee"></script>
-  <link rel="stylesheet" type="text/less" href="main.less" />
+  <script src="main.coffee"></script>
+  <link rel="stylesheet" href="main.less" />
 </head>
 ```
 
