@@ -108,7 +108,7 @@ If you've got a `.babelrc` and that's all you want to customize, you can simply 
     },
     "production": {
       "application/javascript": {
-        "presets": ["stage-0", "es2015", "react"]
+        "presets": ["stage-0", "es2015", "react"],
         "sourceMaps": "none"
       }
     }
