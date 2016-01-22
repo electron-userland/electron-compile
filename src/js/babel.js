@@ -46,12 +46,12 @@ export default class BabelCompiler extends CompilerBase {
 
     if ('plugins' in opts) {
       let plugins = this.attemptToPreload(opts.plugins, 'plugin');
-      if (plugins) opts.plugins = plugins;
+      if (plugins && plugins.length === opts.plugins.length) opts.plugins = plugins;
     }
 
     if ('presets' in opts) {
-      let presets = this.attemptToPreload(opts.plugins, 'preset');
-      if (presets) opts.presets = presets;
+      let presets = this.attemptToPreload(opts.presets, 'preset');
+      if (presets && presets.length === opts.presets.length) opts.presets = presets;
     }
 
     return {
@@ -78,12 +78,12 @@ export default class BabelCompiler extends CompilerBase {
 
     if ('plugins' in opts) {
       let plugins = this.attemptToPreload(opts.plugins, 'plugin');
-      if (plugins) opts.plugins = plugins;
+      if (plugins && plugins.length === opts.plugins.length) opts.plugins = plugins;
     }
 
     if ('presets' in opts) {
       let presets = this.attemptToPreload(opts.presets, 'preset');
-      if (presets) opts.presets = presets;
+      if (presets && presets.length === opts.presets.length) opts.presets = presets;
     }
 
     return {
