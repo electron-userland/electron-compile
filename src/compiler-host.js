@@ -18,7 +18,8 @@ const finalForms = {
   'application/javascript': true,
   'text/html': true,
   'text/css': true,
-  'image/svg+xml': true
+  'image/svg+xml': true,
+  'application/json': true
 };
 
 /**
