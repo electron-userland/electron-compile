@@ -33,7 +33,6 @@
     "lodash": "^3.10.1",
     "mime-types": "^2.1.9",
     "mkdirp": "^0.5.1",
-    "ncp": "^2.0.0",
     "rimraf": "^2.4.3",
     "typescript-simple": "^2.0.0"
   },
