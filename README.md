@@ -146,4 +146,4 @@ electron-compile --appDir /path/to/my/app ./src ./static
 
 ### But I use Grunt / Gulp / I want to do Something Interesting
 
-Compilation also has its own API, check out the [documentation](http://electronjs.github.io/electron-compile/docs/badge.svg) for more information.
+Compilation also has its own API, check out the [documentation](http://electronjs.github.io/electron-compile/docs/) for more information.
