@@ -18,7 +18,7 @@ process.on('uncaughtException', (e) => {
   d(e.stack || '');
 });
 
-async function main(appDir, sourceDirs) {
+async function main(appDir, sourceDirs, removeSource) {
   let compilerHost = null;
   let rootCacheDir = path.join(appDir, '.cache');
   mkdirp.sync(rootCacheDir);
@@ -51,6 +51,12 @@ async function main(appDir, sourceDirs) {
   
   d('Saving out configuration');
   await compilerHost.saveConfiguration();
+  
+  if (removeSource) {
+    await compilerHost.fileChangeCache.createStubAsarArchive(
+      path.join(rootCacheDir, '..', 'stub.asar'),
+      true);
+  }
 }
 
 const d = require('debug')('electron-compile');
@@ -59,6 +65,8 @@ const yargs = require('yargs')
   .usage('Usage: electron-compile --appdir [root-app-dir] paths...')
   .alias('a', 'appdir')
   .describe('a', 'The top-level application directory (i.e. where your package.json is)')
+  .alias('r', 'remove-source')
+  .describe('r', 'If set, the original source will be DELETED and a stub ASAR archive will be created')
   .help('h')
   .alias('h', 'help')
   .epilog('Copyright 2015');
@@ -72,8 +80,9 @@ if (!argv._ || argv._.length < 1) {
 
 const sourceDirs = argv._;
 const appDir = argv.a || process.env.PWD;
+const removeSource = argv.r;
 
-main(appDir, sourceDirs)
+main(appDir, sourceDirs, removeSource)
   .then(() => process.exit(0))
   .catch((e) => {
     console.error(e.message || e);
