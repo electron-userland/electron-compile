@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import fs from 'fs';
+import {Module} from 'module';
 import path from 'path';
 import mimeTypes from 'mime-types';
 
@@ -14,9 +15,9 @@ import mimeTypes from 'mime-types';
 export default function registerRequireExtension(compilerHost) {
   let stubFile = path.join(compilerHost.rootCacheDir, '..', 'stub.asar');
   if (fs.existsSync(stubFile)) {
-    process.env.NODE_PATH = stubFile;
+    process.env.NODE_PATH = `${Module.globalPaths.join(':')}:${stubFile}`;
   } else {
-    process.env.NODE_PATH = '';
+    process.env.NODE_PATH = Module.globalPaths.join(':');
   }
   
   require('module').Module._initPaths();
