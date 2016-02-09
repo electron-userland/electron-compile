@@ -27,6 +27,7 @@
   "homepage": "https://github.com/paulcbetts/electron-compile",
   "main": "lib/index.js",
   "dependencies": {
+    "asar": "^0.9.1",
     "babel-polyfill": "^6.3.14",
     "btoa": "^1.1.2",
     "debug": "^2.2.0",
