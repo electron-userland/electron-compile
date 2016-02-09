@@ -1,9 +1,16 @@
+import path from 'path';
 import fs from 'fs';
 import zlib from 'zlib';
 import crypto from 'crypto';
 import {pfs, pzlib} from './promise';
 import _ from 'lodash';
 import sanitizeFilePath from './sanitize-paths';
+
+// Lazy-require ASAR since most of the time we won't need it
+let asar = null;
+let pify = null;
+let pmkdirp = null;
+let temp = null;
 
 const d = require('debug')('electron-compile:file-change-cache');
 
@@ -184,6 +191,41 @@ export default class FileChangedCache {
     let digest = crypto.createHash('sha1').update(sourceCode, 'utf8').digest('hex');
     
     return {sourceCode, digest, binaryData: null };
+  }
+  
+  /**  
+   * createStubAsarArchive - description  
+   *    
+   * @param  {type} targetAsar  description   
+   * @param  {type} removeFiles description   
+   * @return {type}             description   
+   */   
+  async createStubAsarArchive(targetAsar, removeFiles=false) {
+    if (!asar) {
+      pify = require('pify');
+      asar = require('asar');
+      temp = pify(require('temp'));
+      pmkdirp = pify(require('mkdirp'));
+
+      temp.track();
+    }
+    
+    let prefix = await temp.mkdir('asar');
+    for (let key of Object.keys(this.changeCache)) {
+      let targetFile = path.join(prefix, key);
+      let targetDir = path.dirname(targetFile);
+      
+      await pmkdirp(targetDir);
+      await pfs.writeFile(targetFile, '');
+      
+      if (removeFiles) {
+        await pfs.unlink(path.join(this.appRoot, key));
+      }
+    }
+    
+    await new Promise((resolve) => {
+      asar.createPackage(prefix, targetAsar, resolve);
+    });
   }
   
   getHashForPathSync(absoluteFilePath) {
