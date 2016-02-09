@@ -103,7 +103,7 @@ export function createCompilerHostFromConfiguration(info) {
   let rootCacheDir = info.rootCacheDir || calculateDefaultCompileCacheDirectory();
   
   d(`Creating CompilerHost: ${JSON.stringify(info)}, rootCacheDir = ${rootCacheDir}`);
-  let fileChangeCache = new FileChangedCache(info.appRoot);
+  let fileChangeCache = new FileChangedCache(path.resolve(info.appRoot));
   let ret = new CompilerHost(rootCacheDir, compilers, fileChangeCache, false, compilers['text/plain']);
   
   _.each(Object.keys(info.options || {}), (x) => {

@@ -1,4 +1,7 @@
 import _ from 'lodash';
+import fs from 'fs';
+import {Module} from 'module';
+import path from 'path';
 import mimeTypes from 'mime-types';
 
 /**
@@ -10,11 +13,23 @@ import mimeTypes from 'mime-types';
  * @param  {CompilerHost} compilerHost  The compiler host to use for compilation.
  */ 
 export default function registerRequireExtension(compilerHost) {
+  let stubFile = path.join(compilerHost.rootCacheDir, '..', 'stub.asar');
+  
+  if (fs.existsSync(stubFile)) {
+    process.env.NODE_PATH = `${Module.globalPaths.join(':')}:${stubFile}`;
+  } else {
+    process.env.NODE_PATH = Module.globalPaths.join(':');
+    stubFile = null;
+  }
+  
+  require('module').Module._initPaths();
+  
   _.each(Object.keys(compilerHost.compilersByMimeType), (mimeType) => {
     let ext = mimeTypes.extension(mimeType);
     
     require.extensions[`.${ext}`] = (module, filename) => {
-      let {code} = compilerHost.compileSync(filename);
+      let name = stubFile ? filename.replace('app.asar', 'stub.asar') : filename;
+      let {code} = compilerHost.compileSync(name);
       module._compile(code, filename);
     };
   });
