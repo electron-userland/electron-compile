@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import {pfs, pzlib} from './promise';
 import _ from 'lodash';
 import sanitizeFilePath from './sanitize-paths';
+import {forAllEmptyDirs} from './for-all-files';
 
 // Lazy-require ASAR since most of the time we won't need it
 let asar = null;
@@ -221,6 +222,10 @@ export default class FileChangedCache {
       if (removeFiles) {
         await pfs.unlink(path.join(this.appRoot, key));
       }
+    }
+    
+    if (removeFiles) {
+      await forAllEmptyDirs(this.appRoot, async (filePath) => pfs.rmdir(filePath));
     }
     
     await new Promise((resolve) => {

@@ -50,3 +50,32 @@ export function forAllFilesSync(rootDirectory, func, ...args) {
   
   rec(rootDirectory);
 }
+
+export function forAllEmptyDirs(rootDirectory, func, ...args) {
+  let rec = async (dir) => {
+    let dentries = await pfs.readdir(dir);
+    
+    if (dentries.length < 1) {
+      await func(dir, ...args);
+      return;
+    }
+    
+    for (let name of dentries) {
+      let fullName = path.join(dir, name);
+      let stats = await pfs.stat(fullName);
+      
+      if (!stats.isDirectory()) continue;
+      await rec(fullName);
+    }
+      
+    // NB: The most common func is to remove the empty directory - if that's the
+    // case, we'll retry this directory to see if it's now empty
+    dentries = await pfs.readdir(dir);
+    if (dentries.length < 1) {
+      await func(dir, ...args);
+      return;
+    }
+  };
+  
+  return rec(rootDirectory);
+}
