@@ -14,10 +14,12 @@ import mimeTypes from 'mime-types';
  */ 
 export default function registerRequireExtension(compilerHost) {
   let stubFile = path.join(compilerHost.rootCacheDir, '..', 'stub.asar');
+  
   if (fs.existsSync(stubFile)) {
     process.env.NODE_PATH = `${Module.globalPaths.join(':')}:${stubFile}`;
   } else {
     process.env.NODE_PATH = Module.globalPaths.join(':');
+    stubFile = null;
   }
   
   require('module').Module._initPaths();
@@ -26,7 +28,8 @@ export default function registerRequireExtension(compilerHost) {
     let ext = mimeTypes.extension(mimeType);
     
     require.extensions[`.${ext}`] = (module, filename) => {
-      let {code} = compilerHost.compileSync(filename);
+      let name = stubFile ? filename.replace('app.asar', 'stub.asar') : filename;
+      let {code} = compilerHost.compileSync(name);
       module._compile(code, filename);
     };
   });

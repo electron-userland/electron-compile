@@ -96,6 +96,9 @@ export default class FileChangedCache {
    */   
   async getHashForPath(absoluteFilePath) {
     let cacheKey = sanitizeFilePath(absoluteFilePath);
+    
+    cacheKey = cacheKey.replace('stub.asar', 'app.asar');
+    
     if (this.appRoot) {
       cacheKey = cacheKey.replace(this.appRoot, '');
     } 
@@ -235,6 +238,8 @@ export default class FileChangedCache {
   
   getHashForPathSync(absoluteFilePath) {
     let cacheKey = sanitizeFilePath(absoluteFilePath);
+    cacheKey = cacheKey.replace('stub.asar', 'app.asar');
+
     if (this.appRoot) {
       cacheKey = cacheKey.replace(this.appRoot, '');
     } 
