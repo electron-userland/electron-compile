@@ -98,6 +98,9 @@ export default class FileChangedCache {
       cacheKey = cacheKey.replace(this.originalAppRoot, '');
     }
     
+    cacheKey = cacheKey.replace(/^\//, '');
+    
+    d(`Checking for cache entry: '${cacheKey}'`);
     let cacheEntry = this.changeCache[cacheKey];
     
     if (this.failOnCacheMiss) {
@@ -195,6 +198,9 @@ export default class FileChangedCache {
       cacheKey = cacheKey.replace(this.originalAppRoot, '');
     }
     
+    cacheKey = cacheKey.replace(/^\//, '');
+    
+    d(`Checking for cache entry: ${cacheKey}`);
     let cacheEntry = this.changeCache[cacheKey];
     
     if (this.failOnCacheMiss) {
