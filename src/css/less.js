@@ -40,7 +40,7 @@ export default class LessCompiler extends CompilerBase {
     this.seenFilePaths[path.dirname(filePath)] = true;
 
     if (this.compilerOptions.paths) {
-      Array.prototype.push.apply(paths, this.compilerOptions.paths);
+      paths.push(...this.compilerOptions.paths);
     }
 
     let opts = _.extend({}, this.compilerOptions, {
