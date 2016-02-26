@@ -15,9 +15,9 @@ let protocol = null;
 
 /**
  * Adds our script header to the top of all HTML files
- *  
+ *
  * @private
- */ 
+ */
 export function rigHtmlDocumentToInitializeElectronCompile(doc) {
   let lines = doc.split("\n");
   let replacement = `<head><script src="${magicWords}"></script>`;
@@ -46,7 +46,7 @@ export function rigHtmlDocumentToInitializeElectronCompile(doc) {
 
 function requestFileJob(filePath, finish) {
   fs.readFile(filePath, (err, buf) => {
-    if (err) { 
+    if (err) {
       if (err.errno === 34) {
         finish(-6); // net::ERR_FILE_NOT_FOUND
         return;
@@ -55,7 +55,7 @@ function requestFileJob(filePath, finish) {
         return;
       }
     }
-    
+
     finish({
       data: buf,
       mimeType: mime.lookup(filePath) || 'text/plain'
@@ -68,19 +68,19 @@ let rendererInitialized = false;
 /**
  * Called by our rigged script file at the top of every HTML file to set up
  * the same compilers as the browser process that created us
- *  
+ *
  * @private
- */ 
+ */
 export function initializeRendererProcess(readOnlyMode) {
   if (rendererInitialized) return;
-  
+
   // NB: If we don't do this, we'll get a renderer crash if you enable debug
   require('debug/browser');
-  
+
   let rootCacheDir = require('remote').getGlobal(magicGlobalForRootCacheDir);
   let appRoot = require('remote').getGlobal(magicGlobalForAppRootDir);
   let compilerHost = null;
-  
+
   // NB: This has to be synchronous because we need to block HTML parsing
   // until we're set up
   if (readOnlyMode) {
@@ -90,10 +90,10 @@ export function initializeRendererProcess(readOnlyMode) {
     d(`Setting up electron-compile in development mode with cache dir: ${rootCacheDir}`);
     const { createCompilers } = require('./config-parser');
     const compilersByMimeType = createCompilers();
-    
+
     compilerHost = CompilerHost.createFromConfigurationSync(rootCacheDir, appRoot, compilersByMimeType);
   }
-  
+
   require('./x-require');
   require('./require-hook').default(compilerHost);
   rendererInitialized = true;
@@ -101,19 +101,19 @@ export function initializeRendererProcess(readOnlyMode) {
 
 
 /**
- * Initializes the protocol hook on file: that allows us to intercept files 
- * loaded by Chromium and rewrite them. This method along with 
+ * Initializes the protocol hook on file: that allows us to intercept files
+ * loaded by Chromium and rewrite them. This method along with
  * {@link registerRequireExtension} are the top-level methods that electron-compile
  * actually uses to intercept code that Electron loads.
- *  
+ *
  * @param  {CompilerHost} compilerHost  The compiler host to use for compilation.
- */ 
+ */
 export function initializeProtocolHook(compilerHost) {
   protocol = protocol || require('protocol');
-  
+
   global[magicGlobalForRootCacheDir] = compilerHost.rootCacheDir;
   global[magicGlobalForAppRootDir] = compilerHost.appRoot;
-  
+
   const electronCompileSetupCode = `if (window.require) require('electron-compile/lib/protocol-hook').initializeRendererProcess(${compilerHost.readOnlyMode});`;
 
   protocol.interceptBufferProtocol('file', async function(request, finish) {
@@ -125,7 +125,7 @@ export function initializeProtocolHook(compilerHost) {
         mimeType: 'application/javascript',
         data: new Buffer(electronCompileSetupCode, 'utf8')
       });
-      
+
       return;
     }
 
@@ -136,6 +136,7 @@ export function initializeProtocolHook(compilerHost) {
       // TODO: Jump off this bridge later
       d(`TODO: Found bogus protocol-relative URL, can't fix it up!!`);
       finish(-2);
+      return;
     }
 
     let filePath = decodeURIComponent(uri.pathname);
@@ -173,14 +174,14 @@ export function initializeProtocolHook(compilerHost) {
       requestFileJob(filePath, finish);
       return;
     }
-    
+
     try {
       let result = await compilerHost.compile(filePath);
 
       if (result.mimeType === 'text/html') {
         result.code = rigHtmlDocumentToInitializeElectronCompile(result.code);
       }
-      
+
       if (result.binaryData || result.code instanceof Buffer) {
         finish({ data: result.binaryData || result.code, mimeType: result.mimeType });
         return;
@@ -191,7 +192,7 @@ export function initializeProtocolHook(compilerHost) {
     } catch (e) {
       let err = `Failed to compile ${filePath}: ${e.message}\n${e.stack}`;
       d(err);
-      
+
       if (e.errno === 34 /*ENOENT*/) {
         finish(-6); // net::ERR_FILE_NOT_FOUND
         return;
