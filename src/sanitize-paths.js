@@ -9,6 +9,8 @@ function cachedRealpath(p) {
   if (ret) return ret;
 
   ret = fs.realpathSync(p);
+  d(`Cache miss for cachedRealpath: '${p}' => '${ret}'`);
+
   realpathCache.set(p, ret);
   return ret;
 }
