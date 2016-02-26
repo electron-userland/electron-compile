@@ -22,16 +22,6 @@ export default class FileChangedCache {
   constructor(appRoot, failOnCacheMiss=false) {
     this.appRoot = sanitizeFilePath(appRoot);
 
-    // NB: Some people add symlinks into system directories. node.js will internally
-    // call realpath on paths that it finds, which will break our cache resolution.
-    // We need to catch this scenario and fix it up. The tricky part is, some parts
-    // of Electron will give us the pre-resolved paths, and others will give us the
-    // post-resolved one. We need to handle both.
-    let realAppRoot = fs.realpathSync(appRoot);
-    if (realAppRoot !== appRoot) {
-      this.realAppRoot = sanitizeFilePath(realAppRoot);
-    }
-
     this.failOnCacheMiss = failOnCacheMiss;
     this.changeCache = {};
   }
@@ -107,10 +97,6 @@ export default class FileChangedCache {
     // original built app and we need to still grok it
     if (this.originalAppRoot) {
       cacheKey = cacheKey.replace(this.originalAppRoot, '');
-    }
-
-    if (this.realAppRoot) {
-      cacheKey = cacheKey.replace(this.realAppRoot, '');
     }
 
     let cacheEntry = this.changeCache[cacheKey];
