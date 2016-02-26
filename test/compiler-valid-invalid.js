@@ -8,15 +8,17 @@ import mimeTypes from 'mime-types';
 
 const pfs = pify(fs);
 
+const d = require('debug')('electron-compile:compiler-valid-invalid');
+
 let allFixtureFiles = _.filter(
   fs.readdirSync(path.join(__dirname, '..', 'test', 'fixtures')),
   (x) => x.match(/invalid\./i));
-  
+
 let mimeTypesToTest = _.reduce(allFixtureFiles, (acc,x) => {
   if (global.compilersByMimeType[mimeTypes.lookup(x) || '__nope__']) {
     acc.push(mimeTypes.lookup(x));
   }
-  
+
   return acc;
 }, []);
 
@@ -27,7 +29,7 @@ const expectedMimeTypeSpecialCases = {
 
 for (let mimeType of mimeTypesToTest) {
   let klass = global.compilersByMimeType[mimeType];
-  
+
   describe(`The ${klass.name} class for ${mimeType}`, function() {
     beforeEach(function() {
       this.fixture = new klass();
@@ -47,7 +49,8 @@ for (let mimeType of mimeTypesToTest) {
 
       let result = await this.fixture.compile(source, input, ctx);
       let expectedMimeType = expectedMimeTypeSpecialCases[mimeType] || 'application/javascript';
-      
+
+      d(result.code);
       expect(result.mimeType).to.equal(expectedMimeType);
 
       // NB: Jade doesn't do source maps

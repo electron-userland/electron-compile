@@ -3,15 +3,16 @@ import mimeTypes from 'mime-types';
 
 const typesToRig = {
   'text/typescript': 'ts',
-  'text/jade': 'jade'
+  'text/jade': 'jade',
+  'text/cjsx': 'cjsx'
 };
 
 
 /**
  * Adds MIME types for types not in the mime-types package
- *  
+ *
  * @private
- */ 
+ */
 export function init() {
   _.each(Object.keys(typesToRig), (type) => {
     let ext = typesToRig[type];
