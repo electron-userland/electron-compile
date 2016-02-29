@@ -3,7 +3,8 @@ import mimeTypes from 'mime-types';
 
 const typesToRig = {
   'text/typescript': 'ts',
-  'text/jade': 'jade'
+  'text/jade': 'jade',
+  'text/cson': 'cson'
 };
 
 
