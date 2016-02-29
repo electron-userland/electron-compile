@@ -1,0 +1,13 @@
+'menu': [
+  {
+    label: 'Application'
+    submenu: [
+      {
+        label: 'About'
+        command: null
+      }
+    ]
+    id: 1
+    visible: false
+  }
+]
