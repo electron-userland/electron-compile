@@ -26,6 +26,11 @@ const expectedMimeTypeSpecialCases = {
   'text/cson': 'application/json'
 };
 
+const mimeTypesWithoutSourceMapSupport = [
+  'text/jade',
+  'text/cson'
+];
+
 for (let mimeType of mimeTypesToTest) {
   let klass = global.compilersByMimeType[mimeType];
 
@@ -51,8 +56,8 @@ for (let mimeType of mimeTypesToTest) {
 
       expect(result.mimeType).to.equal(expectedMimeType);
 
-      // NB: Jade doesn't do source maps
-      if (mimeType !== 'text/jade' && mimeType !== 'text/cson') {
+      // NB: Some compilers don't do source maps
+      if (!mimeTypesWithoutSourceMapSupport.includes(mimeType)) {
         let lines = result.code.split('\n');
         expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).to.be.ok;
       }
