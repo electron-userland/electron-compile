@@ -48,7 +48,7 @@
     "chai": "^3.4.1",
     "chai-as-promised": "^5.2.0",
     "cheerio": "^0.19.0",
-    "electron-compilers": "^2.0.0",
+    "electron-compilers": "^2.1.0",
     "electron-prebuilt": "^0.36.2",
     "esdoc": "^0.4.3",
     "esdoc-es7-plugin": "0.0.3",
