@@ -18,6 +18,10 @@ For HTML:
 
 * Jade
 
+For JSON:
+
+* CSON
+
 ### How does it work? (Easiest Way)
 
 Change your reference to `electron-prebuilt` to `electron-prebuilt-compile`. Tada! You did it.
