@@ -21,6 +21,10 @@ For HTML:
 
 * Jade
 
+For JSON:
+
+* CSON
+
 ### Why is this a separate repo?!
 
 Shipping compilers for all of these languages will add a ton of weight to your
