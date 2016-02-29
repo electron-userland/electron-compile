@@ -7,7 +7,7 @@ let jade = null;
 /**
  * @access private
  */ 
- export default class JadeCompiler extends SimpleCompilerBase {
+export default class JadeCompiler extends SimpleCompilerBase {
   constructor() {
     super();
     this.compilerOptions.sourceMap = true;
