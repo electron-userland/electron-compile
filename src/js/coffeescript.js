@@ -8,8 +8,8 @@ let coffee = null;
 
 /**
  * @access private
- */ 
- export default class CoffeeScriptCompiler extends SimpleCompilerBase {
+ */
+export default class CoffeeScriptCompiler extends SimpleCompilerBase {
   constructor() {
     super();
     this.compilerOptions.sourceMap = true;

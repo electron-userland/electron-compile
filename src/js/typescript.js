@@ -7,7 +7,7 @@ let tss = null;
 /**
  * @access private
  */ 
- export default class TypeScriptCompiler extends SimpleCompilerBase {
+export default class TypeScriptCompiler extends SimpleCompilerBase {
   constructor() {
     super();
     this.compilerOptions.sourceMap = true;
