@@ -11,23 +11,24 @@ const pfs = pify(fs);
 let allFixtureFiles = _.filter(
   fs.readdirSync(path.join(__dirname, '..', 'test', 'fixtures')),
   (x) => x.match(/invalid\./i));
-  
+
 let mimeTypesToTest = _.reduce(allFixtureFiles, (acc,x) => {
   if (global.compilersByMimeType[mimeTypes.lookup(x) || '__nope__']) {
     acc.push(mimeTypes.lookup(x));
   }
-  
+
   return acc;
 }, []);
 
 const expectedMimeTypeSpecialCases = {
   'text/less': 'text/css',
-  'text/jade': 'text/html'
+  'text/jade': 'text/html',
+  'text/cson': 'application/json'
 };
 
 for (let mimeType of mimeTypesToTest) {
   let klass = global.compilersByMimeType[mimeType];
-  
+
   describe(`The ${klass.name} class for ${mimeType}`, function() {
     beforeEach(function() {
       this.fixture = new klass();
@@ -47,11 +48,11 @@ for (let mimeType of mimeTypesToTest) {
 
       let result = await this.fixture.compile(source, input, ctx);
       let expectedMimeType = expectedMimeTypeSpecialCases[mimeType] || 'application/javascript';
-      
+
       expect(result.mimeType).to.equal(expectedMimeType);
 
       // NB: Jade doesn't do source maps
-      if (mimeType !== 'text/jade') {
+      if (mimeType !== 'text/jade' && mimeType !== 'text/cson') {
         let lines = result.code.split('\n');
         expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).to.be.ok;
       }
