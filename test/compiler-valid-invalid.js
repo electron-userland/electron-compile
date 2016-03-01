@@ -62,7 +62,7 @@ for (let mimeType of mimeTypesToTest) {
         expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).to.be.ok;
       }
 
-      expect(typeof result.code).to.equal('string');
+      expect(typeof(result.code)).to.equal('string');
     });
 
     it(`should fail the invalid ${mimeType} file`, async function() {
