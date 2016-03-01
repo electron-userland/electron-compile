@@ -18,10 +18,10 @@ export default class CSONCompiler extends SimpleCompilerBase {
   compileSync(sourceCode, filePath) {
     CSON = CSON || require('cson');
 
-    let jsonStr = CSON.parse(sourceCode);
-    
+    let result = CSON.parse(sourceCode);
+
     return {
-      code: jsonStr,
+      code: JSON.stringify(result),
       mimeType: 'application/json'
     };
   }
