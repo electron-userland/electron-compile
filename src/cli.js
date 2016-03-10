@@ -22,11 +22,11 @@ async function main(appDir, sourceDirs) {
   let compilerHost = null;
   let rootCacheDir = path.join(appDir, '.cache');
   mkdirp.sync(rootCacheDir);
-  
+
   if (process.env.NODE_ENV !== 'production') {
     console.log(`Using NODE_ENV = ${process.env.NODE_ENV || 'development'}`);
   }
-  
+
   d(`main: ${appDir}, ${JSON.stringify(sourceDirs)}`);
   try {
     compilerHost = await createCompilerHostFromProjectRoot(appDir, rootCacheDir);
@@ -36,7 +36,7 @@ async function main(appDir, sourceDirs) {
 
     throw e;
   }
-  
+
   await Promise.all(_.map(sourceDirs, (dir) => forAllFiles(dir, async (f) => {
     try {
       d(`Starting compilation for ${f}`);
@@ -48,7 +48,7 @@ async function main(appDir, sourceDirs) {
       d(e.stack);
     }
   })));
-  
+
   d('Saving out configuration');
   await compilerHost.saveConfiguration();
 }
@@ -59,6 +59,7 @@ const yargs = require('yargs')
   .usage('Usage: electron-compile --appdir [root-app-dir] paths...')
   .alias('a', 'appdir')
   .describe('a', 'The top-level application directory (i.e. where your package.json is)')
+  .default('a', process.cwd())
   .help('h')
   .alias('h', 'help')
   .epilog('Copyright 2015');
@@ -71,14 +72,14 @@ if (!argv._ || argv._.length < 1) {
 }
 
 const sourceDirs = argv._;
-const appDir = argv.a || process.env.PWD;
+const appDir = argv.a;
 
 main(appDir, sourceDirs)
   .then(() => process.exit(0))
   .catch((e) => {
     console.error(e.message || e);
     d(e.stack);
-    
+
     console.error("Compilation failed!\nFor extra information, set the DEBUG environment variable to '*'");
     process.exit(-1);
-  });  
+  });
