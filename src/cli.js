@@ -82,12 +82,14 @@ const sourceDirs = argv._;
 const appDir = argv.a;
 const cacheDir = argv.c;
 
-main(appDir, sourceDirs, cacheDir)
-  .then(() => process.exit(0))
-  .catch((e) => {
-    console.error(e.message || e);
-    d(e.stack);
+if (process.mainModule === module) {
+  main(appDir, sourceDirs, cacheDir)
+    .then(() => process.exit(0))
+    .catch((e) => {
+      console.error(e.message || e);
+      d(e.stack);
 
-    console.error("Compilation failed!\nFor extra information, set the DEBUG environment variable to '*'");
-    process.exit(-1);
-  });
+      console.error("Compilation failed!\nFor extra information, set the DEBUG environment variable to '*'");
+      process.exit(-1);
+    });
+}
