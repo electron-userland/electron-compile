@@ -13,6 +13,8 @@ const d = require('debug')('test:packager-cli');
 let testCount = 0;
 
 describe.only('the packager CLI', function() {
+  this.timeout(30 * 1000);
+
   beforeEach(function() {
     this.tempCacheDir = path.join(__dirname, `__packager_cli_${testCount++}`);
     mkdirp.sync(this.tempCacheDir);
