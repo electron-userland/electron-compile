@@ -10,6 +10,23 @@ import {spawnPromise, findActualExecutable} from 'spawn-rx';
 const d = require('debug')('electron-compile:packager');
 const electronPackager = 'electron-packager';
 
+export function parsePackagerOutput(output) {
+  // NB: Yes, this is fragile as fuck. :-/
+  console.log(output);
+  let lines = output.split('\n');
+
+  let idx = _.findIndex(lines, (x) => x.match(/Wrote new app/i));
+  if (idx < 1) throw new Error(`Packager output is invalid: ${output}`);
+  lines = lines.splice(idx);
+
+  // Multi-platform case
+  if (lines[0].match(/Wrote new apps/)) {
+    return _.filter(lines.splice(1), (x) => x.length > 1);
+  } else {
+    return [lines[0].replace(/^.*new app to /, '')];
+  }
+}
+
 export async function main(argv) {
   // 1. Find electron-packager
   // 2. Run it, but strip the ASAR commands out

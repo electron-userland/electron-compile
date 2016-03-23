@@ -35,7 +35,7 @@
     "@paulcbetts/mime-types": "^2.1.8",
     "mkdirp": "^0.5.1",
     "pify": "^2.3.0",
-    "spawn-rx": "^0.1.2",
+    "spawn-rx": "^0.1.4",
     "yargs": "^3.31.0"
   },
   "devDependencies": {
