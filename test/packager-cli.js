@@ -60,7 +60,7 @@ describe('the packager CLI', function() {
     });
   });
 
-  it.only('should replace the init script with es6-shim', async function() {
+  it('should replace the init script with es6-shim', async function() {
     let inputApp = path.resolve(__dirname, 'electron-app');
 
     // NB: The first two elements are dummies to fake out what would normally
