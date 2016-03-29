@@ -71,19 +71,19 @@ const yargs = require('yargs')
   .alias('h', 'help')
   .epilog('Copyright 2015');
 
-const argv = yargs.argv;
-
-if (!argv._ || argv._.length < 1) {
-  yargs.showHelp();
-  process.exit(-1);
-}
-
-const sourceDirs = argv._;
-const appDir = argv.a;
-const cacheDir = argv.c;
-
 if (process.mainModule === module) {
-  main(appDir, sourceDirs, cacheDir)
+  const argv = yargs.argv;
+
+  if (!argv._ || argv._.length < 1) {
+    yargs.showHelp();
+    process.exit(-1);
+  }
+
+  const sourceDirs = argv._;
+  const appDir = argv.a;
+  const cacheDir = argv.c;
+
+  main(appDir, sourceDirs)
     .then(() => process.exit(0))
     .catch((e) => {
       console.error(e.message || e);
