@@ -25,3 +25,5 @@ global.compilersByMimeType = _.reduce(allCompilerClasses, (acc,x) => {
   for (let type of x.getInputMimeTypes()) { acc[type] = x; }
   return acc;
 }, {});
+
+global.compilersByMimeType['text/css'] = global.compilersByMimeType['text/plain'];
