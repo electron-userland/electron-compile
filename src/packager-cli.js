@@ -44,6 +44,39 @@ export function parsePackagerOutput(output) {
   }
 }
 
+async function compileAndShim(packageDir) {
+  let appDir = await packageDirToResourcesDir(packageDir);
+
+  d(`Looking in ${appDir}`);
+  for (let entry of await pfs.readdir(appDir)) {
+    if (entry.match(/^node_modules$/)) continue;
+
+    let fullPath = path.join(appDir, entry);
+    let stat = await pfs.stat(fullPath);
+
+    if (!stat.isDirectory()) continue;
+
+    d(`Executing electron-compile: ${appDir} => ${entry}`);
+    await main(appDir, [fullPath]);
+  }
+
+  d('Copying in es6-shim');
+  let packageJson = JSON.parse(
+    await pfs.readFile(path.join(appDir, 'package.json'), 'utf8'));
+
+  let index = packageJson.main || 'index.js';
+  packageJson.originalMain = index;
+  packageJson.main = 'es6-shim.js';
+
+  await copySmallFile(
+    path.join(__dirname, 'es6-shim.js'),
+    path.join(appDir, 'es6-shim.js'));
+
+  await pfs.writeFile(
+    path.join(appDir, 'package.json'),
+    JSON.stringify(packageJson, null, 2));
+}
+
 export async function packagerMain(argv) {
   // 1. Find electron-packager
   // 2. Run it, but strip the ASAR commands out
@@ -65,23 +98,8 @@ export async function packagerMain(argv) {
 
   d(`Starting compilation for ${JSON.stringify(packageDirs)}`);
   for (let packageDir of packageDirs) {
-    let appDir = await packageDirToResourcesDir(packageDir);
-
-    d(`Looking in ${appDir}`);
-    for (let entry of await pfs.readdir(appDir)) {
-      if (entry.match(/^node_modules$/)) continue;
-
-      let fullPath = path.join(appDir, entry);
-      let stat = await pfs.stat(fullPath);
-
-      if (!stat.isDirectory()) continue;
-
-      d(`Executing electron-compile: ${appDir} => ${entry}`);
-      await main(appDir, [fullPath]);
-    }
+    await compileAndShim(packageDir);
   }
-
-
 }
 
 if (process.mainModule === module) {
