@@ -18,7 +18,7 @@ process.on('uncaughtException', (e) => {
   d(e.stack || '');
 });
 
-async function main(appDir, sourceDirs, cacheDir) {
+export async function main(appDir, sourceDirs, cacheDir) {
   let compilerHost = null;
   if (!cacheDir || cacheDir.length < 1) {
     cacheDir = '.cache';
