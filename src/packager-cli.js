@@ -2,13 +2,30 @@
 import './babel-maybefill';
 
 import _ from 'lodash';
-import path from 'path'
-import {fs} from './promise';
+import path from 'path';
+import {pfs} from './promise';
+import {main} from './cli';
 
 import {spawnPromise, findActualExecutable} from 'spawn-rx';
 
 const d = require('debug')('electron-compile:packager');
 const electronPackager = 'electron-packager';
+
+export async function packageDirToResourcesDir(packageDir) {
+  let appDir = _.find(await pfs.readdir(packageDir), (x) => x.match(/\.app$/i));
+  if (appDir) {
+    return path.join(packageDir, appDir, 'Contents', 'Resources', 'app');
+  } else {
+    return path.join(packageDir, 'resources', 'app');
+  }
+}
+
+async function copySmallFile(from, to) {
+  d(`Copying ${from} => ${to}`);
+
+  let buf = await pfs.readFile(from);
+  await pfs.writeFile(to, buf);
+}
 
 export function parsePackagerOutput(output) {
   // NB: Yes, this is fragile as fuck. :-/
@@ -27,7 +44,7 @@ export function parsePackagerOutput(output) {
   }
 }
 
-export async function main(argv) {
+export async function packagerMain(argv) {
   // 1. Find electron-packager
   // 2. Run it, but strip the ASAR commands out
   // 3. Collect up the output paths
@@ -44,11 +61,31 @@ export async function main(argv) {
   }
 
   let packagerOutput = await spawnPromise(cmd, args);
-  console.log(packagerOutput);
+  let packageDirs = parsePackagerOutput(packagerOutput);
+
+  d(`Starting compilation for ${JSON.stringify(packageDirs)}`);
+  for (let packageDir of packageDirs) {
+    let appDir = await packageDirToResourcesDir(packageDir);
+
+    d(`Looking in ${appDir}`);
+    for (let entry of await pfs.readdir(appDir)) {
+      if (entry.match(/^node_modules$/)) continue;
+
+      let fullPath = path.join(appDir, entry);
+      let stat = await pfs.stat(fullPath);
+
+      if (!stat.isDirectory()) continue;
+
+      d(`Executing electron-compile: ${appDir} => ${entry}`);
+      await main(appDir, [fullPath]);
+    }
+  }
+
+
 }
 
 if (process.mainModule === module) {
-  main(process.argv)
+  packagerMain(process.argv)
     .then(() => process.exit(0))
     .catch((e) => {
       console.error(e.message || e);
