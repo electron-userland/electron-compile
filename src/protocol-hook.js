@@ -147,7 +147,7 @@ export function initializeProtocolHook(compilerHost) {
     }
 
     // NB: Special-case files coming from atom.asar or node_modules
-    if (filePath.match(/[\/\\]atom.asar/) || filePath.match(/[\/\\]node_modules/)) {
+    if (filePath.match(/[\/\\](atom|electron).asar/) || filePath.match(/[\/\\]node_modules/)) {
       // NBs on NBs: If we're loading an HTML file from node_modules, we still have
       // to do the HTML document rigging
       if (filePath.match(/\.html?$/i)) {
