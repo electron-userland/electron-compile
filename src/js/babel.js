@@ -56,7 +56,8 @@ export default class BabelCompiler extends CompilerBase {
 
     let opts = _.extend({}, this.compilerOptions, {
       filename: filePath,
-      ast: false
+      ast: false,
+      babelrc: false
     });
 
     if ('plugins' in opts) {
@@ -88,7 +89,8 @@ export default class BabelCompiler extends CompilerBase {
 
     let opts = _.extend({}, this.compilerOptions, {
       filename: filePath,
-      ast: false
+      ast: false,
+      babelrc: false
     });
 
     if ('plugins' in opts) {
