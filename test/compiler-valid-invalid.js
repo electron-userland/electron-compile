@@ -31,12 +31,30 @@ const mimeTypesWithoutSourceMapSupport = [
   'text/cson'
 ];
 
+const compilerOptionsForMimeType = {
+  'application/javascript': {
+    "presets": ["stage-0", "es2015"],
+    "plugins": ["transform-runtime"],
+    "sourceMaps": "inline"
+  },
+
+  'text/jsx': {
+    "presets": ["react", "stage-0", "es2015"],
+    "plugins": ["transform-runtime"],
+    "sourceMaps": "inline"
+  }
+};
+
 for (let mimeType of mimeTypesToTest) {
   let klass = global.compilersByMimeType[mimeType];
 
   describe(`The ${klass.name} class for ${mimeType}`, function() {
     beforeEach(function() {
       this.fixture = new klass();
+
+      if (mimeType in compilerOptionsForMimeType) {
+        this.fixture.compilerOptions = compilerOptionsForMimeType[mimeType];
+      }
     });
 
     it(`should compile the valid ${mimeType} file`, async function() {

@@ -28,22 +28,33 @@ describe('The compiler host', function() {
   beforeEach(function() {
     this.appRootDir = path.join(__dirname, '..');
     this.fileChangeCache = new FileChangeCache(this.appRootDir);
-        
+
     this.tempCacheDir = path.join(__dirname, `__compile_cache_${testCount++}`);
     mkdirp.sync(this.tempCacheDir);
-    
+
     this.compilersByMimeType = _.reduce(Object.keys(global.compilersByMimeType), (acc, type) => {
       let Klass = global.compilersByMimeType[type];
       acc[type] = new Klass();
       return acc;
     }, {});
-    
+
     let InlineHtmlCompiler = Object.getPrototypeOf(this.compilersByMimeType['text/html']).constructor;
     this.compilersByMimeType['text/html'] = InlineHtmlCompiler.createFromCompilers(this.compilersByMimeType);
-    
+    this.compilersByMimeType['application/javascript'].compilerOptions = {
+      "presets": ["react", "stage-0", "es2015"],
+      "plugins": ["transform-runtime"],
+      "sourceMaps": "inline"
+    };
+
+    this.compilersByMimeType['text/jsx'].compilerOptions = {
+      "presets": ["react", "stage-0", "es2015"],
+      "plugins": ["transform-runtime"],
+      "sourceMaps": "inline"
+    };
+
     this.fixture = new CompilerHost(this.tempCacheDir, this.compilersByMimeType, this.fileChangeCache, false);
   });
-  
+
   afterEach(function() {
     rimraf.sync(this.tempCacheDir);
   });
@@ -52,7 +63,7 @@ describe('The compiler host', function() {
     let input = '<html><style type="text/less">body { font-family: "lol"; }</style></html>';
     let inFile = path.join(this.tempCacheDir, 'input.html');
     fs.writeFileSync(inFile, input);
-    
+
     let result = this.fixture.compileSync(inFile);
 
     expect(result.mimeType).to.equal('text/html');
@@ -69,11 +80,11 @@ describe('The compiler host', function() {
       if (filePath.match(/source_map/)) return false;
       if (filePath.match(/babelrc/)) return false;
       if (filePath.match(/compilerc/)) return false;
-      
+
       return true;
     });
   });
-  
+
   it('Should compile everything in the fixtures directory sync', function() {
     let input = path.join(__dirname, '..', 'test', 'fixtures');
 
@@ -84,11 +95,11 @@ describe('The compiler host', function() {
       if (filePath.match(/source_map/)) return false;
       if (filePath.match(/babelrc/)) return false;
       if (filePath.match(/compilerc/)) return false;
-      
+
       return true;
     });
   });
-  
+
   it('Should read files from cache once we compile them', async function() {
     let input = path.join(__dirname, '..', 'test', 'fixtures');
 
@@ -99,10 +110,10 @@ describe('The compiler host', function() {
       if (filePath.match(/source_map/)) return false;
       if (filePath.match(/babelrc/)) return false;
       if (filePath.match(/compilerc/)) return false;
-      
+
       return true;
     });
-    
+
     this.fixture = new CompilerHost(this.tempCacheDir, this.compilersByMimeType, this.fileChangeCache, true);
     this.fixture.compileUncached = () => Promise.reject(new Error("Fail!"));
 
@@ -113,11 +124,11 @@ describe('The compiler host', function() {
       if (filePath.match(/source_map/)) return false;
       if (filePath.match(/babelrc/)) return false;
       if (filePath.match(/compilerc/)) return false;
-      
+
       return true;
     });
   });
-  
+
   it('Should read files from cache once we compile them synchronously', function() {
     let input = path.join(__dirname, '..', 'test', 'fixtures');
 
@@ -128,10 +139,10 @@ describe('The compiler host', function() {
       if (filePath.match(/source_map/)) return false;
       if (filePath.match(/babelrc/)) return false;
       if (filePath.match(/compilerc/)) return false;
-      
+
       return true;
     });
-    
+
     this.fixture = new CompilerHost(this.tempCacheDir, this.compilersByMimeType, this.fileChangeCache, true);
     this.fixture.compileUncached = () => { throw new Error("Fail!"); };
 
@@ -142,11 +153,11 @@ describe('The compiler host', function() {
       if (filePath.match(/source_map/)) return false;
       if (filePath.match(/babelrc/)) return false;
       if (filePath.match(/compilerc/)) return false;
-      
+
       return true;
     });
   });
-  
+
   it('Should read files from serialized compiler information', async function() {
     let input = path.join(__dirname, '..', 'test', 'fixtures');
 
@@ -158,13 +169,13 @@ describe('The compiler host', function() {
       if (filePath.match(/source_map/)) return false;
       if (filePath.match(/babelrc/)) return false;
       if (filePath.match(/compilerc/)) return false;
-      
+
       return true;
     });
-    
+
     d("Saving configuration");
     await this.fixture.saveConfiguration();
-    
+
     d("Recreating from said configuration");
     this.fixture = await CompilerHost.createReadonlyFromConfiguration(this.tempCacheDir, this.appRootDir);
     this.fixture.compileUncached = () => Promise.reject(new Error("Fail!"));
@@ -177,11 +188,11 @@ describe('The compiler host', function() {
       if (filePath.match(/source_map/)) return false;
       if (filePath.match(/babelrc/)) return false;
       if (filePath.match(/compilerc/)) return false;
-      
+
       return true;
     });
   });
-  
+
   it('Should read files from serialized compiler information synchronously', function() {
     let input = path.join(__dirname, '..', 'test', 'fixtures');
 
@@ -193,13 +204,13 @@ describe('The compiler host', function() {
       if (filePath.match(/source_map/)) return false;
       if (filePath.match(/babelrc/)) return false;
       if (filePath.match(/compilerc/)) return false;
-      
+
       return true;
     });
-    
+
     d("Saving configuration");
     this.fixture.saveConfigurationSync();
-    
+
     d("Recreating from said configuration");
     this.fixture = CompilerHost.createReadonlyFromConfigurationSync(this.tempCacheDir, this.appRootDir);
     this.fixture.compileUncached = () => Promise.reject(new Error("Fail!"));
@@ -212,7 +223,7 @@ describe('The compiler host', function() {
       if (filePath.match(/source_map/)) return false;
       if (filePath.match(/babelrc/)) return false;
       if (filePath.match(/compilerc/)) return false;
-      
+
       return true;
     });
   });
