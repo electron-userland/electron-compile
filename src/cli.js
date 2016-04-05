@@ -18,9 +18,9 @@ process.on('uncaughtException', (e) => {
   d(e.stack || '');
 });
 
-async function main(appDir, sourceDirs) {
+async function main(appDir, sourceDirs, cacheDir) {
   let compilerHost = null;
-  let rootCacheDir = path.join(appDir, '.cache');
+  let rootCacheDir = path.join(appDir, cacheDir);
   mkdirp.sync(rootCacheDir);
 
   if (process.env.NODE_ENV !== 'production') {
@@ -60,6 +60,9 @@ const yargs = require('yargs')
   .alias('a', 'appdir')
   .describe('a', 'The top-level application directory (i.e. where your package.json is)')
   .default('a', process.cwd())
+  .alias('c', 'cachedir')
+  .describe('c', 'The directory to put the cache')
+  .default('c', '.cache')
   .help('h')
   .alias('h', 'help')
   .epilog('Copyright 2015');
@@ -73,8 +76,9 @@ if (!argv._ || argv._.length < 1) {
 
 const sourceDirs = argv._;
 const appDir = argv.a;
+const cacheDir = argv.c;
 
-main(appDir, sourceDirs)
+main(appDir, sourceDirs, cacheDir)
   .then(() => process.exit(0))
   .catch((e) => {
     console.error(e.message || e);
