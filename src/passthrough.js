@@ -1,6 +1,6 @@
 import path from 'path';
 import {SimpleCompilerBase} from './compiler-base';
-import mimeTypes from 'mime-types';
+import mimeTypes from '@paulcbetts/mime-types';
 
 const inputMimeTypes = ['text/plain'];
 
