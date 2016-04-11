@@ -32,7 +32,7 @@
     "debug": "^2.2.0",
     "lodash": "^3.10.1",
     "lru-cache": "^4.0.0",
-    "mime-types": "^2.1.8",
+    "@paulcbetts/mime-types": "^2.1.8",
     "mkdirp": "^0.5.1",
     "pify": "^2.3.0",
     "yargs": "^3.31.0"

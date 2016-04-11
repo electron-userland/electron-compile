@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import mimeTypes from 'mime-types';
+import mimeTypes from '@paulcbetts/mime-types';
 import fs from 'fs';
 import zlib from 'zlib';
 import path from 'path';

@@ -4,7 +4,7 @@ import pify from 'pify';
 import fs from 'fs';
 import path from 'path';
 import _ from 'lodash';
-import mimeTypes from 'mime-types';
+import mimeTypes from '@paulcbetts/mime-types';
 
 const pfs = pify(fs);
 
