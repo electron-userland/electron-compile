@@ -83,7 +83,7 @@ if (process.mainModule === module) {
   const appDir = argv.a;
   const cacheDir = argv.c;
 
-  main(appDir, sourceDirs)
+  main(appDir, sourceDirs, cacheDir)
     .then(() => process.exit(0))
     .catch((e) => {
       console.error(e.message || e);
