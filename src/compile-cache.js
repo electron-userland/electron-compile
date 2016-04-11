@@ -102,7 +102,6 @@ export default class CompileCache {
     try {
       cacheFile = path.join(this.getCachePath(), hashInfo.hash);
       let result = null;
-      console.log(filePath, cacheFile);
 
       if (hashInfo.isFileBinary) {
         d("File is binary, reading out info");
