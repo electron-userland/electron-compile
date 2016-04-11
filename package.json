@@ -1,6 +1,6 @@
 {
   "name": "electron-compilers",
-  "version": "2.1.4",
+  "version": "3.0.0",
   "description": "Compiler implementations for electron-compile",
   "main": "lib/main.js",
   "scripts": {
@@ -32,7 +32,7 @@
     "jade": "^1.11.0",
     "less": "^2.5.3",
     "lodash": "^3.10.1",
-    "mime-types": "^2.1.9",
+    "@paulcbetts/mime-types": "^2.1.9",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.4.3",
     "typescript-simple": "^2.0.0"

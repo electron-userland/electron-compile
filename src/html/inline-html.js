@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import path from 'path';
-import mimeTypes from 'mime-types';
+import mimeTypes from '@paulcbetts/mime-types';
 import {CompilerBase} from '../compiler-base';
 
 const inputMimeTypes = ['text/html'];
