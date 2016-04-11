@@ -20,6 +20,10 @@ process.on('uncaughtException', (e) => {
 
 async function main(appDir, sourceDirs, cacheDir) {
   let compilerHost = null;
+  if (!cacheDir || cacheDir.length < 1) {
+    cacheDir = '.cache';
+  }
+
   let rootCacheDir = path.join(appDir, cacheDir);
   mkdirp.sync(rootCacheDir);
 
