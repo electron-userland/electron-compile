@@ -27,18 +27,19 @@
   "homepage": "https://github.com/paulcbetts/electron-compile",
   "main": "lib/index.js",
   "dependencies": {
+    "@paulcbetts/mime-types": "^2.1.8",
     "babel-polyfill": "^6.3.14",
     "btoa": "^1.1.2",
     "debug": "^2.2.0",
     "lodash": "^3.10.1",
     "lru-cache": "^4.0.0",
-    "@paulcbetts/mime-types": "^2.1.8",
     "mkdirp": "^0.5.1",
     "pify": "^2.3.0",
     "spawn-rx": "^0.1.4",
     "yargs": "^3.31.0"
   },
   "devDependencies": {
+    "asar": "^0.11.0",
     "babel-cli": "^6.3.17",
     "babel-eslint": "^5.0.0-beta6",
     "babel-plugin-transform-runtime": "^6.5.2",
