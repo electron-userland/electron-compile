@@ -1,6 +1,6 @@
 {
   "name": "electron-compile",
-  "version": "2.1.4",
+  "version": "3.0.0",
   "description": "Electron supporting package to compile JS and CSS in Electron applications",
   "scripts": {
     "doc": "esdoc -c ./esdoc.json",
@@ -32,7 +32,7 @@
     "debug": "^2.2.0",
     "lodash": "^3.10.1",
     "lru-cache": "^4.0.0",
-    "mime-types": "^2.1.8",
+    "@paulcbetts/mime-types": "^2.1.8",
     "mkdirp": "^0.5.1",
     "pify": "^2.3.0",
     "yargs": "^3.31.0"
@@ -48,7 +48,7 @@
     "chai": "^3.4.1",
     "chai-as-promised": "^5.2.0",
     "cheerio": "^0.19.0",
-    "electron-compilers": "^2.1.4",
+    "electron-compilers": "^3.0.0",
     "electron-prebuilt": "^0.36.2",
     "esdoc": "^0.4.3",
     "esdoc-es7-plugin": "0.0.3",

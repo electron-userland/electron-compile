@@ -5,7 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import rimraf from 'rimraf';
 import mkdirp from 'mkdirp';
-import mimeTypes from 'mime-types';
+import mimeTypes from '@paulcbetts/mime-types';
 import FileChangeCache from '../src/file-change-cache';
 import CompilerHost from '../src/compiler-host';
 
