@@ -3,6 +3,8 @@ import './babel-maybefill';
 
 import _ from 'lodash';
 import path from 'path';
+import rimraf from 'rimraf';
+
 import {pfs} from './promise';
 import {main} from './cli';
 
@@ -77,28 +79,57 @@ async function compileAndShim(packageDir) {
     JSON.stringify(packageJson, null, 2));
 }
 
-export async function packagerMain(argv) {
-  // 1. Find electron-packager
-  // 2. Run it, but strip the ASAR commands out
-  // 3. Collect up the output paths
-  // 4. Run cli.js on everything that looks like a source directory
-  // 5. (if necessary) ASAR everything back up
+export async function runAsarArchive(packageDir, asarUnpackDir) {
+  let appDir = await packageDirToResourcesDir(packageDir);
+  
+  let asarArgs = ['pack', 'app', 'app.asar'];
+  if (asarUnpackDir) {
+    asarArgs.push('--unpack-dir', asarUnpackDir);
+  }
+  
+  let { cmd, args } = findExecutableOrGuess('asar', asarArgs);
+  await spawnPromise(cmd, args, { cwd: appDir });
+  rimraf.sync(path.join(appDir, 'app'));
+}
 
+export function findExecutableOrGuess(cmdToFind, argsToUse) {
+  let { cmd, args } = findActualExecutable(cmdToFind, argsToUse);
+  if (cmd === electronPackager) {
+    d(`Can't find ${cmdToFind}, falling back to where it should be as a guess!`);
+    cmd = findActualExecutable(path.resolve(__dirname, '..', '..', '.bin', cmdToFind)).cmd;
+  }
+  
+  return { cmd, args };
+}
+
+export async function packagerMain(argv) {
   let packagerArgs = _.filter(
     argv.splice(2), (x) => !x.match(/^(asar|asar-unpack)/i));
-
-  let { cmd, args } = findActualExecutable(electronPackager, packagerArgs);
-  if (cmd === electronPackager) {
-    d("Can't find electron-packager, falling back to where it should be as a guess!");
-    cmd = findActualExecutable(path.resolve(__dirname, '..', '..', '.bin', 'electron-packager')).cmd;
+    
+  if (_.find(argv, (x) => x.match(/^--asar-unpack$/))) {
+    throw new Error("electron-compile doesn't support --asar-unpack at the moment, use asar-unpack-dir");
   }
-
+  
+  let { cmd, args } = findExecutableOrGuess(electronPackager, packagerArgs);
+  
   let packagerOutput = await spawnPromise(cmd, args);
   let packageDirs = parsePackagerOutput(packagerOutput);
 
   d(`Starting compilation for ${JSON.stringify(packageDirs)}`);
   for (let packageDir of packageDirs) {
     await compileAndShim(packageDir);
+  
+    let shouldAsar = _.find(argv, (x) => x.match(/^asar/i));
+    if (!shouldAsar) return;
+    
+    let indexOfUnpack = _.findIndex(argv, (x) => x.match(/^asar-unpack-dir$/));
+    
+    let asarUnpackDir = null;
+    if (indexOfUnpack >= 0 && argv.length+1 < indexOfUnpack) {
+      asarUnpackDir = argv[indexOfUnpack+1];
+    }
+    
+    await runAsarArchive(packageDir, asarUnpackDir);
   }
 }
 
