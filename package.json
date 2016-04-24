@@ -58,7 +58,6 @@
     "esdoc-es7-plugin": "0.0.3",
     "esdoc-plugin-async-to-sync": "^0.5.0",
     "eslint": "^1.10.3",
-    "mocha": "^2.3.4",
-    "rimraf": "^2.5.0"
+    "mocha": "^2.3.4"
   }
 }

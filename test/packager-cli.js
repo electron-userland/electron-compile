@@ -12,6 +12,18 @@ const d = require('debug')('test:packager-cli');
 
 let testCount = 0;
 
+function statSyncNoException(fsPath) {
+  if ('statSyncNoException' in sfs) {
+    return sfs.statSyncNoException(fsPath);
+  }
+
+  try {
+    return sfs.statSync(fsPath);
+  } catch (e) {
+    return null;
+  }
+}
+
 describe('the packager CLI', function() {
   this.timeout(60 * 1000);
 
@@ -82,5 +94,31 @@ describe('the packager CLI', function() {
 
     expect(packageJson.originalMain).to.equal('main.js');
     expect(packageJson.main).to.equal('es6-shim.js');
+  });
+  
+  it('should ASAR archive', async function() {
+    let inputApp = path.resolve(__dirname, 'electron-app');
+
+    // NB: The first two elements are dummies to fake out what would normally
+    // be the path to node and the path to the script
+    await packagerMain(['', '', '--platform', 'win32', '--arch', 'x64', '--asar', '--out', this.tempCacheDir, inputApp]);
+
+    const toFind = ['resources/app.asar'];
+    let cacheDir = this.tempCacheDir;
+
+    _.each(toFind, (name) => {
+      let file = path.resolve(cacheDir, 'mp3-encoder-demo-win32-x64', name);
+
+      d(`Looking for ${file}`);
+      expect(statSyncNoException(file)).to.be.ok;
+    });
+    
+    const toNotFind = ['resources/app'];
+    _.each(toNotFind, (name) => {
+      let file = path.resolve(cacheDir, 'mp3-encoder-demo-win32-x64', name);
+
+      d(`Looking for ${file}`);
+      expect(statSyncNoException(file)).not.to.be.ok;
+    });
   });
 });

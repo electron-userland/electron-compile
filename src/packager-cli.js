@@ -88,8 +88,10 @@ export async function runAsarArchive(packageDir, asarUnpackDir) {
   }
   
   let { cmd, args } = findExecutableOrGuess('asar', asarArgs);
-  await spawnPromise(cmd, args, { cwd: appDir });
-  rimraf.sync(path.join(appDir, 'app'));
+  
+  d(`Running ${cmd} ${JSON.stringify(args)}`);
+  await spawnPromise(cmd, args, { cwd: path.join(appDir, '..') });
+  rimraf.sync(path.join(appDir));
 }
 
 export function findExecutableOrGuess(cmdToFind, argsToUse) {
@@ -103,8 +105,10 @@ export function findExecutableOrGuess(cmdToFind, argsToUse) {
 }
 
 export async function packagerMain(argv) {
+  d(`argv: ${JSON.stringify(argv)}`);
+
   let packagerArgs = _.filter(
-    argv.splice(2), (x) => !x.match(/^(asar|asar-unpack)/i));
+    argv.slice(2), (x) => !x.match(/^--(asar|asar-unpack)/i));
     
   if (_.find(argv, (x) => x.match(/^--asar-unpack$/))) {
     throw new Error("electron-compile doesn't support --asar-unpack at the moment, use asar-unpack-dir");
@@ -112,6 +116,7 @@ export async function packagerMain(argv) {
   
   let { cmd, args } = findExecutableOrGuess(electronPackager, packagerArgs);
   
+  d(`Spawning electron-packager: ${JSON.stringify(args)}`);
   let packagerOutput = await spawnPromise(cmd, args);
   let packageDirs = parsePackagerOutput(packagerOutput);
 
@@ -119,10 +124,14 @@ export async function packagerMain(argv) {
   for (let packageDir of packageDirs) {
     await compileAndShim(packageDir);
   
-    let shouldAsar = _.find(argv, (x) => x.match(/^asar/i));
-    if (!shouldAsar) return;
+    let shouldAsar = _.find(argv, (x) => x.match(/^--asar/i));
+    if (!shouldAsar) {
+      d(`No ASAR! ${JSON.stringify(argv)}`);
+      continue;
+    }
     
-    let indexOfUnpack = _.findIndex(argv, (x) => x.match(/^asar-unpack-dir$/));
+    d('Starting ASAR packaging');
+    let indexOfUnpack = _.findIndex(argv, (x) => x.match(/^--asar-unpack-dir$/));
     
     let asarUnpackDir = null;
     if (indexOfUnpack >= 0 && argv.length+1 < indexOfUnpack) {
