@@ -29,6 +29,27 @@ async function copySmallFile(from, to) {
   await pfs.writeFile(to, buf);
 }
 
+export function splitOutAsarArguments(argv) {
+  if (_.find(argv, (x) => x.match(/^--asar-unpack$/))) {
+    throw new Error("electron-compile doesn't support --asar-unpack at the moment, use asar-unpack-dir");
+  }
+  
+  // Strip --asar altogether
+  let ret = _.filter(argv, (x) => !x.match(/^--asar/));
+  
+  if (ret.length === argv.length) { return { packagerArgs: ret, asarArgs: null }; }
+  
+  let indexOfUnpack = _.findIndex(ret, (x) => x.match(/^--asar-unpack-dir$/));
+  if (indexOfUnpack < 0) {
+    return { packagerArgs: ret, asarArgs: [] };
+  }
+
+  let unpackArgs = ret.slice(indexOfUnpack, indexOfUnpack+1);
+  let notUnpackArgs = ret.slice(0, indexOfUnpack).concat(ret.slice(indexOfUnpack+2));
+  
+  return { packagerArgs: notUnpackArgs, asarArgs: unpackArgs };
+}
+
 export function parsePackagerOutput(output) {
   // NB: Yes, this is fragile as fuck. :-/
   console.log(output);
@@ -106,14 +127,9 @@ export function findExecutableOrGuess(cmdToFind, argsToUse) {
 
 export async function packagerMain(argv) {
   d(`argv: ${JSON.stringify(argv)}`);
-
-  let packagerArgs = _.filter(
-    argv.slice(2), (x) => !x.match(/^--(asar|asar-unpack)/i));
-    
-  if (_.find(argv, (x) => x.match(/^--asar-unpack$/))) {
-    throw new Error("electron-compile doesn't support --asar-unpack at the moment, use asar-unpack-dir");
-  }
+  argv = argv.splice(2);
   
+  let { packagerArgs, asarArgs } = splitOutAsarArguments(argv);
   let { cmd, args } = findExecutableOrGuess(electronPackager, packagerArgs);
   
   d(`Spawning electron-packager: ${JSON.stringify(args)}`);
@@ -124,18 +140,12 @@ export async function packagerMain(argv) {
   for (let packageDir of packageDirs) {
     await compileAndShim(packageDir);
   
-    let shouldAsar = _.find(argv, (x) => x.match(/^--asar/i));
-    if (!shouldAsar) {
-      d(`No ASAR! ${JSON.stringify(argv)}`);
-      continue;
-    }
+    if (!asarArgs) continue;
     
     d('Starting ASAR packaging');
-    let indexOfUnpack = _.findIndex(argv, (x) => x.match(/^--asar-unpack-dir$/));
-    
     let asarUnpackDir = null;
-    if (indexOfUnpack >= 0 && argv.length+1 < indexOfUnpack) {
-      asarUnpackDir = argv[indexOfUnpack+1];
+    if (asarArgs.length === 2) {
+      asarUnpackDir = asarArgs[1];
     }
     
     await runAsarArchive(packageDir, asarUnpackDir);
