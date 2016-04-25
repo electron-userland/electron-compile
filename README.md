@@ -130,6 +130,10 @@ The opening Object is a list of MIME Types, and options passed to the compiler i
 
 ## How can I precompile my code for release-time?
 
+electron-compile comes with a wrapper around the [electron-packager](https://github.com/electron-userland/electron-packager) project, `electron-packager-compile` (if you use the `electron-prebuilt-compile` project, this will just be `electron-packager`). Run it the same way you run `electron-packager` and the compilation wire-up will be done in the background.
+
+## How can I precompile my code for release-time? (the hard way)
+
 electron-compile comes with a command-line application to pre-create a cache for you.
 
 ```sh
