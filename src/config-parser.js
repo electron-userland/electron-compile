@@ -92,7 +92,7 @@ export function init(appRoot, mainModule, productionMode = null, cacheDir = null
     if (cacheDir) {
       compilerHost = createCompilerHostFromProjectRootSync(appRoot, rootCacheDir);
     } else {
-      compilerHost = createCompilerHostFromProjectRootSync(appRoot);  
+      compilerHost = createCompilerHostFromProjectRootSync(appRoot);
     }
 
   }
@@ -330,7 +330,7 @@ export function getDefaultConfiguration() {
 /**
  * Allows you to create new instances of all compilers that are supported by
  * electron-compile and use them directly. Currently supports Babel, CoffeeScript,
- * TypeScript, LESS, and Jade.
+ * TypeScript, Less, and Jade.
  *
  * @return {Object}  An Object whose Keys are MIME types, and whose values
  * are instances of @{link CompilerBase}.

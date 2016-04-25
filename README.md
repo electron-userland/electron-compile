@@ -12,7 +12,7 @@ For JavaScript:
 
 For CSS:
 
-* LESS
+* Less
 
 For HTML:
 
@@ -80,7 +80,7 @@ DEBUG=electron-compile:* npm start
 DEBUG=*,-babel npm start
 ```
 
-### How do I set up (Babel / LESS / whatever) the way I want?
+### How do I set up (Babel / Less / whatever) the way I want?
 
 If you've got a `.babelrc` and that's all you want to customize, you can simply use it directly. electron-compile will respect it, even the environment-specific settings. If you want to customize other compilers, use a `.compilerc` file. Here's an example:
 
@@ -125,7 +125,7 @@ The opening Object is a list of MIME Types, and options passed to the compiler i
 * Babel - http://babeljs.io/docs/usage/options
 * CoffeeScript - http://coffeescript.org/documentation/docs/coffee-script.html#section-5
 * TypeScript - https://github.com/Microsoft/TypeScript/blob/v1.5.0-beta/bin/typescriptServices.d.ts#L1076
-* LESS - http://lesscss.org/usage/index.html#command-line-usage-options
+* Less - http://lesscss.org/usage/index.html#command-line-usage-options
 * Jade - http://jade-lang.com/api
 
 ## How can I precompile my code for release-time?
