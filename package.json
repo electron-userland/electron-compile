@@ -10,7 +10,8 @@
     "test": "mocha --compilers js:babel-register test/*.js"
   },
   "bin": {
-    "electron-compile": "lib/cli.js"
+    "electron-compile": "lib/cli.js",
+    "electron-packager-compile": "lib/packager-cli.js"
   },
   "repository": {
     "type": "git",
