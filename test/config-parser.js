@@ -15,6 +15,8 @@ const d = require('debug')('test:config-parser');
 let testCount = 0;
 
 describe('the configuration parser module', function() {
+  this.timeout(10 * 1000);
+
   describe('the createCompilers method', function() {
     it('should return compilers', function() {
       let result = createCompilers();

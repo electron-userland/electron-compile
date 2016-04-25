@@ -18,7 +18,7 @@ process.on('uncaughtException', (e) => {
   d(e.stack || '');
 });
 
-async function main(appDir, sourceDirs, cacheDir) {
+export async function main(appDir, sourceDirs, cacheDir) {
   let compilerHost = null;
   if (!cacheDir || cacheDir.length < 1) {
     cacheDir = '.cache';
@@ -71,23 +71,25 @@ const yargs = require('yargs')
   .alias('h', 'help')
   .epilog('Copyright 2015');
 
-const argv = yargs.argv;
+if (process.mainModule === module) {
+  const argv = yargs.argv;
 
-if (!argv._ || argv._.length < 1) {
-  yargs.showHelp();
-  process.exit(-1);
-}
-
-const sourceDirs = argv._;
-const appDir = argv.a;
-const cacheDir = argv.c;
-
-main(appDir, sourceDirs, cacheDir)
-  .then(() => process.exit(0))
-  .catch((e) => {
-    console.error(e.message || e);
-    d(e.stack);
-
-    console.error("Compilation failed!\nFor extra information, set the DEBUG environment variable to '*'");
+  if (!argv._ || argv._.length < 1) {
+    yargs.showHelp();
     process.exit(-1);
-  });
+  }
+
+  const sourceDirs = argv._;
+  const appDir = argv.a;
+  const cacheDir = argv.c;
+
+  main(appDir, sourceDirs, cacheDir)
+    .then(() => process.exit(0))
+    .catch((e) => {
+      console.error(e.message || e);
+      d(e.stack);
+
+      console.error("Compilation failed!\nFor extra information, set the DEBUG environment variable to '*'");
+      process.exit(-1);
+    });
+}

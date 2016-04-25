@@ -23,12 +23,14 @@ let mimeTypesToTest = _.reduce(allFixtureFiles, (acc,x) => {
 const expectedMimeTypeSpecialCases = {
   'text/less': 'text/css',
   'text/jade': 'text/html',
-  'text/cson': 'application/json'
+  'text/cson': 'application/json',
+  'text/css': 'text/css'
 };
 
 const mimeTypesWithoutSourceMapSupport = [
   'text/jade',
-  'text/cson'
+  'text/cson',
+  'text/css'
 ];
 
 const compilerOptionsForMimeType = {

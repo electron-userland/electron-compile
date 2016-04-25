@@ -12,4 +12,4 @@ export const pfs = pify(require('fs'));
 /**
  * @private
  */ 
- export const pzlib = pify(require('zlib'));
+export const pzlib = pify(require('zlib'));

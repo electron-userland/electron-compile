@@ -10,7 +10,8 @@
     "test": "mocha --compilers js:babel-register test/*.js"
   },
   "bin": {
-    "electron-compile": "lib/cli.js"
+    "electron-compile": "lib/cli.js",
+    "electron-packager-compile": "lib/packager-cli.js"
   },
   "repository": {
     "type": "git",
@@ -27,17 +28,20 @@
   "homepage": "https://github.com/paulcbetts/electron-compile",
   "main": "lib/index.js",
   "dependencies": {
+    "@paulcbetts/mime-types": "^2.1.8",
     "babel-polyfill": "^6.3.14",
     "btoa": "^1.1.2",
     "debug": "^2.2.0",
     "lodash": "^3.10.1",
     "lru-cache": "^4.0.0",
-    "@paulcbetts/mime-types": "^2.1.8",
     "mkdirp": "^0.5.1",
     "pify": "^2.3.0",
+    "rimraf": "^2.5.2",
+    "spawn-rx": "^0.1.4",
     "yargs": "^3.31.0"
   },
   "devDependencies": {
+    "asar": "^0.11.0",
     "babel-cli": "^6.3.17",
     "babel-eslint": "^5.0.0-beta6",
     "babel-plugin-transform-runtime": "^6.5.2",
@@ -49,12 +53,12 @@
     "chai-as-promised": "^5.2.0",
     "cheerio": "^0.19.0",
     "electron-compilers": "^3.0.0",
+    "electron-packager": "^5.2.1",
     "electron-prebuilt": "^0.36.2",
     "esdoc": "^0.4.3",
     "esdoc-es7-plugin": "0.0.3",
     "esdoc-plugin-async-to-sync": "^0.5.0",
     "eslint": "^1.10.3",
-    "mocha": "^2.3.4",
-    "rimraf": "^2.5.0"
+    "mocha": "^2.3.4"
   }
 }
