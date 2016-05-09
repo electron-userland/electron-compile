@@ -311,7 +311,8 @@ export default class FileChangedCache {
    * @private
    */
   static hasSourceMap(sourceCode) {
-    return sourceCode.lastIndexOf('//# sourceMap') > sourceCode.lastIndexOf('\n');
+    const trimmed = sourceCode.trim();
+    return trimmed.lastIndexOf('//# sourceMap') > trimmed.lastIndexOf('\n');
   }
 
   /**
