@@ -1,4 +1,5 @@
 import './babel-maybefill';
+
 import url from 'url';
 import fs from 'fs';
 import mime from '@paulcbetts/mime-types';
@@ -77,8 +78,8 @@ export function initializeRendererProcess(readOnlyMode) {
   // NB: If we don't do this, we'll get a renderer crash if you enable debug
   require('debug/browser');
 
-  let rootCacheDir = require('remote').getGlobal(magicGlobalForRootCacheDir);
-  let appRoot = require('remote').getGlobal(magicGlobalForAppRootDir);
+  let rootCacheDir = require('electron').remote.getGlobal(magicGlobalForRootCacheDir);
+  let appRoot = require('electron').remote.getGlobal(magicGlobalForAppRootDir);
   let compilerHost = null;
 
   // NB: This has to be synchronous because we need to block HTML parsing
@@ -109,7 +110,7 @@ export function initializeRendererProcess(readOnlyMode) {
  * @param  {CompilerHost} compilerHost  The compiler host to use for compilation.
  */
 export function initializeProtocolHook(compilerHost) {
-  protocol = protocol || require('protocol');
+  protocol = protocol || require('electron').protocol;
 
   global[magicGlobalForRootCacheDir] = compilerHost.rootCacheDir;
   global[magicGlobalForAppRootDir] = compilerHost.appRoot;
