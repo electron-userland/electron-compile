@@ -42,6 +42,5 @@ export default function sanitizeFilePath(file) {
     realFile = `${cachedRealpath(parts[0])}/app.asar/${parts[1]}`;
   }
 
-  let ret = realFile.replace(/[\\\/]/g, '/');
-  return ret.toLowerCase();
+  return realFile.replace(/[\\\/]/g, '/');
 }
