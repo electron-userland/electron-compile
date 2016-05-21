@@ -609,7 +609,7 @@ export default class CompilerHost {
    * @private
    */
   static fixNodeModulesSourceMapping(sourceCode, sourcePath, appRoot) {
-    let regexSourceMapping = /\/\/#.+sourceMappingURL=(.*)/i;
+    let regexSourceMapping = /\/\/#.*sourceMappingURL=([^"'].*)/i;
     let sourceMappingCheck = sourceCode.match(regexSourceMapping);
 
     if (sourceMappingCheck && sourceMappingCheck[1] && sourceMappingCheck[1] !== ''){
