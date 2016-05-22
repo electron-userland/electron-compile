@@ -35,6 +35,7 @@
     "@paulcbetts/mime-types": "^2.1.9",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.4.3",
+    "stylus": "^0.54.5",
     "typescript-simple": "^2.0.0"
   },
   "devDependencies": {
