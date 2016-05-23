@@ -2,7 +2,7 @@ import './babel-maybefill';
 
 import url from 'url';
 import fs from 'fs';
-import mime from '@paulcbetts/mime-types';
+import mime from 'mime-types';
 
 import CompilerHost from './compiler-host';
 
