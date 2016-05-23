@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import mimeTypes from '@paulcbetts/mime-types';
+import mimeTypes from 'mime-types';
 
 const typesToRig = {
   'text/typescript': 'ts',
