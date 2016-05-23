@@ -1,5 +1,6 @@
 import {SimpleCompilerBase} from '../compiler-base';
 import extend from 'lodash/object/extend';
+import {basename} from 'path';
 
 const mimeTypes = ['text/stylus'];
 let stylusjs = null;
@@ -24,7 +25,7 @@ export default class StylusCompiler extends SimpleCompilerBase {
 		stylusjs = require('stylus');
 
 		let opts = extend({}, this.compilerOptions, {
-			filename: path.basename(filePath)
+			filename: basename(filePath)
 		});
 
 		let code, error;
