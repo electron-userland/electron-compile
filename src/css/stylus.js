@@ -1,6 +1,6 @@
-import {SimpleCompilerBase} from '../compiler-base';
+import {CompilerBase} from '../compiler-base';
 import extend from 'lodash/object/extend';
-import {basename} from 'path';
+import path from 'path';
 
 const mimeTypes = ['text/stylus'];
 let stylusjs = null;
@@ -8,44 +8,71 @@ let stylusjs = null;
 /**
  * @access private
  */
-export default class StylusCompiler extends SimpleCompilerBase {
-	constructor() {
-		super();
+export default class StylusCompiler extends CompilerBase {
+  constructor() {
+    super();
 
-		this.compilerOptions = {
+    this.compilerOptions = {
+      sourcemap: true
+    };
+  }
 
-		};
-	}
+  static getInputMimeTypes() {
+    return mimeTypes;
+  }
 
-	static getInputMimeTypes() {
-		return mimeTypes;
-	}
+  async shouldCompileFile(fileName, compilerContext) {
+    return true;
+  }
 
-	compileSync(sourceCode, filePath, compilerContext) {
-		stylusjs = require('stylus');
+  async determineDependentFiles(sourceCode, filePath, compilerContext) {
+    return [];
+  }
 
-		let opts = extend({}, this.compilerOptions, {
-			filename: basename(filePath)
-		});
+  async compile(sourceCode, filePath, compilerContext) {
+    stylusjs = stylusjs || require('stylus');
 
-		let code, error;
+    let opts = extend({}, this.compilerOptions, {
+      filename: path.basename(filePath)
+    });
 
-		stylusjs.render(sourceCode, opts, (err, css) => {
-			error = err;
-			code = css;
-		});
+    let code = await new Promise((res,rej) => {
+      stylusjs.render(sourceCode, opts, (err, css) => {
+        if (err) {
+          rej(err);
+        } else {
+          res(css);
+        }
+      });
+    });
 
-		if (error) {
-			throw error;
-		}
+    return {
+      code, mimeType: 'text/css'
+    };
+  }
 
-		return {
-			code,
-			mimeType: 'text/css'
-		};
-	}
+  shouldCompileFileSync(fileName, compilerContext) {
+    return true;
+  }
 
-	getCompilerVersion() {
-		return require('stylus/package.json').version;
-	}
+  determineDependentFilesSync(sourceCode, filePath, compilerContext) {
+    return [];
+  }
+
+  compileSync(sourceCode, filePath, compilerContext) {
+    stylusjs = stylusjs || require('stylus');
+
+    let opts = extend({}, this.compilerOptions, {
+      filename: path.basename(filePath)
+    });
+
+    return {
+      code: stylusjs.render(sourceCode, opts),
+      mimeType: 'text/css'
+    };
+  }
+
+  getCompilerVersion() {
+    return require('stylus/package.json').version;
+  }
 }
