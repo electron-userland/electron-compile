@@ -25,7 +25,7 @@ For JSON:
 
 ### How does it work? (Easiest Way)
 
-Change your reference to `electron-prebuilt` to `electron-prebuilt-compile`. Tada! You did it.
+Use `electron-prebuilt-compile` instead of the `electron-prebuilt` module. Tada! You did it.
 
 ### Wait, seriously?
 
