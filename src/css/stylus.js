@@ -1,7 +1,8 @@
-import {SimpleCompilerBase} from '../compiler-base';
+import {CompilerBase} from '../compiler-base';
 import extend from 'lodash/object/extend';
 import {basename} from 'path';
 import nib from 'nib';
+import path from 'path';
 
 const mimeTypes = ['text/stylus'];
 let stylusjs = null;
@@ -9,58 +10,85 @@ let stylusjs = null;
 /**
  * @access private
  */
-export default class StylusCompiler extends SimpleCompilerBase {
-	constructor() {
-		super();
+export default class StylusCompiler extends CompilerBase {
+  constructor() {
+    super();
 
-		this.compilerOptions = {
+    this.compilerOptions = {
+      sourcemap: true
+    };
+  }
 
-		};
-	}
+  static getInputMimeTypes() {
+    return mimeTypes;
+  }
 
-	static getInputMimeTypes() {
-		return mimeTypes;
-	}
+  async shouldCompileFile(fileName, compilerContext) {
+    return true;
+  }
 
-	compileSync(sourceCode, filePath, compilerContext) {
-		stylusjs = require('stylus');
+  async determineDependentFiles(sourceCode, filePath, compilerContext) {
+    return [];
+  }
 
-		let opts = extend({}, this.compilerOptions, {
-			filename: basename(filePath)
-		});
+  async compile(sourceCode, filePath, compilerContext) {
+    stylusjs = stylusjs || require('stylus');
 
-		let code, error;
+    let opts = extend({}, this.compilerOptions, {
+      filename: path.basename(filePath)
+    });
 
-		if (opts.import && !Array.isArray(opts.import)) {
-			opts.import = [opts.import];
-		}
+    if (opts.import && !Array.isArray(opts.import)) {
+      opts.import = [opts.import];
+    }
 
-		if (opts.import && opts.import.indexOf('nib') >= 0) {
-			opts.use = opts.use || [];
-			if (!Array.isArray(opts.use)) {
-				opts.use = [opts.use];
-			}
-			opts.use.push(nib());
-		}
+    if (opts.import && opts.import.indexOf('nib') >= 0) {
+      opts.use = opts.use || [];
 
-		console.log(opts);
+      if (!Array.isArray(opts.use)) {
+        opts.use = [opts.use];
+      }
 
-		stylusjs.render(sourceCode, opts, (err, css) => {
-				error = err;
-				code = css;
-			});
+      opts.use.push(nib());
+    }
 
-		if (error) {
-			throw error;
-		}
+    let code = await new Promise((res,rej) => {
+      stylusjs.render(sourceCode, opts, (err, css) => {
+        if (err) {
+          rej(err);
+        } else {
+          res(css);
+        }
+      });
+    });
 
-		return {
-			code,
-			mimeType: 'text/css'
-		};
-	}
+    return {
+      code, mimeType: 'text/css'
+    };
+  }
 
-	getCompilerVersion() {
-		return require('stylus/package.json').version;
-	}
+  shouldCompileFileSync(fileName, compilerContext) {
+    return true;
+  }
+
+  determineDependentFilesSync(sourceCode, filePath, compilerContext) {
+    return [];
+  }
+
+  compileSync(sourceCode, filePath, compilerContext) {
+    stylusjs = stylusjs || require('stylus');
+
+    let opts = extend({}, this.compilerOptions, {
+      filename: basename(filePath)
+    });
+
+    return {
+      code: stylusjs.render(sourceCode, opts),
+      mimeType: 'text/css'
+    };
+  }
+
+  getCompilerVersion() {
+    return require('stylus/package.json').version;
+  }
 }
