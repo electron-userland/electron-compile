@@ -16,7 +16,7 @@ For JavaScript:
 For CSS:
 
 * LESS
-* Stylus
+* Stylus (with optional nib)
 
 For HTML:
 
