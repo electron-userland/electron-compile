@@ -34,23 +34,7 @@ export default class StylusCompiler extends CompilerBase {
   async compile(sourceCode, filePath, compilerContext) {
     stylusjs = stylusjs || require('stylus');
 
-    let opts = extend({}, this.compilerOptions, {
-      filename: path.basename(filePath)
-    });
-
-    if (opts.import && !Array.isArray(opts.import)) {
-      opts.import = [opts.import];
-    }
-
-    if (opts.import && opts.import.indexOf('nib') >= 0) {
-      opts.use = opts.use || [];
-
-      if (!Array.isArray(opts.use)) {
-        opts.use = [opts.use];
-      }
-
-      opts.use.push(nib());
-    }
+    let opts = this.makeOpts();
 
     let code = await new Promise((res,rej) => {
       stylusjs.render(sourceCode, opts, (err, css) => {
@@ -67,6 +51,28 @@ export default class StylusCompiler extends CompilerBase {
     };
   }
 
+  makeOpts() {
+    let opts = extend({}, this.compilerOptions, {
+      filename: basename(filePath)
+    });
+
+    if (opts.import && !Array.isArray(opts.import)) {
+      opts.import = [opts.import];
+    }
+
+    if (opts.import && opts.import.indexOf('nib') >= 0) {
+      opts.use = opts.use || [];
+
+      if (!Array.isArray(opts.use)) {
+        opts.use = [opts.use];
+      }
+
+      opts.use.push(nib());
+    }
+
+    return opts;
+  }
+
   shouldCompileFileSync(fileName, compilerContext) {
     return true;
   }
@@ -78,9 +84,7 @@ export default class StylusCompiler extends CompilerBase {
   compileSync(sourceCode, filePath, compilerContext) {
     stylusjs = stylusjs || require('stylus');
 
-    let opts = extend({}, this.compilerOptions, {
-      filename: basename(filePath)
-    });
+    let opts = this.makeOpts();
 
     return {
       code: stylusjs.render(sourceCode, opts),
