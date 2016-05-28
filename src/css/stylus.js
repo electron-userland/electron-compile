@@ -1,5 +1,6 @@
 import {CompilerBase} from '../compiler-base';
 import extend from 'lodash/object/extend';
+import each from 'lodash/collection/each';
 import {basename} from 'path';
 import nib from 'nib';
 import path from 'path';
@@ -37,7 +38,11 @@ export default class StylusCompiler extends CompilerBase {
     let opts = this.makeOpts(filePath);
 
     let code = await new Promise((res,rej) => {
-      stylusjs.render(sourceCode, opts, (err, css) => {
+      let styl = stylusjs(sourceCode, opts);
+
+      this.applyOpts(opts, styl);
+
+      styl.render((err, css) => {
         if (err) {
           rej(err);
         } else {
@@ -73,6 +78,28 @@ export default class StylusCompiler extends CompilerBase {
     return opts;
   }
 
+  applyOpts(opts, stylus) {
+    each(opts, (val, key) => {
+      switch(key) {
+        case 'set':
+        case 'define':
+            each(val, (v, k) => {
+                stylus[key](k, v);
+            });
+            break;
+        case 'include':
+        case 'import':
+        case 'use':
+            each(val, (v) => {
+                stylus[key](v);
+            });
+            break;
+      }
+    });
+
+    return stylus;
+  }
+
   shouldCompileFileSync(fileName, compilerContext) {
     return true;
   }
@@ -84,10 +111,13 @@ export default class StylusCompiler extends CompilerBase {
   compileSync(sourceCode, filePath, compilerContext) {
     stylusjs = stylusjs || require('stylus');
 
-    let opts = this.makeOpts(filePath);
+    let opts = this.makeOpts(filePath),
+        styl = stylusjs(sourceCode, opts);
+
+    this.applyOpts(opts, styl);
 
     return {
-      code: stylusjs.render(sourceCode, opts),
+      code: styl.render(),
       mimeType: 'text/css'
     };
   }
