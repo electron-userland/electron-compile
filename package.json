@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/paulcbetts/electron-compilers",
   "dependencies": {
+    "@paulcbetts/mime-types": "^2.1.9",
     "babel-core": "^6.1.2",
     "babel-preset-es2015": "^6.1.2",
     "btoa": "^1.1.2",
@@ -32,8 +33,8 @@
     "jade": "^1.11.0",
     "less": "^2.5.3",
     "lodash": "^3.10.1",
-    "@paulcbetts/mime-types": "^2.1.9",
     "mkdirp": "^0.5.1",
+    "nib": "^1.1.0",
     "rimraf": "^2.4.3",
     "stylus": "^0.54.5",
     "typescript-simple": "^2.0.0"
