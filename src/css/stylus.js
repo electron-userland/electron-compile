@@ -34,7 +34,7 @@ export default class StylusCompiler extends CompilerBase {
   async compile(sourceCode, filePath, compilerContext) {
     stylusjs = stylusjs || require('stylus');
 
-    let opts = this.makeOpts();
+    let opts = this.makeOpts(filePath);
 
     let code = await new Promise((res,rej) => {
       stylusjs.render(sourceCode, opts, (err, css) => {
@@ -51,7 +51,7 @@ export default class StylusCompiler extends CompilerBase {
     };
   }
 
-  makeOpts() {
+  makeOpts(filePath) {
     let opts = extend({}, this.compilerOptions, {
       filename: basename(filePath)
     });
@@ -84,7 +84,7 @@ export default class StylusCompiler extends CompilerBase {
   compileSync(sourceCode, filePath, compilerContext) {
     stylusjs = stylusjs || require('stylus');
 
-    let opts = this.makeOpts();
+    let opts = this.makeOpts(filePath);
 
     return {
       code: stylusjs.render(sourceCode, opts),
