@@ -6,7 +6,6 @@ import {pfs} from './promise';
 
 import FileChangedCache from './file-change-cache';
 import CompilerHost from './compiler-host';
-import { initializeProtocolHook } from './protocol-hook';
 import registerRequireExtension from './require-hook';
 
 const d = require('debug')('electron-compile:config-parser');
@@ -44,6 +43,7 @@ export function initializeGlobalHooks(compilerHost) {
 
   if ('type' in process && process.type === 'browser') {
     const { app } = require('electron');
+    const { initializeProtocolHook } = require('./protocol-hook');
 
     let protoify = function() { initializeProtocolHook(compilerHost); };
     if (app.isReady()) {
