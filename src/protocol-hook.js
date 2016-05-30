@@ -4,9 +4,10 @@ import url from 'url';
 import fs from 'fs';
 import mime from '@paulcbetts/mime-types';
 
-import CompilerHost from './compiler-host';
-
 const magicWords = "__magic__file__to__help__electron__compile.js";
+
+// NB: These are duped in initialize-renderer so we can save startup time, make
+// sure to run both!
 const magicGlobalForRootCacheDir = '__electron_compile_root_cache_dir';
 const magicGlobalForAppRootDir = '__electron_compile_app_root_dir';
 
@@ -64,43 +65,6 @@ function requestFileJob(filePath, finish) {
   });
 }
 
-let rendererInitialized = false;
-
-/**
- * Called by our rigged script file at the top of every HTML file to set up
- * the same compilers as the browser process that created us
- *
- * @private
- */
-export function initializeRendererProcess(readOnlyMode) {
-  if (rendererInitialized) return;
-
-  // NB: If we don't do this, we'll get a renderer crash if you enable debug
-  require('debug/browser');
-
-  let rootCacheDir = require('electron').remote.getGlobal(magicGlobalForRootCacheDir);
-  let appRoot = require('electron').remote.getGlobal(magicGlobalForAppRootDir);
-  let compilerHost = null;
-
-  // NB: This has to be synchronous because we need to block HTML parsing
-  // until we're set up
-  if (readOnlyMode) {
-    d(`Setting up electron-compile in precompiled mode with cache dir: ${rootCacheDir}`);
-    compilerHost = CompilerHost.createReadonlyFromConfigurationSync(rootCacheDir, appRoot);
-  } else {
-    d(`Setting up electron-compile in development mode with cache dir: ${rootCacheDir}`);
-    const { createCompilers } = require('./config-parser');
-    const compilersByMimeType = createCompilers();
-
-    compilerHost = CompilerHost.createFromConfigurationSync(rootCacheDir, appRoot, compilersByMimeType);
-  }
-
-  require('./x-require');
-  require('./require-hook').default(compilerHost);
-  rendererInitialized = true;
-}
-
-
 /**
  * Initializes the protocol hook on file: that allows us to intercept files
  * loaded by Chromium and rewrite them. This method along with
@@ -115,7 +79,7 @@ export function initializeProtocolHook(compilerHost) {
   global[magicGlobalForRootCacheDir] = compilerHost.rootCacheDir;
   global[magicGlobalForAppRootDir] = compilerHost.appRoot;
 
-  const electronCompileSetupCode = `if (window.require) require('electron-compile/lib/protocol-hook').initializeRendererProcess(${compilerHost.readOnlyMode});`;
+  const electronCompileSetupCode = `if (window.require) require('electron-compile/lib/initialize-renderer').initializeRendererProcess(${compilerHost.readOnlyMode});`;
 
   protocol.interceptBufferProtocol('file', async function(request, finish) {
     let uri = url.parse(request.url);
