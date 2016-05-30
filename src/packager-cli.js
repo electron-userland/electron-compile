@@ -33,12 +33,12 @@ export function splitOutAsarArguments(argv) {
   if (_.find(argv, (x) => x.match(/^--asar-unpack$/))) {
     throw new Error("electron-compile doesn't support --asar-unpack at the moment, use asar-unpack-dir");
   }
-  
+
   // Strip --asar altogether
   let ret = _.filter(argv, (x) => !x.match(/^--asar/));
-  
+
   if (ret.length === argv.length) { return { packagerArgs: ret, asarArgs: null }; }
-  
+
   let indexOfUnpack = _.findIndex(ret, (x) => x.match(/^--asar-unpack-dir$/));
   if (indexOfUnpack < 0) {
     return { packagerArgs: ret, asarArgs: [] };
@@ -46,7 +46,7 @@ export function splitOutAsarArguments(argv) {
 
   let unpackArgs = ret.slice(indexOfUnpack, indexOfUnpack+1);
   let notUnpackArgs = ret.slice(0, indexOfUnpack).concat(ret.slice(indexOfUnpack+2));
-  
+
   return { packagerArgs: notUnpackArgs, asarArgs: unpackArgs };
 }
 
@@ -72,7 +72,7 @@ async function compileAndShim(packageDir) {
 
   d(`Looking in ${appDir}`);
   for (let entry of await pfs.readdir(appDir)) {
-    if (entry.match(/^node_modules$/)) continue;
+    if (entry.match(/^(node_modules|bower_components)$/)) continue;
 
     let fullPath = path.join(appDir, entry);
     let stat = await pfs.stat(fullPath);
@@ -102,14 +102,14 @@ async function compileAndShim(packageDir) {
 
 export async function runAsarArchive(packageDir, asarUnpackDir) {
   let appDir = await packageDirToResourcesDir(packageDir);
-  
+
   let asarArgs = ['pack', 'app', 'app.asar'];
   if (asarUnpackDir) {
     asarArgs.push('--unpack-dir', asarUnpackDir);
   }
-  
+
   let { cmd, args } = findExecutableOrGuess('asar', asarArgs);
-  
+
   d(`Running ${cmd} ${JSON.stringify(args)}`);
   await spawnPromise(cmd, args, { cwd: path.join(appDir, '..') });
   rimraf.sync(path.join(appDir));
@@ -121,17 +121,17 @@ export function findExecutableOrGuess(cmdToFind, argsToUse) {
     d(`Can't find ${cmdToFind}, falling back to where it should be as a guess!`);
     cmd = findActualExecutable(path.resolve(__dirname, '..', '..', '.bin', cmdToFind)).cmd;
   }
-  
+
   return { cmd, args };
 }
 
 export async function packagerMain(argv) {
   d(`argv: ${JSON.stringify(argv)}`);
   argv = argv.splice(2);
-  
+
   let { packagerArgs, asarArgs } = splitOutAsarArguments(argv);
   let { cmd, args } = findExecutableOrGuess(electronPackager, packagerArgs);
-  
+
   d(`Spawning electron-packager: ${JSON.stringify(args)}`);
   let packagerOutput = await spawnPromise(cmd, args);
   let packageDirs = parsePackagerOutput(packagerOutput);
@@ -139,15 +139,15 @@ export async function packagerMain(argv) {
   d(`Starting compilation for ${JSON.stringify(packageDirs)}`);
   for (let packageDir of packageDirs) {
     await compileAndShim(packageDir);
-  
+
     if (!asarArgs) continue;
-    
+
     d('Starting ASAR packaging');
     let asarUnpackDir = null;
     if (asarArgs.length === 2) {
       asarUnpackDir = asarArgs[1];
     }
-    
+
     await runAsarArchive(packageDir, asarUnpackDir);
   }
 }
