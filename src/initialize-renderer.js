@@ -1,3 +1,4 @@
+import './babel-maybefill'
 import CompilerHost from './compiler-host';
 
 // NB: These are duped in protocol-hook so we can save startup time, make
