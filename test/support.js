@@ -1,4 +1,4 @@
-import 'babel-polyfill';
+import '../src/babel-maybefill';
 
 import _ from 'lodash';
 

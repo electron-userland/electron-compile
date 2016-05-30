@@ -36,6 +36,7 @@
     "lru-cache": "^4.0.0",
     "mkdirp": "^0.5.1",
     "pify": "^2.3.0",
+    "regenerator-runtime": "^0.9.5",
     "rimraf": "^2.5.2",
     "spawn-rx": "^0.1.4",
     "yargs": "^3.31.0"
