@@ -24,7 +24,8 @@ const expectedMimeTypeSpecialCases = {
   'text/less': 'text/css',
   'text/jade': 'text/html',
   'text/cson': 'application/json',
-  'text/css': 'text/css'
+  'text/css': 'text/css',
+  'text/stylus': 'text/css'
 };
 
 const mimeTypesWithoutSourceMapSupport = [
