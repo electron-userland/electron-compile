@@ -118,8 +118,13 @@ export async function runAsarArchive(packageDir, asarUnpackDir) {
 export function findExecutableOrGuess(cmdToFind, argsToUse) {
   let { cmd, args } = findActualExecutable(cmdToFind, argsToUse);
   if (cmd === electronPackager) {
+    //With windows you need to add the .cmd to the file name. The raw name will exist but it's a bash script and breaks
+    if (process.platform === 'win32' && cmdToFind.slice(cmdToFind.length - 4) !== '.cmd'){
+      cmdToFind = cmdToFind + '.cmd';
+    }
+
     d(`Can't find ${cmdToFind}, falling back to where it should be as a guess!`);
-    cmd = findActualExecutable(path.resolve(__dirname, '..', '..', '.bin', cmdToFind)).cmd;
+    ({ cmd, args } = findActualExecutable(path.resolve(__dirname, '..', '..', '.bin', cmdToFind), argsToUse));
   }
 
   return { cmd, args };
