@@ -42,7 +42,12 @@ export default class BabelCompiler extends CompilerBase {
 
     for (let strategy of preloadStrategies) {
       try {
-        return strategy();
+        let ret = strategy();
+
+        // NB: Some plugins like transform-decorators-legacy, use import/export
+        // semantics, and others don't
+        if ('default' in ret) ret = ret['default'];
+        return ret;
       } catch (e) {
         continue;
       }
