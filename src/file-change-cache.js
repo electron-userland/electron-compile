@@ -322,7 +322,6 @@ export default class FileChangedCache {
    * @private
    */
   static detectFileEncoding(buffer) {
-    d(`Detecting file encoding!!!`);
     if (buffer.length < 1) return false;
     let buf = (buffer.length < 4096 ? buffer : buffer.slice(0, 4096));
 
