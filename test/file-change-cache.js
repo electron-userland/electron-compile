@@ -4,6 +4,7 @@ import FileChangeCache from '../src/file-change-cache';
 import path from 'path';
 import fs from 'fs';
 import pify from 'pify';
+
 const pfs = pify(fs);
 
 describe('The file changed cache', function() {
@@ -27,7 +28,7 @@ describe('The file changed cache', function() {
     delete result.sourceCode;
     expect(result).to.deep.equal(expectedInfo);
   });
-  
+
   it("Correctly handles binary files", async function() {
     const expectedInfo = {
       hash: '83af4f2b5a3e2dda1a322ac75799eee337d569a5',
@@ -44,8 +45,26 @@ describe('The file changed cache', function() {
     delete result.binaryData;
     expect(result).to.deep.equal(expectedInfo);
   });
-  
-  
+
+  it.only("Correctly handles webp binary files", async function() {
+    const expectedInfo = {
+      hash: '9018bd399fab0dd21f33b23813dad941461cf3cd',
+      hasSourceMap: false,
+      isInNodeModules: false,
+      isMinified: false,
+      isFileBinary: true
+    };
+
+    let input = path.resolve(__dirname, '..', 'test', 'fixtures', 'alsobinary.webp');
+    let result = await this.fixture.getHashForPath(input);
+
+    expect(result.binaryData).to.be.ok;
+    expect(result.binaryData.length > 16).to.be.ok;
+    delete result.binaryData;
+    expect(result).to.deep.equal(expectedInfo);
+  });
+
+
   it("Correctly computes a file hash for a canned file syncronously", function() {
     const expectedInfo = {
       hash: '4a92e95074156e8b46869519c43ddf10b59299a4',
@@ -74,14 +93,14 @@ describe('The file changed cache', function() {
 
     let input = path.join(__dirname, '..', 'test', 'fixtures', 'valid.js');
     let result = await this.fixture.getHashForPath(input);
-    
+
     expect(result.sourceCode).to.be.ok;
     delete result.sourceCode;
     expect(result).to.deep.equal(expectedInfo);
 
     this.fixture.calculateHashForFile = () => Promise.reject(new Error("Didn't work"));
     result = await this.fixture.getHashForPath(input);
-    
+
     // NB: The file hash cache itself shouldn't hold onto file contents, it should
     // only opportunistically return it if it had to read the contents anyways
     expect(result.sourceCode).to.be.not.ok;
@@ -126,18 +145,18 @@ describe('The file changed cache', function() {
     let input = path.join(__dirname, 'tempfile.tmp');
     let contents = await pfs.readFile(realInput);
     await pfs.writeFile(input, contents);
-    
+
     let stat1 = await pfs.stat(realInput);
     let stat2 = await pfs.stat(input);
     expect(stat1.size).to.equal(stat2.size);
-    
+
     try {
       let result = await this.fixture.getHashForPath(input);
 
       expect(result.sourceCode).to.be.ok;
-      delete result.sourceCode;      
+      delete result.sourceCode;
       expect(result).to.deep.equal(expectedInfo);
-        
+
       let fd = await pfs.open(input, 'a');
       await pfs.write(fd, '\n\n\n\n');
       await pfs.close(fd);
@@ -151,12 +170,12 @@ describe('The file changed cache', function() {
         hasCalledCalc = true;
         return realCalc(...args);
       };
-      
+
       result = await this.fixture.getHashForPath(input);
 
       expect(result.sourceCode).to.be.ok;
-      delete result.sourceCode;      
-      
+      delete result.sourceCode;
+
       expect(result).not.to.deep.equal(expectedInfo);
       expect(hasCalledCalc).to.be.ok;
     } finally {
@@ -170,7 +189,7 @@ describe('The file changed cache', function() {
 
     expect(result.hasSourceMap).to.be.ok;
   });
-  
+
   it("Successfully finds if a file has a source map synchronously", function() {
     let input = path.join(__dirname, '..', 'test', 'fixtures', 'source_map.js');
     let result = this.fixture.getHashForPathSync(input);
