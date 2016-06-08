@@ -46,7 +46,7 @@ describe('The file changed cache', function() {
     expect(result).to.deep.equal(expectedInfo);
   });
 
-  it.only("Correctly handles webp binary files", async function() {
+  it("Correctly handles webp binary files", async function() {
     const expectedInfo = {
       hash: '9018bd399fab0dd21f33b23813dad941461cf3cd',
       hasSourceMap: false,
