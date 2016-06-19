@@ -12,6 +12,8 @@ import ReadOnlyCompiler from './read-only-compiler';
 
 const d = require('debug')('electron-compile:compiler-host');
 
+require('./rig-mime-types').init();
+
 // This isn't even my
 const finalForms = {
   'text/javascript': true,
