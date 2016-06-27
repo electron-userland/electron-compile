@@ -114,17 +114,24 @@ export function createCompilerHostFromConfiguration(info) {
 
   d(`Creating CompilerHost: ${JSON.stringify(info)}, rootCacheDir = ${rootCacheDir}`);
   let fileChangeCache = new FileChangedCache(info.appRoot);
-  let ret = new CompilerHost(rootCacheDir, compilers, fileChangeCache, false, compilers['text/plain']);
 
   _.each(Object.keys(info.options || {}), (x) => {
     let opts = info.options[x];
     if (!(x in compilers)) {
       throw new Error(`Found compiler settings for missing compiler: ${x}`);
     }
-
+    
+    // NB: Let's hope this isn't a valid compiler option...
+    if (opts.passthrough) {
+      compilers[x] = compilers['text/plain'];
+      delete opts.passthrough;
+    }
+    
     d(`Setting options for ${x}: ${JSON.stringify(opts)}`);
     compilers[x].compilerOptions = opts;
   });
+
+  let ret = new CompilerHost(rootCacheDir, compilers, fileChangeCache, false, compilers['text/plain']);
 
   // NB: It's super important that we guarantee that the configuration is saved
   // out, because we'll need to re-read it in the renderer process
