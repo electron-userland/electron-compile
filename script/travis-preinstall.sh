@@ -2,16 +2,30 @@
 
 # Adapted from https://github.com/electron/spectron/blob/master/script/travis-build.sh
 
-git clone https://github.com/creationix/nvm.git /tmp/.nvm
-source /tmp/.nvm/nvm.sh
-nvm install "$NODE_VERSION"
-nvm use --delete-prefix "$NODE_VERSION"
+install_nvm() {
+  git clone https://github.com/creationix/nvm.git /tmp/.nvm
+  echo "source /tmp/.nvm/nvm.sh" > ~/.bashrc
+}
 
-if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-  export DISPLAY=:99.0
-  sh -e /etc/init.d/xvfb start
-  sleep 3
-fi
+install_node() {
+  nvm install "$NODE_VERSION"
+  nvm use --delete-prefix "$NODE_VERSION"
+}
 
-node --version
-npm --version
+start_headless_display_server() {
+  if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+    export DISPLAY=:99.0
+    sh -e /etc/init.d/xvfb start
+    sleep 3
+  fi
+}
+
+print_versions() {
+  node --version
+  npm --version
+}
+
+install_nvm
+install_node
+start_headless_display_server
+print_versions
