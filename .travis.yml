@@ -1,0 +1,16 @@
+env:
+  - NODE_VERSION="5.8"
+
+os:
+  - linux
+  - osx
+
+before_install: ./script/travis/preinstall.sh
+
+install: npm install
+
+script: npm test
+
+cache:
+  directories:
+    - node_modules
