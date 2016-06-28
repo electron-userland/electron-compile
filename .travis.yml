@@ -5,7 +5,7 @@ os:
   - linux
   - osx
 
-before_install: ./script/travis/preinstall.sh
+before_install: ./script/travis-preinstall.sh
 
 install: npm install
 
