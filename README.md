@@ -129,6 +129,23 @@ The opening Object is a list of MIME Types, and options passed to the compiler i
 * Less - http://lesscss.org/usage/index.html#command-line-usage-options
 * Jade - http://jade-lang.com/api
 
+## How can I compile only some file types but not others?
+
+With `passthrough` enabled, electron-compile will return your source files completely unchanged!
+
+In this example `.compilerc`, JavaScript files won't be compiled:
+
+```js
+{
+  "application/javascript": {
+    "passthrough": true
+  },
+  "text/less": {
+    "dumpLineNumbers": "comments"
+  }
+}
+```
+
 ## How can I precompile my code for release-time?
 
 electron-compile comes with a wrapper around the [electron-packager](https://github.com/electron-userland/electron-packager) project, `electron-packager-compile` (if you use the `electron-prebuilt-compile` project, this will just be `electron-packager`). Run it the same way you run `electron-packager` and the compilation wire-up will be done in the background.

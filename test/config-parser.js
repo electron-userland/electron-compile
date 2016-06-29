@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import fs from 'fs';
 import path from 'path';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
@@ -63,6 +64,26 @@ describe('the configuration parser module', function() {
       let lines = compileInfo.code.split('\n');
       expect(lines.length > 5).to.be.ok;
       expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).not.to.be.ok;
+    });
+    
+    it('creates a no-op compiler when passthrough is set for a mime type', async function() {
+      let fixtureDir = path.join(__dirname, '..', 'test', 'fixtures');
+
+      let sourceFilePath = path.join(fixtureDir, 'valid.js');
+      let sourceFile = fs.readFileSync(sourceFilePath);
+
+      let result = await createCompilerHostFromConfigFile(path.join(fixtureDir, 'compilerc-passthrough'));
+
+      let compileInfo = await result.compile(sourceFilePath);
+      d(JSON.stringify(compileInfo));
+
+      expect(compileInfo.mimeType).to.equal('application/javascript');
+      
+      if (compileInfo.code) {
+        expect(compileInfo.code).to.deep.equal(sourceFile.toString());
+      } else {
+        expect(compileInfo.binaryData).to.equal(sourceFile);
+      }
     });
   });
 
