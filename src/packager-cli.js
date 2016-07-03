@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import './babel-maybefill';
 
-import _ from 'lodash';
 import path from 'path';
 import rimraf from 'rimraf';
 
@@ -14,7 +13,7 @@ const d = require('debug')('electron-compile:packager');
 const electronPackager = 'electron-packager';
 
 export async function packageDirToResourcesDir(packageDir) {
-  let appDir = _.find(await pfs.readdir(packageDir), (x) => x.match(/\.app$/i));
+  let appDir = (await pfs.readdir(packageDir)).find((x) => x.match(/\.app$/i));
   if (appDir) {
     return path.join(packageDir, appDir, 'Contents', 'Resources', 'app');
   } else {
@@ -30,16 +29,16 @@ async function copySmallFile(from, to) {
 }
 
 export function splitOutAsarArguments(argv) {
-  if (_.find(argv, (x) => x.match(/^--asar-unpack$/))) {
+  if (argv.find((x) => x.match(/^--asar-unpack$/))) {
     throw new Error("electron-compile doesn't support --asar-unpack at the moment, use asar-unpack-dir");
   }
 
   // Strip --asar altogether
-  let ret = _.filter(argv, (x) => !x.match(/^--asar/));
+  let ret = argv.filter((x) => !x.match(/^--asar/));
 
   if (ret.length === argv.length) { return { packagerArgs: ret, asarArgs: null }; }
 
-  let indexOfUnpack = _.findIndex(ret, (x) => x.match(/^--asar-unpack-dir$/));
+  let indexOfUnpack = ret.findIndex((x) => x.match(/^--asar-unpack-dir$/));
   if (indexOfUnpack < 0) {
     return { packagerArgs: ret, asarArgs: [] };
   }
@@ -55,13 +54,13 @@ export function parsePackagerOutput(output) {
   console.log(output);
   let lines = output.split('\n');
 
-  let idx = _.findIndex(lines, (x) => x.match(/Wrote new app/i));
+  let idx = lines.findIndex((x) => x.match(/Wrote new app/i));
   if (idx < 1) throw new Error(`Packager output is invalid: ${output}`);
   lines = lines.splice(idx);
 
   // Multi-platform case
   if (lines[0].match(/Wrote new apps/)) {
-    return _.filter(lines.splice(1), (x) => x.length > 1);
+    return lines.splice(1).filter((x) => x.length > 1);
   } else {
     return [lines[0].replace(/^.*new app to /, '')];
   }

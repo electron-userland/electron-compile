@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import mimeTypes from '@paulcbetts/mime-types';
 
 const typesToRig = {
@@ -15,10 +14,10 @@ const typesToRig = {
  * @private
  */
 export function init() {
-  _.each(Object.keys(typesToRig), (type) => {
+  Object.keys(typesToRig).forEach((type) => {
     let ext = typesToRig[type];
 
     mimeTypes.types[ext] = type;
-    mimeTypes.extensions[type] = _.clone([ext], true);
+    mimeTypes.extensions[type] = [ext];
   });
 }

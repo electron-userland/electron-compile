@@ -32,7 +32,6 @@
     "babel-polyfill": "^6.3.14",
     "btoa": "^1.1.2",
     "debug": "^2.2.0",
-    "lodash": "^3.10.1",
     "lru-cache": "^4.0.0",
     "mkdirp": "^0.5.1",
     "pify": "^2.3.0",

@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import fs from 'fs';
 import path from 'path';
 import mkdirp from 'mkdirp';
@@ -63,7 +62,7 @@ describe('the configuration parser module', function() {
       
       let lines = compileInfo.code.split('\n');
       expect(lines.length > 5).to.be.ok;
-      expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).not.to.be.ok;
+      expect(lines.find((x) => x.match(/sourceMappingURL=/))).not.to.be.ok;
     });
     
     it('creates a no-op compiler when passthrough is set for a mime type', async function() {
@@ -112,7 +111,7 @@ describe('the configuration parser module', function() {
       
       let lines = compileInfo.code.split('\n');
       expect(lines.length > 5).to.be.ok;
-      expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).to.be.ok;
+      expect(lines.find((x) => x.match(/sourceMappingURL=/))).to.be.ok;
     });
     
     it('uses the development env when env is unset', async function() {
@@ -127,7 +126,7 @@ describe('the configuration parser module', function() {
       
       let lines = compileInfo.code.split('\n');
       expect(lines.length > 5).to.be.ok;
-      expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).to.be.ok;
+      expect(lines.find((x) => x.match(/sourceMappingURL=/))).to.be.ok;
     });
     
     it('uses the production env when env is set', async function() {
@@ -143,7 +142,7 @@ describe('the configuration parser module', function() {
       
       let lines = compileInfo.code.split('\n');
       expect(lines.length > 5).to.be.ok;
-      expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).not.to.be.ok;
+      expect(lines.find((x) => x.match(/sourceMappingURL=/))).not.to.be.ok;
     });  
   });
   
@@ -172,7 +171,7 @@ describe('the configuration parser module', function() {
       
       let lines = compileInfo.code.split('\n');
       expect(lines.length > 5).to.be.ok;
-      expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).to.be.ok;
+      expect(lines.find((x) => x.match(/sourceMappingURL=/))).to.be.ok;
     });
     
     it('uses the development env when env is unset', async function() {
@@ -187,7 +186,7 @@ describe('the configuration parser module', function() {
       
       let lines = compileInfo.code.split('\n');
       expect(lines.length > 5).to.be.ok;
-      expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).to.be.ok;
+      expect(lines.find((x) => x.match(/sourceMappingURL=/))).to.be.ok;
     });
     
     it('uses the production env when env is set', async function() {
@@ -203,7 +202,7 @@ describe('the configuration parser module', function() {
       
       let lines = compileInfo.code.split('\n');
       expect(lines.length > 5).to.be.ok;
-      expect(_.any(lines, (x) => x.match(/sourceMappingURL=/))).not.to.be.ok;
+      expect(lines.find((x) => x.match(/sourceMappingURL=/))).not.to.be.ok;
     });  
   });
 });

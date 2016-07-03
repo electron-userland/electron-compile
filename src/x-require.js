@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import url from 'url';
 
 function requireModule(href) {
@@ -25,7 +24,7 @@ function requireModule(href) {
 export default (() => {
   if (process.type !== 'renderer' || !window || !window.document) return null;
   
-  let proto = _.extend(Object.create(HTMLElement.prototype), {
+  let proto = Object.assign(Object.create(HTMLElement.prototype), {
     createdCallback: function() {
       let href = this.getAttribute('src');
       if (href && href.length > 0) {

@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import mimeTypes from '@paulcbetts/mime-types';
 import fs from 'fs';
 import zlib from 'zlib';
@@ -66,11 +65,11 @@ export default class CompilerHost {
    *                                         present.
    */   
   constructor(rootCacheDir, compilers, fileChangeCache, readOnlyMode, fallbackCompiler = null) {
-    let compilersByMimeType = _.assign({}, compilers);
-    _.assign(this, {rootCacheDir, compilersByMimeType, fileChangeCache, readOnlyMode, fallbackCompiler});
+    let compilersByMimeType = Object.assign({}, compilers);
+    Object.assign(this, {rootCacheDir, compilersByMimeType, fileChangeCache, readOnlyMode, fallbackCompiler});
     this.appRoot = this.fileChangeCache.appRoot;
     
-    this.cachesForCompilers = _.reduce(Object.keys(compilersByMimeType), (acc, x) => {
+    this.cachesForCompilers = Object.keys(compilersByMimeType).reduce((acc, x) => {
       let compiler = compilersByMimeType[x];
       if (acc.has(compiler)) return acc;
 
@@ -109,7 +108,7 @@ export default class CompilerHost {
     
     let fileChangeCache = FileChangedCache.loadFromData(info.fileChangeCache, appRoot, true);
 
-    let compilers = _.reduce(Object.keys(info.compilers), (acc, x) => {
+    let compilers = Object.keys(info.compilers).reduce((acc, x) => {
       let cur = info.compilers[x];
       acc[x] = new ReadOnlyCompiler(cur.name, cur.compilerVersion, cur.compilerOptions, cur.inputMimeTypes);
       
@@ -153,7 +152,7 @@ export default class CompilerHost {
     
     let fileChangeCache = FileChangedCache.loadFromData(info.fileChangeCache, appRoot, false);
     
-    _.each(Object.keys(info.compilers), (x) => {
+    Object.keys(info.compilers).forEach((x) => {
       let cur = info.compilers[x];
       compilersByMimeType[x].compilerOptions = cur.compilerOptions;
     });
@@ -170,7 +169,7 @@ export default class CompilerHost {
    * @return {Promise}  Completion
    */   
   async saveConfiguration() {
-    let serializedCompilerOpts = _.reduce(Object.keys(this.compilersByMimeType), (acc, x) => {
+    let serializedCompilerOpts = Object.keys(this.compilersByMimeType).reduce((acc, x) => {
       let compiler = this.compilersByMimeType[x];
       let Klass = Object.getPrototypeOf(compiler).constructor;
       
@@ -330,11 +329,11 @@ export default class CompilerHost {
       
     if ((finalForms[result.mimeType] && !shouldInlineHtmlify) || isPassthrough) {
       // Got something we can use in-browser, let's return it
-      return _.assign(result, {dependentFiles});
+      return Object.assign(result, {dependentFiles});
     } else {
       d(`Recursively compiling result of ${filePath} with non-final MIME type ${result.mimeType}, input was ${inputMimeType}`);
 
-      hashInfo = _.assign({ sourceCode: result.code, mimeType: result.mimeType }, hashInfo);
+      hashInfo = Object.assign({ sourceCode: result.code, mimeType: result.mimeType }, hashInfo);
       compiler = this.compilersByMimeType[result.mimeType || '__lolnothere'];
 
       if (!compiler) {
@@ -388,7 +387,7 @@ export default class CompilerHost {
     
     let fileChangeCache = FileChangedCache.loadFromData(info.fileChangeCache, appRoot, true);
     
-    let compilers = _.reduce(Object.keys(info.compilers), (acc, x) => {
+    let compilers = Object.keys(info.compilers).reduce((acc, x) => {
       let cur = info.compilers[x];
       acc[x] = new ReadOnlyCompiler(cur.name, cur.compilerVersion, cur.compilerOptions, cur.inputMimeTypes);
       
@@ -405,7 +404,7 @@ export default class CompilerHost {
     
     let fileChangeCache = FileChangedCache.loadFromData(info.fileChangeCache, appRoot, false);
     
-    _.each(Object.keys(info.compilers), (x) => {
+    Object.keys(info.compilers).forEach((x) => {
       let cur = info.compilers[x];
       compilersByMimeType[x].compilerOptions = cur.compilerOptions;
     });
@@ -414,7 +413,7 @@ export default class CompilerHost {
   }
    
   saveConfigurationSync() {
-    let serializedCompilerOpts = _.reduce(Object.keys(this.compilersByMimeType), (acc, x) => {
+    let serializedCompilerOpts = Object.keys(this.compilersByMimeType).reduce((acc, x) => {
       let compiler = this.compilersByMimeType[x];
       let Klass = Object.getPrototypeOf(compiler).constructor;
       
@@ -547,11 +546,11 @@ export default class CompilerHost {
       
     if ((finalForms[result.mimeType] && !shouldInlineHtmlify) || isPassthrough) {
       // Got something we can use in-browser, let's return it
-      return _.assign(result, {dependentFiles});
+      return Object.assign(result, {dependentFiles});
     } else {
       d(`Recursively compiling result of ${filePath} with non-final MIME type ${result.mimeType}, input was ${inputMimeType}`);
 
-      hashInfo = _.assign({ sourceCode: result.code, mimeType: result.mimeType }, hashInfo);
+      hashInfo = Object.assign({ sourceCode: result.code, mimeType: result.mimeType }, hashInfo);
       compiler = this.compilersByMimeType[result.mimeType || '__lolnothere'];
 
       if (!compiler) {

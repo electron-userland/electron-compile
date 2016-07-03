@@ -3,7 +3,6 @@
 import './babel-maybefill';
 import path from 'path';
 import mkdirp from 'mkdirp';
-import _ from 'lodash';
 
 import {createCompilerHostFromProjectRoot} from './config-parser';
 import {forAllFiles} from './for-all-files';
@@ -41,7 +40,7 @@ export async function main(appDir, sourceDirs, cacheDir) {
     throw e;
   }
 
-  await Promise.all(_.map(sourceDirs, (dir) => forAllFiles(dir, async (f) => {
+  await Promise.all(sourceDirs.map((dir) => forAllFiles(dir, async (f) => {
     try {
       d(`Starting compilation for ${f}`);
       await compilerHost.compile(f);
