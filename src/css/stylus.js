@@ -1,5 +1,4 @@
 import {CompilerBase} from '../compiler-base';
-import extend from 'lodash/object/extend';
 import path from 'path';
 
 const mimeTypes = ['text/stylus'];
@@ -32,7 +31,7 @@ export default class StylusCompiler extends CompilerBase {
   async compile(sourceCode, filePath, compilerContext) {
     stylusjs = stylusjs || require('stylus');
 
-    let opts = extend({}, this.compilerOptions, {
+    let opts = Object.assign({}, this.compilerOptions, {
       filename: path.basename(filePath)
     });
 
@@ -62,7 +61,7 @@ export default class StylusCompiler extends CompilerBase {
   compileSync(sourceCode, filePath, compilerContext) {
     stylusjs = stylusjs || require('stylus');
 
-    let opts = extend({}, this.compilerOptions, {
+    let opts = Object.assign({}, this.compilerOptions, {
       filename: path.basename(filePath)
     });
 

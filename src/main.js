@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 const filenames = [
   'css/less',
   'css/stylus',
@@ -12,4 +10,4 @@ const filenames = [
   'passthrough'
 ];
 
-module.exports = _.map(filenames, (x) => require('./' + x).default);
+module.exports = filenames.map((x) => require('./' + x).default);

@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import path from 'path';
 import {CompilerBase} from '../compiler-base';
 
@@ -32,12 +31,12 @@ export default class BabelCompiler extends CompilerBase {
   // directory (i.e. Grunt perhaps), and if it doesn't work, just keep going.
   attemptToPreload(names, prefix) {
     const preloadStrategies = [
-      () => _.map(names, (x) => require.main.require(`babel-${prefix}-${x}`)),
+      () => names.map((x) => require.main.require(`babel-${prefix}-${x}`)),
       () => {
         let nodeModulesAboveUs = path.resolve(__dirname, '..', '..', '..');
-        return _.map(names, (x) => require(path.join(nodeModulesAboveUs, `babel-${prefix}-${x}`)));
+        return names.map((x) => require(path.join(nodeModulesAboveUs, `babel-${prefix}-${x}`)));
       },
-      () => _.map(names, (x) => require(`babel-${prefix}-${x}`))
+      () => names.map((x) => require(`babel-${prefix}-${x}`))
     ];
 
     for (let strategy of preloadStrategies) {
@@ -59,7 +58,7 @@ export default class BabelCompiler extends CompilerBase {
   async compile(sourceCode, filePath, compilerContext) {
     babel = babel || require('babel-core');
 
-    let opts = _.extend({}, this.compilerOptions, {
+    let opts = Object.assign({}, this.compilerOptions, {
       filename: filePath,
       ast: false,
       babelrc: false
@@ -92,7 +91,7 @@ export default class BabelCompiler extends CompilerBase {
   compileSync(sourceCode, filePath, compilerContext) {
     babel = babel || require('babel-core');
 
-    let opts = _.extend({}, this.compilerOptions, {
+    let opts = Object.assign({}, this.compilerOptions, {
       filename: filePath,
       ast: false,
       babelrc: false

@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import path from 'path';
 import btoa from 'btoa';
 import {SimpleCompilerBase} from '../compiler-base';
@@ -24,7 +23,7 @@ export default class CoffeeScriptCompiler extends SimpleCompilerBase {
 
     let {js, v3SourceMap} = coffee.compile(
       sourceCode,
-      _.extend({ filename: filePath }, this.compilerOptions));
+      Object.assign({ filename: filePath }, this.compilerOptions));
 
     js = `${js}\n` +
       `//# sourceMappingURL=data:application/json;base64,${btoa(unescape(encodeURIComponent(v3SourceMap)))}\n` +

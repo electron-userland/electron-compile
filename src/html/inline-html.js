@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import path from 'path';
 import mimeTypes from '@paulcbetts/mime-types';
 import {CompilerBase} from '../compiler-base';
@@ -99,7 +98,7 @@ export default class InlineHtmlCompiler extends CompilerBase {
     toWait.push(this.each($('style'), async (i, el) => {
       let mimeType = $(el).attr('type') || 'text/plain';
 
-      let thisCtx = _.assign({
+      let thisCtx = Object.assign({
         count: styleCount++,
         tag: 'style'
       }, compilerContext);
@@ -121,7 +120,7 @@ export default class InlineHtmlCompiler extends CompilerBase {
         return;
       }
 
-      let thisCtx = _.assign({
+      let thisCtx = Object.assign({
         count: scriptCount++,
         tag: 'script'
       }, compilerContext);
@@ -182,7 +181,7 @@ export default class InlineHtmlCompiler extends CompilerBase {
     this.eachSync($('style'), async (i, el) => {
       let mimeType = $(el).attr('type');
 
-      let thisCtx = _.assign({
+      let thisCtx = Object.assign({
         count: styleCount++,
         tag: 'style'
       }, compilerContext);
@@ -204,7 +203,7 @@ export default class InlineHtmlCompiler extends CompilerBase {
         return;
       }
 
-      let thisCtx = _.assign({
+      let thisCtx = Object.assign({
         count: scriptCount++,
         tag: 'script'
       }, compilerContext);
@@ -249,7 +248,7 @@ export default class InlineHtmlCompiler extends CompilerBase {
 
   getCompilerVersion() {
     let thisVersion = require('../../package.json').version;
-    let otherVersions = _.map(this.allCompilers, (x) => x.getCompilerVersion).join();
+    let otherVersions = this.allCompilers.map((x) => x.getCompilerVersion).join();
 
     return `${thisVersion},${otherVersions}`;
   }

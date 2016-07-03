@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import path from 'path';
 import {CompilerBase} from '../compiler-base';
 
@@ -43,7 +42,7 @@ export default class LessCompiler extends CompilerBase {
       paths.push(...this.compilerOptions.paths);
     }
 
-    let opts = _.extend({}, this.compilerOptions, {
+    let opts = Object.assign({}, this.compilerOptions, {
       paths: paths,
       filename: path.basename(filePath)
     });
@@ -74,7 +73,7 @@ export default class LessCompiler extends CompilerBase {
     paths.unshift('.');
     this.seenFilePaths[path.dirname(filePath)] = true;
 
-    let opts = _.extend({}, this.compilerOptions, {
+    let opts = Object.assign({}, this.compilerOptions, {
       paths: paths,
       filename: path.basename(filePath),
       fileAsync: false, async: false, syncImport: true

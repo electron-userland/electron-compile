@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import {SimpleCompilerBase} from '../compiler-base';
 
 const inputMimeTypes = ['text/jade'];
@@ -22,7 +21,7 @@ export default class JadeCompiler extends SimpleCompilerBase {
 
     let code = jade.render(
       sourceCode,
-      _.extend({ filename: filePath, cache: false }, this.compilerOptions));
+      Object.assign({ filename: filePath, cache: false }, this.compilerOptions));
 
     return { code, mimeType: 'text/html' };
   }
