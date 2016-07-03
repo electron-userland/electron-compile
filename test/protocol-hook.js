@@ -1,6 +1,5 @@
 import './support.js';
 
-import _ from 'lodash';
 import path from 'path';
 import fs from 'fs';
 
@@ -13,7 +12,7 @@ describe('protocol hook library', function() {
       let result = rigHtmlDocumentToInitializeElectronCompile(content);
       
       let lines = result.split('\n');
-      expect(_.any(lines, (x) => x.match(/head.*__magic__file/i))).to.be.ok;
+      expect(lines.find((x) => x.match(/head.*__magic__file/i))).to.be.ok;
     });
     
     it('should rig pages without tags', function() {
@@ -21,7 +20,7 @@ describe('protocol hook library', function() {
       let result = rigHtmlDocumentToInitializeElectronCompile(content);
       
       let lines = result.split('\n');
-      expect(_.any(lines, (x) => x.match(/head.*__magic__file/i))).to.be.ok;
+      expect(lines.find((x) => x.match(/head.*__magic__file/i))).to.be.ok;
     });
   });
 });

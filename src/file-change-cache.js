@@ -2,7 +2,6 @@ import fs from 'fs';
 import zlib from 'zlib';
 import crypto from 'crypto';
 import {pfs, pzlib} from './promise';
-import _ from 'lodash';
 import sanitizeFilePath from './sanitize-paths';
 
 const d = require('debug')('electron-compile:file-change-cache');
@@ -139,9 +138,9 @@ export default class FileChangedCache {
     d(`Cache entry for ${cacheKey}: ${JSON.stringify(this.changeCache[cacheKey])}`);
 
     if (binaryData) {
-      return _.extend({binaryData}, info);
+      return Object.assign({binaryData}, info);
     } else {
-      return _.extend({sourceCode}, info);
+      return Object.assign({sourceCode}, info);
     }
   }
 
@@ -240,9 +239,9 @@ export default class FileChangedCache {
     d(`Cache entry for ${cacheKey}: ${JSON.stringify(this.changeCache[cacheKey])}`);
 
     if (binaryData) {
-      return _.extend({binaryData}, info);
+      return Object.assign({binaryData}, info);
     } else {
-      return _.extend({sourceCode}, info);
+      return Object.assign({sourceCode}, info);
     }
   }
 
@@ -327,8 +326,7 @@ export default class FileChangedCache {
 
     const encodings = ['utf8', 'utf16le'];
 
-    let encoding = _.find(
-      encodings,
+    let encoding = encodings.find(
       (x) => !FileChangedCache.containsControlCharacters(buf.toString(x)));
 
     return encoding;

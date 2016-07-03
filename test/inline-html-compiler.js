@@ -4,7 +4,6 @@ import fs from 'fs';
 import path from 'path';
 import cheerio from 'cheerio';
 import pify from 'pify';
-import _ from 'lodash';
 
 const validInputs = [
   'inline-valid.html',
@@ -19,7 +18,7 @@ const d = require('debug')('test:inline-html-compiler');
 
 describe('The inline HTML compiler', function() {
   beforeEach(function() {
-    let compilers = _.reduce(Object.keys(global.compilersByMimeType), (acc, x) => {
+    let compilers = Object.keys(global.compilersByMimeType).reduce((acc, x) => {
       let Klass = global.compilersByMimeType[x];
       acc[x] = new Klass();
       
@@ -36,7 +35,7 @@ describe('The inline HTML compiler', function() {
     this.fixture = InlineHtmlCompiler.createFromCompilers(compilers);
   });
 
-  _.each(validInputs, (inputFile) => {
+  validInputs.forEach((inputFile) => {
     it('should compile the valid fixture ' + inputFile, async function() {
       let input = path.join(__dirname, '..', 'test', 'fixtures', inputFile);
 
@@ -61,7 +60,7 @@ describe('The inline HTML compiler', function() {
 
         if ($(el).attr('type').match(/handlebars/)) return;
 
-        expect(_.find(text.split('\n'), (l) => l.match(/sourceMappingURL/))).to.be.ok;
+        expect(text.split('\n').find((l) => l.match(/sourceMappingURL/))).to.be.ok;
       });
     });
 
@@ -91,7 +90,7 @@ describe('The inline HTML compiler', function() {
         if ($(el).attr('type').match(/handlebars/)) return;
 
         d(text);
-        expect(_.find(text.split('\n'), (l) => l.match(/sourceMappingURL/))).to.be.ok;
+        expect(text.split('\n').find((l) => l.match(/sourceMappingURL/))).to.be.ok;
       });
     });
   });
@@ -140,7 +139,7 @@ describe('The inline HTML compiler', function() {
 
     $('x-require').map((__, el) => {
       let src = $(el).attr('src');
-      expect(_.find(src.split(/[\\\/]/), (x) => x === '.' || x === '..')).not.to.be.ok;
+      expect(src.split(/[\\\/]/).find((x) => x === '.' || x === '..')).not.to.be.ok;
     });
   });
 });

@@ -1,6 +1,5 @@
 import './support.js';
 
-import _ from 'lodash';
 import sfs from 'fs';
 import path from 'path';
 import rimraf from 'rimraf';
@@ -46,7 +45,7 @@ describe('the packager CLI', function() {
     const toFind = ['node.dll', 'resources', 'resources/app/src/main.coffee'];
     let cacheDir = this.tempCacheDir;
 
-    _.each(toFind, (name) => {
+    toFind.forEach((name) => {
       let file = path.resolve(cacheDir, 'mp3-encoder-demo-win32-ia32', name);
 
       d(`Looking for ${file}`);
@@ -64,7 +63,7 @@ describe('the packager CLI', function() {
     const toFind = ['resources/app/.cache', 'resources/app/.compilerc'];
     let cacheDir = this.tempCacheDir;
 
-    _.each(toFind, (name) => {
+    toFind.forEach((name) => {
       let file = path.resolve(cacheDir, 'mp3-encoder-demo-win32-x64', name);
 
       d(`Looking for ${file}`);
@@ -82,7 +81,7 @@ describe('the packager CLI', function() {
     const toFind = ['resources/app/package.json', 'resources/app/es6-shim.js'];
     let cacheDir = this.tempCacheDir;
 
-    _.each(toFind, (name) => {
+    toFind.forEach((name) => {
       let file = path.resolve(cacheDir, 'mp3-encoder-demo-win32-x64', name);
 
       d(`Looking for ${file}`);
@@ -106,7 +105,7 @@ describe('the packager CLI', function() {
     const toFind = ['resources/app.asar'];
     let cacheDir = this.tempCacheDir;
 
-    _.each(toFind, (name) => {
+    toFind.forEach((name) => {
       let file = path.resolve(cacheDir, 'mp3-encoder-demo-win32-x64', name);
 
       d(`Looking for ${file}`);
@@ -114,7 +113,7 @@ describe('the packager CLI', function() {
     });
     
     const toNotFind = ['resources/app'];
-    _.each(toNotFind, (name) => {
+    toNotFind.forEach((name) => {
       let file = path.resolve(cacheDir, 'mp3-encoder-demo-win32-x64', name);
 
       d(`Looking for ${file}`);

@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import fs from 'fs';
 import path from 'path';
 import mkdirp from 'mkdirp';
@@ -115,7 +114,7 @@ export function createCompilerHostFromConfiguration(info) {
   d(`Creating CompilerHost: ${JSON.stringify(info)}, rootCacheDir = ${rootCacheDir}`);
   let fileChangeCache = new FileChangedCache(info.appRoot);
 
-  _.each(Object.keys(info.options || {}), (x) => {
+  Object.keys(info.options || {}).forEach((x) => {
     let opts = info.options[x];
     if (!(x in compilers)) {
       throw new Error(`Found compiler settings for missing compiler: ${x}`);
@@ -368,7 +367,7 @@ export function createCompilers() {
   // but will have a reference to the final result of what we return, which
   // resolves the circular dependency we'd otherwise have here.
   let ret = {};
-  let instantiatedClasses = _.map(allCompilerClasses, (Klass) => {
+  let instantiatedClasses = allCompilerClasses.map((Klass) => {
     if ('createFromCompilers' in Klass) {
       return Klass.createFromCompilers(ret);
     } else {
@@ -376,7 +375,7 @@ export function createCompilers() {
     }
   });
 
-  _.reduce(instantiatedClasses, (acc,x) => {
+  instantiatedClasses.reduce((acc,x) => {
     let Klass = Object.getPrototypeOf(x).constructor;
 
     for (let type of Klass.getInputMimeTypes()) { acc[type] = x; }

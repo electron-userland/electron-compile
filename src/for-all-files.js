@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import fs from 'fs';
 import path from 'path';
 import {pfs} from './promise';
@@ -32,7 +31,7 @@ export function forAllFiles(rootDirectory, func, ...args) {
 
 export function forAllFilesSync(rootDirectory, func, ...args) {
   let rec = (dir) => {
-    _.each(fs.readdirSync(dir), (name) => {
+    fs.readdirSync(dir).forEach((name) => {
       let fullName = path.join(dir, name);
       let stats = fs.statSync(fullName);
       

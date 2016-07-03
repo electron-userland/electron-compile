@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import mimeTypes from '@paulcbetts/mime-types';
 
 /**
@@ -10,7 +9,7 @@ import mimeTypes from '@paulcbetts/mime-types';
  * @param  {CompilerHost} compilerHost  The compiler host to use for compilation.
  */ 
 export default function registerRequireExtension(compilerHost) {
-  _.each(Object.keys(compilerHost.compilersByMimeType), (mimeType) => {
+  Object.keys(compilerHost.compilersByMimeType).forEach((mimeType) => {
     let ext = mimeTypes.extension(mimeType);
     
     require.extensions[`.${ext}`] = (module, filename) => {

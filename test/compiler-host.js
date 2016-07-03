@@ -1,6 +1,5 @@
 import './support.js';
 
-import _ from 'lodash';
 import path from 'path';
 import fs from 'fs';
 import rimraf from 'rimraf';
@@ -15,7 +14,7 @@ let testCount=0;
 
 describe('All available compilers', function() {
   it('should have a MIME type in mime-types', function() {
-    _.each(Object.keys(global.compilersByMimeType), (type) => {
+    Object.keys(global.compilersByMimeType).forEach((type) => {
       d(`Extension for ${type} is ${mimeTypes.extension(type)}`);
       expect(mimeTypes.extension(type)).to.be.ok;
     });
@@ -32,7 +31,7 @@ describe('The compiler host', function() {
     this.tempCacheDir = path.join(__dirname, `__compile_cache_${testCount++}`);
     mkdirp.sync(this.tempCacheDir);
 
-    this.compilersByMimeType = _.reduce(Object.keys(global.compilersByMimeType), (acc, type) => {
+    this.compilersByMimeType = Object.keys(global.compilersByMimeType).reduce((acc, type) => {
       let Klass = global.compilersByMimeType[type];
       acc[type] = new Klass();
       return acc;
