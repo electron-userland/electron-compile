@@ -30,23 +30,25 @@ export default class BabelCompiler extends CompilerBase {
   // installed in it. Instead, we try to load from our entry point's node_modules
   // directory (i.e. Grunt perhaps), and if it doesn't work, just keep going.
   attemptToPreload(names, prefix) {
+    const fixupModule = (exp) => {
+      // NB: Some plugins like transform-decorators-legacy, use import/export
+      // semantics, and others don't
+      if ('default' in exp) return exp['default'];
+      return exp;
+    };
+
     const preloadStrategies = [
-      () => names.map((x) => require.main.require(`babel-${prefix}-${x}`)),
+      () => names.map((x) => fixupModule(require.main.require(`babel-${prefix}-${x}`))),
       () => {
         let nodeModulesAboveUs = path.resolve(__dirname, '..', '..', '..');
-        return names.map((x) => require(path.join(nodeModulesAboveUs, `babel-${prefix}-${x}`)));
+        return names.map((x) => fixupModule(require(path.join(nodeModulesAboveUs, `babel-${prefix}-${x}`))));
       },
-      () => names.map((x) => require(`babel-${prefix}-${x}`))
+      () => names.map((x) => fixupModule(require(`babel-${prefix}-${x}`)))
     ];
 
     for (let strategy of preloadStrategies) {
       try {
-        let ret = strategy();
-
-        // NB: Some plugins like transform-decorators-legacy, use import/export
-        // semantics, and others don't
-        if ('default' in ret) ret = ret['default'];
-        return ret;
+        return strategy();
       } catch (e) {
         continue;
       }
