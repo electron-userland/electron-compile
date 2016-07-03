@@ -248,7 +248,8 @@ export default class InlineHtmlCompiler extends CompilerBase {
 
   getCompilerVersion() {
     let thisVersion = require('../../package.json').version;
-    let otherVersions = this.allCompilers.map((x) => x.getCompilerVersion).join();
+    let compilers = this.allCompilers || [];
+    let otherVersions = compilers.map((x) => x.getCompilerVersion).join();
 
     return `${thisVersion},${otherVersions}`;
   }
