@@ -3,8 +3,6 @@ sudo: false
 language: node_js
 
 node_js:
-  - "4"
-  - "5"
   - "6"
 
 cache:
@@ -16,7 +14,5 @@ install:
   - npm install
 
 script:
-  - npm run test
-  - npm run lint
   - npm run compile
-  - npm run doc
+  - npm run test
