@@ -28,7 +28,7 @@
     "cheerio": "^0.19.0",
     "coffee-script": "^1.10.0",
     "cson": "^3.0.2",
-    "debug": "^2.2.0",
+    "debug-electron": "0.0.1",
     "jade": "^1.11.0",
     "less": "^2.5.3",
     "@paulcbetts/mime-types": "^2.1.9",

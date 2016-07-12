@@ -5,7 +5,7 @@ import {CompilerBase} from '../compiler-base';
 const inputMimeTypes = ['text/html'];
 let cheerio = null;
 
-const d = require('debug')('electron-compile:inline-html');
+const d = require('debug-electron')('electron-compile:inline-html');
 
 /**
  * @access private
