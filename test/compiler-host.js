@@ -8,7 +8,7 @@ import mimeTypes from '@paulcbetts/mime-types';
 import FileChangeCache from '../src/file-change-cache';
 import CompilerHost from '../src/compiler-host';
 
-const d = require('debug')('test:compiler-host');
+const d = require('debug-electron')('test:compiler-host');
 
 let testCount=0;
 

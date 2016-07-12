@@ -11,7 +11,7 @@ const magicWords = "__magic__file__to__help__electron__compile.js";
 const magicGlobalForRootCacheDir = '__electron_compile_root_cache_dir';
 const magicGlobalForAppRootDir = '__electron_compile_app_root_dir';
 
-const d = require('debug')('electron-compile:protocol-hook');
+const d = require('debug-electron')('electron-compile:protocol-hook');
 
 let protocol = null;
 

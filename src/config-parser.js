@@ -7,7 +7,7 @@ import FileChangedCache from './file-change-cache';
 import CompilerHost from './compiler-host';
 import registerRequireExtension from './require-hook';
 
-const d = require('debug')('electron-compile:config-parser');
+const d = require('debug-electron')('electron-compile:config-parser');
 
 // NB: We intentionally delay-load this so that in production, you can create
 // cache-only versions of these compilers

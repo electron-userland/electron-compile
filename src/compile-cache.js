@@ -5,7 +5,7 @@ import createDigestForObject from './digest-for-object';
 import {pfs, pzlib} from './promise';
 import mkdirp from 'mkdirp';
 
-const d = require('debug')('electron-compile:compile-cache');
+const d = require('debug-electron')('electron-compile:compile-cache');
 
 /**
  * CompileCache manages getting and setting entries for a single compiler; each

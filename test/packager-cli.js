@@ -7,7 +7,7 @@ import mkdirp from 'mkdirp';
 
 import {packagerMain} from '../src/packager-cli';
 
-const d = require('debug')('test:packager-cli');
+const d = require('debug-electron')('test:packager-cli');
 
 let testCount = 0;
 
@@ -94,7 +94,7 @@ describe('the packager CLI', function() {
     expect(packageJson.originalMain).to.equal('main.js');
     expect(packageJson.main).to.equal('es6-shim.js');
   });
-  
+
   it('should ASAR archive', async function() {
     let inputApp = path.resolve(__dirname, 'electron-app');
 
@@ -111,7 +111,7 @@ describe('the packager CLI', function() {
       d(`Looking for ${file}`);
       expect(statSyncNoException(file)).to.be.ok;
     });
-    
+
     const toNotFind = ['resources/app'];
     toNotFind.forEach((name) => {
       let file = path.resolve(cacheDir, 'mp3-encoder-demo-win32-x64', name);

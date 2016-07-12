@@ -14,24 +14,24 @@ const validInputs = [
 const pfs = pify(fs);
 const InlineHtmlCompiler = global.compilersByMimeType['text/html'];
 
-const d = require('debug')('test:inline-html-compiler');
+const d = require('debug-electron')('test:inline-html-compiler');
 
 describe('The inline HTML compiler', function() {
   beforeEach(function() {
     let compilers = Object.keys(global.compilersByMimeType).reduce((acc, x) => {
       let Klass = global.compilersByMimeType[x];
       acc[x] = new Klass();
-      
+
       return acc;
     }, {});
-    
+
     compilers['application/javascript'].compilerOptions = {
       "presets": ["stage-0", "es2015", "react"],
       "sourceMaps": "inline"
     };
-    
+
     compilers['text/coffeescript'].compilerOptions = { sourceMap: true };
-    
+
     this.fixture = InlineHtmlCompiler.createFromCompilers(compilers);
   });
 

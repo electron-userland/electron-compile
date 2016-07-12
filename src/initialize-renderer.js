@@ -6,7 +6,7 @@ import CompilerHost from './compiler-host';
 const magicGlobalForRootCacheDir = '__electron_compile_root_cache_dir';
 const magicGlobalForAppRootDir = '__electron_compile_app_root_dir';
 
-const d = require('debug')('electron-compile:initialize-renderer');
+const d = require('debug-electron')('electron-compile:initialize-renderer');
 
 let rendererInitialized = false;
 
@@ -20,7 +20,7 @@ export function initializeRendererProcess(readOnlyMode) {
   if (rendererInitialized) return;
 
   // NB: If we don't do this, we'll get a renderer crash if you enable debug
-  require('debug/browser');
+  require('debug-electron/browser');
 
   let rootCacheDir = require('electron').remote.getGlobal(magicGlobalForRootCacheDir);
   let appRoot = require('electron').remote.getGlobal(magicGlobalForAppRootDir);
