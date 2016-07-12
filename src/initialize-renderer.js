@@ -19,9 +19,6 @@ let rendererInitialized = false;
 export function initializeRendererProcess(readOnlyMode) {
   if (rendererInitialized) return;
 
-  // NB: If we don't do this, we'll get a renderer crash if you enable debug
-  require('debug-electron/browser');
-
   let rootCacheDir = require('electron').remote.getGlobal(magicGlobalForRootCacheDir);
   let appRoot = require('electron').remote.getGlobal(magicGlobalForAppRootDir);
   let compilerHost = null;
