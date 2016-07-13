@@ -2,7 +2,7 @@ import path from 'path';
 import {SimpleCompilerBase} from './compiler-base';
 import mimeTypes from '@paulcbetts/mime-types';
 
-const inputMimeTypes = ['text/plain'];
+const inputMimeTypes = ['text/plain', 'image/svg+xml'];
 
 
 /**
