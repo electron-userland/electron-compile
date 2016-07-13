@@ -83,7 +83,7 @@ DEBUG=*,-babel npm start
 
 ### How do I set up (Babel / Less / whatever) the way I want?
 
-If you've got a `.babelrc` and that's all you want to customize, you can simply use it directly. electron-compile will respect it, even the environment-specific settings. If you want to customize other compilers, use a `.compilerc` file. Here's an example:
+If you've got a `.babelrc` and that's all you want to customize, you can simply use it directly. electron-compile will respect it, even the environment-specific settings. If you want to customize other compilers, use a `.compilerc` or `.compilerc.json` file. Here's an example:
 
 ```js
 {

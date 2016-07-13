@@ -119,13 +119,13 @@ export function createCompilerHostFromConfiguration(info) {
     if (!(x in compilers)) {
       throw new Error(`Found compiler settings for missing compiler: ${x}`);
     }
-    
+
     // NB: Let's hope this isn't a valid compiler option...
     if (opts.passthrough) {
       compilers[x] = compilers['text/plain'];
       delete opts.passthrough;
     }
-    
+
     d(`Setting options for ${x}: ${JSON.stringify(opts)}`);
     compilers[x].compilerOptions = opts;
   });
@@ -209,7 +209,7 @@ export async function createCompilerHostFromConfigFile(file, rootCacheDir=null) 
 
 /**
  * Creates a configured {@link CompilerHost} instance from the project root
- * directory. This method first searches for a .compilerc, then falls back to the
+ * directory. This method first searches for a .compilerc (or .compilerc.json), then falls back to the
  * default locations for Babel configuration info. If neither are found, defaults
  * to standard settings
  *
@@ -222,6 +222,11 @@ export async function createCompilerHostFromConfigFile(file, rootCacheDir=null) 
  */
 export async function createCompilerHostFromProjectRoot(rootDir, rootCacheDir=null) {
   let compilerc = path.join(rootDir, '.compilerc');
+  if (statSyncNoException(compilerc)) {
+    d(`Found a .compilerc at ${compilerc}, using it`);
+    return await createCompilerHostFromConfigFile(compilerc, rootCacheDir);
+  }
+  compilerc += '.json';
   if (statSyncNoException(compilerc)) {
     d(`Found a .compilerc at ${compilerc}, using it`);
     return await createCompilerHostFromConfigFile(compilerc, rootCacheDir);
