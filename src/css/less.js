@@ -6,7 +6,7 @@ let lessjs = null;
 
 /**
  * @access private
- */ 
+ */
 export default class LessCompiler extends CompilerBase {
   constructor() {
     super();
@@ -33,10 +33,10 @@ export default class LessCompiler extends CompilerBase {
   async compile(sourceCode, filePath, compilerContext) {
     lessjs = lessjs || require('less');
 
-    let paths = Object.keys(this.seenFilePaths);
-    paths.unshift('.');
+    let thisPath = path.dirname(filePath);
+    this.seenFilePaths[thisPath] = true;
 
-    this.seenFilePaths[path.dirname(filePath)] = true;
+    let paths = Object.keys(this.seenFilePaths);
 
     if (this.compilerOptions.paths) {
       paths.push(...this.compilerOptions.paths);
@@ -69,9 +69,14 @@ export default class LessCompiler extends CompilerBase {
     let source = '';
     let error = null;
 
+    let thisPath = path.dirname(filePath);
+    this.seenFilePaths[thisPath] = true;
+
     let paths = Object.keys(this.seenFilePaths);
-    paths.unshift('.');
-    this.seenFilePaths[path.dirname(filePath)] = true;
+
+    if (this.compilerOptions.paths) {
+      paths.push(...this.compilerOptions.paths);
+    }
 
     let opts = Object.assign({}, this.compilerOptions, {
       paths: paths,
