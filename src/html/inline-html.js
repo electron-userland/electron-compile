@@ -105,7 +105,7 @@ export default class InlineHtmlCompiler extends CompilerBase {
 
       let origText = $(el).text();
       let newText = await that.compileBlock(origText, filePath, mimeType, thisCtx);
-      
+
       if (origText !== newText) {
         $(el).text(newText);
         $(el).attr('type', 'text/css');
@@ -138,6 +138,10 @@ export default class InlineHtmlCompiler extends CompilerBase {
     $('link').map((i, el) => {
       let href = $(el).attr('href');
       if (href && href.length > 2) { $(el).attr('href', InlineHtmlCompiler.fixupRelativeUrl(href)); }
+
+      // NB: In recent versions of Chromium, the link type MUST be text/css or
+      // it will be flat-out ignored.
+      $(el).attr('type', 'text/css');
     });
 
     $('x-require').map((i, el) => {
@@ -185,7 +189,7 @@ export default class InlineHtmlCompiler extends CompilerBase {
         count: styleCount++,
         tag: 'style'
       }, compilerContext);
-      
+
       let origText = $(el).text();
       let newText = that.compileBlockSync(origText, filePath, mimeType, thisCtx);
 
@@ -209,7 +213,7 @@ export default class InlineHtmlCompiler extends CompilerBase {
       }, compilerContext);
 
       let mimeType = $(el).attr('type');
-      
+
       let oldText = $(el).text();
       let newText = that.compileBlockSync(oldText, filePath, mimeType, thisCtx);
 
