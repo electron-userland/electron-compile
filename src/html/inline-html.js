@@ -140,8 +140,9 @@ export default class InlineHtmlCompiler extends CompilerBase {
       if (href && href.length > 2) { $(el).attr('href', InlineHtmlCompiler.fixupRelativeUrl(href)); }
 
       // NB: In recent versions of Chromium, the link type MUST be text/css or
-      // it will be flat-out ignored.
-      $(el).attr('type', 'text/css');
+      // it will be flat-out ignored. Also I hate myself for hardcoding these.
+      let type = $(el).attr('type');
+      if (type === 'text/less' || type === 'text/stylus') $(el).attr('type', 'text/css');
     });
 
     $('x-require').map((i, el) => {
@@ -226,6 +227,11 @@ export default class InlineHtmlCompiler extends CompilerBase {
     $('link').map((i, el) => {
       let href = $(el).attr('href');
       if (href && href.length > 2) { $(el).attr('href', InlineHtmlCompiler.fixupRelativeUrl(href)); }
+
+      // NB: In recent versions of Chromium, the link type MUST be text/css or
+      // it will be flat-out ignored. Also I hate myself for hardcoding these.
+      let type = $(el).attr('type');
+      if (type === 'text/less' || type === 'text/stylus') $(el).attr('type', 'text/css');
     });
 
     $('x-require').map((i, el) => {
