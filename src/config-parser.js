@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import zlib from 'zlib';
 import mkdirp from 'mkdirp';
 import {pfs} from './promise';
 
@@ -113,6 +114,13 @@ export function createCompilerHostFromConfiguration(info) {
 
   d(`Creating CompilerHost: ${JSON.stringify(info)}, rootCacheDir = ${rootCacheDir}`);
   let fileChangeCache = new FileChangedCache(info.appRoot);
+
+  let compilerInfo = path.join(rootCacheDir, 'compiler-info.json.gz');
+  if (fs.existsSync(compilerInfo)) {
+    let buf = fs.readFileSync(compilerInfo);
+    let json = JSON.parse(zlib.gunzipSync(buf));
+    fileChangeCache = FileChangedCache.loadFromData(json.fileChangeCache, info.appRoot, false);
+  }
 
   Object.keys(info.options || {}).forEach((x) => {
     let opts = info.options[x];
