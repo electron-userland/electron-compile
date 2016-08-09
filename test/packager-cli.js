@@ -23,7 +23,7 @@ function statSyncNoException(fsPath) {
   }
 }
 
-describe('the packager CLI', function() {
+describe.skip('the packager CLI', function() {
   this.timeout(60 * 1000);
 
   beforeEach(function() {
