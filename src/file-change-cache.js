@@ -90,14 +90,11 @@ export default class FileChangedCache {
     let cacheEntry = this.getCacheEntryForPath(absoluteFilePath);
 
     if (this.failOnCacheMiss) {
-      if (!cacheEntry) {
-        d(`Tried to read file cache entry for ${absoluteFilePath}`);
-        d(`cacheKey: ${cacheKey}, appRoot: ${this.appRoot}, originalAppRoot: ${this.originalAppRoot}`);
-        throw new Error(`Asked for ${absoluteFilePath} but it was not precompiled!`);
-      }
-
       return cacheEntry.info;
     }
+
+    let cacheKey = sanitizeFilePath(absoluteFilePath);
+    let {ctime, size} = await this.getInfoForCacheEntry(absoluteFilePath);
 
     if (cacheEntry) {
       if (!this.hasFileChanged(absoluteFilePath, cacheEntry)) {
@@ -128,6 +125,17 @@ export default class FileChangedCache {
     }
   }
 
+  async getInfoForCacheEntry(absoluteFilePath) {
+    let stat = await pfs.stat(absoluteFilePath);
+    if (!stat || !stat.isFile()) throw new Error(`Can't stat ${absoluteFilePath}`);
+
+    return {
+      stat,
+      ctime: stat.ctime.getTime(),
+      size: stat.size
+    };
+  }
+
   /**
    * Gets the cached data for a file path, if it exists.
    *
@@ -149,7 +157,15 @@ export default class FileChangedCache {
 
     let cacheEntry = this.changeCache[cacheKey];
 
-    return cacheEntry || {};
+    if (this.failOnCacheMiss) {
+      if (!cacheEntry) {
+        d(`Tried to read file cache entry for ${absoluteFilePath}`);
+        d(`cacheKey: ${cacheKey}, appRoot: ${this.appRoot}, originalAppRoot: ${this.originalAppRoot}`);
+        throw new Error(`Asked for ${absoluteFilePath} but it was not precompiled!`);
+      }
+    }
+
+    return cacheEntry;
   }
 
   /**
@@ -160,15 +176,11 @@ export default class FileChangedCache {
    *
    * @return {boolean}
    */
-  async hasFileChanged(absoluteFilePath, cacheEntry=null) {
+  async hasFileChanged(absoluteFilePath, cacheEntry=null, fileHashInfo=null) {
     cacheEntry = cacheEntry || this.getCacheEntryForPath(absoluteFilePath);
+    fileHashInfo = fileHashInfo || this.getInfoForCacheEntry(absoluteFilePath);
 
-    let stat = await pfs.stat(absoluteFilePath);
-    let ctime = stat.ctime.getTime();
-    let size = stat.size;
-    if (!stat || !stat.isFile()) throw new Error(`Can't stat ${absoluteFilePath}`);
-
-    return !(cacheEntry.ctime >= ctime && cacheEntry.size === size)
+    return !(cacheEntry.ctime >= fileHashInfo.ctime && cacheEntry.size === fileHashInfo.size);
   }
 
   /**
