@@ -185,7 +185,7 @@ export default class CompileCache {
    */
   async getOrFetch(filePath, fetcher) {
     let cacheResult = await this.get(filePath);
-    let anyDependentFilesChanged = this.haveAnyDependentFilesChanged(cacheResult)
+    let anyDependentFilesChanged = await this.haveAnyDependentFilesChanged(cacheResult);
 
     if ((cacheResult.code || cacheResult.binaryData) && !anyDependentFilesChanged) {
       return cacheResult;
@@ -207,7 +207,7 @@ export default class CompileCache {
    * tree.
    */
   async haveAnyDependentFilesChanged(cacheResult) {
-    if (!cacheResult.dependentFiles.length) return false;
+    if (!cacheResult.dependentFiles || !cacheResult.dependentFiles.length) return false;
 
     for (let dependentFile of cacheResult.dependentFiles) {
       if (await this.fileChangeCache.hasFileChanged(dependentFile)) {
@@ -215,7 +215,7 @@ export default class CompileCache {
       }
 
       let dependentFileCacheResult = await this.get(dependentFile);
-      if (dependentFileCacheResult.dependentFiles.length) {
+      if (dependentFileCacheResult.dependentFiles && dependentFileCacheResult.dependentFiles.length) {
         let anySubdependentFilesChanged = this.haveAnyDependentFilesChanged(dependentFileCacheResult);
         if (anySubdependentFilesChanged) return true;
       }
