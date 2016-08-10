@@ -96,7 +96,7 @@ export default class FileChangedCache {
     let {ctime, size} = await this.getInfoForCacheEntry(absoluteFilePath);
 
     if (cacheEntry) {
-      if (!this.hasFileChanged(absoluteFilePath, cacheEntry)) {
+      if (await !this.hasFileChanged(absoluteFilePath, cacheEntry, {ctime, size})) {
         return cacheEntry.info;
       }
 
