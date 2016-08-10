@@ -87,13 +87,12 @@ export default class FileChangedCache {
    *                                     was text and there was a cache miss
    */
   async getHashForPath(absoluteFilePath) {
-    let cacheEntry = this.getCacheEntryForPath(absoluteFilePath);
+    let {cacheEntry, cacheKey} = this.getCacheEntryForPath(absoluteFilePath);
 
     if (this.failOnCacheMiss) {
       return cacheEntry.info;
     }
 
-    let cacheKey = sanitizeFilePath(absoluteFilePath);
     let {ctime, size} = await this.getInfoForCacheEntry(absoluteFilePath);
 
     if (cacheEntry) {
@@ -165,7 +164,7 @@ export default class FileChangedCache {
       }
     }
 
-    return cacheEntry;
+    return {cacheEntry, cacheKey};
   }
 
   /**
@@ -177,7 +176,7 @@ export default class FileChangedCache {
    * @return {boolean}
    */
   async hasFileChanged(absoluteFilePath, cacheEntry=null, fileHashInfo=null) {
-    cacheEntry = cacheEntry || this.getCacheEntryForPath(absoluteFilePath);
+    cacheEntry = cacheEntry || this.getCacheEntryForPath(absoluteFilePath).cacheEntry;
     fileHashInfo = fileHashInfo || this.getInfoForCacheEntry(absoluteFilePath);
 
     return !(cacheEntry.ctime >= fileHashInfo.ctime && cacheEntry.size === fileHashInfo.size);
