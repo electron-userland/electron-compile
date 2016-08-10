@@ -141,14 +141,6 @@ export function initializeProtocolHook(compilerHost) {
     try {
       let result = await compilerHost.compile(filePath);
 
-      console.log('DEPENDENTFILES', result.dependentFiles);
-
-      // if (result.dependentFiles) {
-      //   for (let dependentFile of result.dependentFiles) {
-      //     await compilerHost.compile(dependentFile);
-      //   }
-      // }
-
       if (result.mimeType === 'text/html') {
         result.code = rigHtmlDocumentToInitializeElectronCompile(result.code);
       }

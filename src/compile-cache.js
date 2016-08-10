@@ -127,14 +127,6 @@ export default class CompileCache {
       d(`Failed to read cache for ${filePath}, looked in ${cacheFile}: ${e.message}`);
     }
 
-    // Expect every dependent file to have the same hash as it was last time in the cache
-    // Otherwise, we definitely want to fetch
-    dependentFiles.every((dependentFile) => {
-      let dependentFileHashInfo = await this.fileChangeCache.getHashForPath(path.resolve(dependentFile));
-
-
-    })
-
     return { hashInfo, code, mimeType, binaryData, dependentFiles };
   }
 
@@ -193,16 +185,13 @@ export default class CompileCache {
    */
   async getOrFetch(filePath, fetcher) {
     let cacheResult = await this.get(filePath);
-    debugger;
-    // TODO: If dependent files have changed, bust the cache for the current file and all the dependent files
-    if (cacheResult.dependentFiles && cacheResult.dependentFiles.length) {
-      for (let dependentFile of cacheResult.dependentFiles) {
-        await this.getOrFetch(dependentFile, fetcher);
-      }
+    let anyDependentFilesChanged = cacheResult.dependentFiles.every(async function(dependentFile) {
+      return await this.fileChangeCache.hasFileChanged(dependentFile)
+    });
+
+    if ((cacheResult.code || cacheResult.binaryData) && !anyDependentFilesChanged) {
+      return cacheResult;
     }
-
-    if (cacheResult.code || cacheResult.binaryData) return cacheResult;
-
 
     let result = await fetcher(filePath, cacheResult.hashInfo) || { hashInfo: cacheResult.hashInfo };
 

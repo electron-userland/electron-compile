@@ -87,18 +87,7 @@ export default class FileChangedCache {
    *                                     was text and there was a cache miss
    */
   async getHashForPath(absoluteFilePath) {
-    let cacheKey = sanitizeFilePath(absoluteFilePath);
-    if (this.appRoot) {
-      cacheKey = cacheKey.replace(this.appRoot, '');
-    }
-
-    // NB: We do this because x-require will include an absolute path from the
-    // original built app and we need to still grok it
-    if (this.originalAppRoot) {
-      cacheKey = cacheKey.replace(this.originalAppRoot, '');
-    }
-
-    let cacheEntry = this.changeCache[cacheKey];
+    let cacheEntry = this.getCacheEntryForPath(absoluteFilePath);
 
     if (this.failOnCacheMiss) {
       if (!cacheEntry) {
@@ -110,13 +99,8 @@ export default class FileChangedCache {
       return cacheEntry.info;
     }
 
-    let stat = await pfs.stat(absoluteFilePath);
-    let ctime = stat.ctime.getTime();
-    let size = stat.size;
-    if (!stat || !stat.isFile()) throw new Error(`Can't stat ${absoluteFilePath}`);
-
     if (cacheEntry) {
-      if (cacheEntry.ctime >= ctime && cacheEntry.size === size) {
+      if (!this.hasFileChanged(absoluteFilePath, cacheEntry)) {
         return cacheEntry.info;
       }
 
@@ -144,6 +128,48 @@ export default class FileChangedCache {
     }
   }
 
+  /**
+   * Gets the cached data for a file path, if it exists.
+   *
+   * @param  {string} absoluteFilePath  The path to a file to retrieve info on.
+   *
+   * @return {Object}
+   */
+  getCacheEntryForPath(absoluteFilePath) {
+    let cacheKey = sanitizeFilePath(absoluteFilePath);
+    if (this.appRoot) {
+      cacheKey = cacheKey.replace(this.appRoot, '');
+    }
+
+    // NB: We do this because x-require will include an absolute path from the
+    // original built app and we need to still grok it
+    if (this.originalAppRoot) {
+      cacheKey = cacheKey.replace(this.originalAppRoot, '');
+    }
+
+    let cacheEntry = this.changeCache[cacheKey];
+
+    return cacheEntry;
+  }
+
+  /**
+   * Checks the file cache to see if a file has changed.
+   *
+   * @param  {string} absoluteFilePath  The path to a file to retrieve info on.
+   * @param  {Object} cacheEntry  Cache data from {@link getCacheEntryForPath}
+   *
+   * @return {boolean}
+   */
+  async hasFileChanged(absoluteFilePath, cacheEntry=null) {
+    cacheEntry = cacheEntry || this.getCacheEntryForPath(absoluteFilePath);
+
+    let stat = await pfs.stat(absoluteFilePath);
+    let ctime = stat.ctime.getTime();
+    let size = stat.size;
+    if (!stat || !stat.isFile()) throw new Error(`Can't stat ${absoluteFilePath}`);
+
+    return !(cacheEntry.ctime >= ctime && cacheEntry.size === size)
+  }
 
   /**
    * Returns data that can passed to {@link loadFromData} to rehydrate this cache.
