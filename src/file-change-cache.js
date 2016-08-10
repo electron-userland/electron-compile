@@ -149,7 +149,7 @@ export default class FileChangedCache {
 
     let cacheEntry = this.changeCache[cacheKey];
 
-    return cacheEntry;
+    return cacheEntry || {};
   }
 
   /**
