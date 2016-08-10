@@ -185,9 +185,7 @@ export default class CompileCache {
    */
   async getOrFetch(filePath, fetcher) {
     let cacheResult = await this.get(filePath);
-    let anyDependentFilesChanged = cacheResult.dependentFiles.every(async function(dependentFile) {
-      return await this.fileChangeCache.hasFileChanged(dependentFile)
-    });
+    let anyDependentFilesChanged = this.haveAnyDependentFilesChanged(cacheResult)
 
     if ((cacheResult.code || cacheResult.binaryData) && !anyDependentFilesChanged) {
       return cacheResult;
@@ -202,6 +200,28 @@ export default class CompileCache {
 
     result.hashInfo = cacheResult.hashInfo;
     return result;
+  }
+
+  /**
+   * @private Recursively check if any file's dependencies have changed anywhere in the dependency
+   * tree.
+   */
+  async haveAnyDependentFilesChanged(cacheResult) {
+    if (!cacheResult.dependentFiles.length) return false;
+
+    for (let dependentFile of cacheResult.dependentFiles) {
+      if (await this.fileChangeCache.hasFileChanged(dependentFile)) {
+        return true;
+      }
+
+      let dependentFileCacheResult = await this.get(dependentFile);
+      if (dependentFileCacheResult.dependentFiles.length) {
+        let anySubdependentFilesChanged = this.haveAnyDependentFilesChanged(dependentFileCacheResult);
+        if (anySubdependentFilesChanged) return true;
+      }
+    }
+
+    return false;
   }
 
   getSync(filePath) {
