@@ -1,5 +1,3 @@
-import './babel-maybefill';
-
 import * as configParser from './config-parser';
 
 import CompilerHost from './compiler-host';

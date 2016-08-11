@@ -1,5 +1,3 @@
-import '../src/babel-maybefill';
-
 const allCompilerClasses = require('electron-compilers');
 
 let chai = require("chai");
@@ -19,7 +17,7 @@ require('../src/rig-mime-types').init();
 
 global.compilersByMimeType = allCompilerClasses.reduce((acc,x) => {
   acc = acc || {};
-  
+
   for (let type of x.getInputMimeTypes()) { acc[type] = x; }
   return acc;
 }, {});

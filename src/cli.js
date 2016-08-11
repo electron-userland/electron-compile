@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import './babel-maybefill';
 import path from 'path';
 import mkdirp from 'mkdirp';
 
