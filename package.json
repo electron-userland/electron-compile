@@ -21,6 +21,7 @@
     "url": "https://github.com/paulcbetts/electron-compilers/issues"
   },
   "homepage": "https://github.com/paulcbetts/electron-compilers",
+  "engines": { "node" : ">= 5.0" }, 
   "dependencies": {
     "@paulcbetts/mime-types": "^2.1.10",
     "babel-core": "^6.13.2",
