@@ -1,4 +1,5 @@
 import {SimpleCompilerBase} from '../compiler-base';
+import path from 'path';
 
 const inputMimeTypes = ['text/typescript', 'text/tsx'];
 let tss = null;
@@ -10,11 +11,11 @@ let ts = null;
 export default class TypeScriptCompiler extends SimpleCompilerBase {
   constructor() {
     super();
-    this.compilerOptions.sourceMap = true;
-
+    
     this.compilerOptions = {
       module: 'commonjs',
-      sourceMap: true
+      sourceMap: true,
+      doSemanticChecks: true,
     };
   }
 
@@ -26,16 +27,24 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
     tss = tss || require('typescript-simple');
     ts = ts || require('typescript');
     
-    let extraOpts = {target: ts.ScriptTarget.ES6};
+    // NB: We set outDir here to work around a bug in TypeScriptSimple
+    // NB: If you enable semantic checks with TSX, you're gonna have a
+    //     Bad Time
+    let extraOpts = {target: ts.ScriptTarget.ES6, outDir: '/'};
+    let isJsx = false;
     if (filePath.match(/\.tsx$/i)) {
-      extraOpts.jsx = ts.JsxEmit.Preserve;
+      extraOpts.jsx = ts.JsxEmit.React;
+      isJsx = true;
     }
     
     // NB: Work around TypeScriptSimple modifying the options object
-    let compiler = new tss.TypeScriptSimple(Object.assign({}, this.compilerOptions), this.compilerOptions.doSemanticChecks);
+    let compiler = new tss.TypeScriptSimple(
+      Object.assign({}, this.compilerOptions, extraOpts), 
+      this.compilerOptions.doSemanticChecks && !isJsx);
 
+    console.log(`Calling compile ${sourceCode.length} - ${filePath}`);
     return {
-      code: compiler.compile(sourceCode, filePath),
+      code: compiler.compile(sourceCode, path.basename(filePath)),
       mimeType: 'application/javascript'
     };
   }
