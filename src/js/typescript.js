@@ -15,7 +15,7 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
     this.compilerOptions = {
       module: 'commonjs',
       sourceMap: true,
-      doSemanticChecks: true,
+      doSemanticChecks: true
     };
   }
 
@@ -24,7 +24,7 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
   }
 
   compileSync(sourceCode, filePath) {
-    tss = tss || require('typescript-simple');
+    tss = tss || require('typescript-simple'); 
     ts = ts || require('typescript');
     
     // NB: We set outDir here to work around a bug in TypeScriptSimple
@@ -42,7 +42,6 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
       Object.assign({}, this.compilerOptions, extraOpts), 
       this.compilerOptions.doSemanticChecks && !isJsx);
 
-    console.log(`Calling compile ${sourceCode.length} - ${filePath}`);
     return {
       code: compiler.compile(sourceCode, path.basename(filePath)),
       mimeType: 'application/javascript'
