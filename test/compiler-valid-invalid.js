@@ -44,6 +44,11 @@ const compilerOptionsForMimeType = {
     "presets": ["react", "stage-0", "es2015"],
     "plugins": ["transform-runtime"],
     "sourceMaps": "inline"
+  },
+
+  'text/stylus': {
+    'import': ['nib'],
+    'sourcemap': 'inline'
   }
 };
 
@@ -73,6 +78,7 @@ for (let mimeType of mimeTypesToTest) {
 
       let result = await this.fixture.compile(source, input, ctx);
       let expectedMimeType = expectedMimeTypeSpecialCases[mimeType] || 'application/javascript';
+      console.log(JSON.stringify(result, null, 2));
 
       expect(result.mimeType).to.equal(expectedMimeType);
 
