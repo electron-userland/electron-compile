@@ -24,7 +24,7 @@ function statSyncNoException(fsPath) {
 }
 
 describe('the packager CLI', function() {
-  this.timeout(60 * 1000);
+  this.timeout(120 * 1000);
 
   beforeEach(function() {
     this.tempCacheDir = path.join(__dirname, `__packager_cli_${testCount++}`);
@@ -40,7 +40,7 @@ describe('the packager CLI', function() {
 
     // NB: The first two elements are dummies to fake out what would normally
     // be the path to node and the path to the script
-    await packagerMain(['', '', '--platform', 'win32', '--arch', 'all', '--out', this.tempCacheDir, inputApp]);
+    await packagerMain(['', '', '--platform', 'win32', '--version', '1.3.2', '--arch', 'all', '--out', this.tempCacheDir, inputApp]);
 
     const toFind = ['node.dll', 'resources', 'resources/app/src/main.coffee'];
     let cacheDir = this.tempCacheDir;
@@ -58,7 +58,7 @@ describe('the packager CLI', function() {
 
     // NB: The first two elements are dummies to fake out what would normally
     // be the path to node and the path to the script
-    await packagerMain(['', '', '--platform', 'win32', '--arch', 'x64', '--out', this.tempCacheDir, inputApp]);
+    await packagerMain(['', '', '--platform', 'win32', '--version', '1.3.2', '--arch', 'x64', '--out', this.tempCacheDir, inputApp]);
 
     const toFind = ['resources/app/.cache', 'resources/app/.compilerc'];
     let cacheDir = this.tempCacheDir;
@@ -76,7 +76,7 @@ describe('the packager CLI', function() {
 
     // NB: The first two elements are dummies to fake out what would normally
     // be the path to node and the path to the script
-    await packagerMain(['', '', '--platform', 'win32', '--arch', 'x64', '--out', this.tempCacheDir, inputApp]);
+    await packagerMain(['', '', '--platform', 'win32', '--version', '1.3.2', '--arch', 'x64', '--out', this.tempCacheDir, inputApp]);
 
     const toFind = ['resources/app/package.json', 'resources/app/es6-shim.js'];
     let cacheDir = this.tempCacheDir;
@@ -100,7 +100,7 @@ describe('the packager CLI', function() {
 
     // NB: The first two elements are dummies to fake out what would normally
     // be the path to node and the path to the script
-    await packagerMain(['', '', '--platform', 'win32', '--arch', 'x64', '--asar', '--out', this.tempCacheDir, inputApp]);
+    await packagerMain(['', '', '--platform', 'win32', '--version', '1.3.2', '--arch', 'x64', '--asar', '--out', this.tempCacheDir, inputApp]);
 
     const toFind = ['resources/app.asar'];
     let cacheDir = this.tempCacheDir;
