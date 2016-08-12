@@ -25,7 +25,7 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
     tss = tss || require('typescript-simple');
     
     // NB: Work around TypeScriptSimple modifying the options object
-    let compiler = new tss.TypeScriptSimple(Object.assign({}, this.compilerOptions));
+    let compiler = new tss.TypeScriptSimple(Object.assign({}, this.compilerOptions), this.compilerOptions.doSemanticChecks);
 
     return {
       code: compiler.compile(sourceCode, filePath),

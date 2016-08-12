@@ -90,7 +90,9 @@ export default class InlineHtmlCompiler extends CompilerBase {
 
   async compile(sourceCode, filePath, compilerContext) {
     cheerio = cheerio || require('cheerio');
-    let $ = cheerio.load(sourceCode);
+    
+    //Leave the attributes casing as it is, because of Angular 2 and maybe other case-sensitive frameworks
+    let $ = cheerio.load(sourceCode, {lowerCaseAttributeNames: false});
     let toWait = [];
 
     let that = this;
@@ -179,7 +181,9 @@ export default class InlineHtmlCompiler extends CompilerBase {
 
   compileSync(sourceCode, filePath, compilerContext) {
     cheerio = cheerio || require('cheerio');
-    let $ = cheerio.load(sourceCode);
+    
+    //Leave the attributes casing as it is, because of Angular 2 and maybe other case-sensitive frameworks
+    let $ = cheerio.load(sourceCode, {lowerCaseAttributeNames: false});
 
     let that = this;
     let styleCount = 0;
