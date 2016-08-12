@@ -88,7 +88,7 @@ If you've got a `.babelrc` and that's all you want to customize, you can simply 
 ```js
 {
   "application/javascript": {
-    "presets": ["stage-0", "es2015", "react"],
+    "presets": ["es2016-node5", "react"],
     "sourceMaps": "inline"
   },
   "text/less": {
@@ -104,7 +104,7 @@ If you've got a `.babelrc` and that's all you want to customize, you can simply 
   "env": {
     "development": {
       "application/javascript": {
-        "presets": ["stage-0", "es2015", "react"],
+        "presets": ["es2016-node5", "react"],
         "sourceMaps": "inline"
       },
       "text/less": {
@@ -113,7 +113,7 @@ If you've got a `.babelrc` and that's all you want to customize, you can simply 
     },
     "production": {
       "application/javascript": {
-        "presets": ["stage-0", "es2015", "react"],
+        "presets": ["es2016-node5", "react"],
         "sourceMaps": "none"
       }
     }

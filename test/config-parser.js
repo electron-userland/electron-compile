@@ -49,7 +49,7 @@ describe('the configuration parser module', function() {
         rootCacheDir: this.tempCacheDir,
         options: {
           'application/javascript': {
-            "presets": ["stage-0", "es2015"],
+            "presets": ["es2016-node5"],
             "sourceMaps": false
           }
         }

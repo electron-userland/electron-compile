@@ -35,14 +35,14 @@ const mimeTypesWithoutSourceMapSupport = [
 
 const compilerOptionsForMimeType = {
   'application/javascript': {
-    "presets": ["stage-0", "es2015"],
-    "plugins": ["transform-runtime"],
+    "presets": ["es2016-node5"],
+    "plugins": ["transform-async-to-generator"],
     "sourceMaps": "inline"
   },
 
   'text/jsx': {
-    "presets": ["react", "stage-0", "es2015"],
-    "plugins": ["transform-runtime"],
+    "presets": ["es2016-node5", "react"],
+    "plugins": ["transform-async-to-generator"],
     "sourceMaps": "inline"
   },
 

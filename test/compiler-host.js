@@ -40,14 +40,14 @@ describe('The compiler host', function() {
     let InlineHtmlCompiler = Object.getPrototypeOf(this.compilersByMimeType['text/html']).constructor;
     this.compilersByMimeType['text/html'] = InlineHtmlCompiler.createFromCompilers(this.compilersByMimeType);
     this.compilersByMimeType['application/javascript'].compilerOptions = {
-      "presets": ["react", "stage-0", "es2015"],
-      "plugins": ["transform-runtime"],
+      "presets": ["react", "es2016-node5"],
+      "plugins": ["transform-async-to-generator"],
       "sourceMaps": "inline"
     };
 
     this.compilersByMimeType['text/jsx'].compilerOptions = {
-      "presets": ["react", "stage-0", "es2015"],
-      "plugins": ["transform-runtime"],
+      "presets": ["react", "es2016-node5"],
+      "plugins": ["transform-async-to-generator"],
       "sourceMaps": "inline"
     };
 
