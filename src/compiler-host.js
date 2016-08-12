@@ -267,6 +267,7 @@ export default class CompilerHost {
 
     if (hashInfo.isInNodeModules) {
       let code = hashInfo.sourceCode || await pfs.readFile(filePath, 'utf8');
+      code = await CompilerHost.fixNodeModulesSourceMapping(code, filePath, this.fileChangeCache.appRoot);
       return { code, mimeType: type };
     }
 
@@ -490,6 +491,7 @@ export default class CompilerHost {
 
     if (hashInfo.isInNodeModules) {
       let code = hashInfo.sourceCode || fs.readFileSync(filePath, 'utf8');
+      code = CompilerHost.fixNodeModulesSourceMappingSync(code, filePath, this.fileChangeCache.appRoot);
       return { code, mimeType: type };
     }
 
@@ -599,5 +601,59 @@ export default class CompilerHost {
    */
   static shouldPassthrough(hashInfo) {
     return hashInfo.isMinified || hashInfo.isInNodeModules || hashInfo.hasSourceMap || hashInfo.isFileBinary;
+  }
+    
+  /**
+   * Look at the code of a node modules and see the sourceMapping path.
+   * If there is any, check the path and try to fix it with and
+   * root relative path.
+   * @private
+   */
+  static async fixNodeModulesSourceMapping(sourceCode, sourcePath, appRoot) {
+    let regexSourceMapping = /\/\/#.*sourceMappingURL=(?!data:)([^"'].*)/i;
+    let sourceMappingCheck = sourceCode.match(regexSourceMapping);
+
+    if (sourceMappingCheck && sourceMappingCheck[1] && sourceMappingCheck[1] !== ''){
+      let sourceMapPath = sourceMappingCheck[1];
+      
+      try {
+        await pfs.stat(sourceMapPath);
+      } catch (error) {
+        let normRoot = path.normalize(appRoot);
+        let absPathToModule = path.dirname(sourcePath.replace(normRoot, '').substring(1));
+        let newMapPath = path.join(absPathToModule, sourceMapPath);
+        
+        return sourceCode.replace(regexSourceMapping, `//# sourceMappingURL=${newMapPath}`);
+      }
+    }
+    
+    return sourceCode;
+  }
+
+  /**
+   * Look at the code of a node modules and see the sourceMapping path.
+   * If there is any, check the path and try to fix it with and
+   * root relative path.
+   * @private
+   */
+  static fixNodeModulesSourceMappingSync(sourceCode, sourcePath, appRoot) {
+    let regexSourceMapping = /\/\/#.*sourceMappingURL=(?!data:)([^"'].*)/i;
+    let sourceMappingCheck = sourceCode.match(regexSourceMapping);
+
+    if (sourceMappingCheck && sourceMappingCheck[1] && sourceMappingCheck[1] !== ''){
+      let sourceMapPath = sourceMappingCheck[1];
+      
+      try {
+        fs.statSync(sourceMapPath);
+      } catch (error) {
+        let normRoot = path.normalize(appRoot);
+        let absPathToModule = path.dirname(sourcePath.replace(normRoot, '').substring(1));
+        let newMapPath = path.join(absPathToModule, sourceMapPath);
+        
+        return sourceCode.replace(regexSourceMapping, `//# sourceMappingURL=${newMapPath}`);
+      }
+    }
+    
+    return sourceCode;
   }
 }

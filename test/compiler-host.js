@@ -226,4 +226,46 @@ describe('The compiler host', function() {
       return true;
     });
   });
+
+  it('Should update the sourceMappingURL with the node_modules path', function() {
+    //I need to use path.normalize to support run the test on different OS
+    let nmz = path.normalize;
+    let fix = CompilerHost.fixNodeModulesSourceMappingSync;
+    let result = '';
+
+    let code = `//# sourceMappingURL=index.ts.map`;
+    let expected = `//# sourceMappingURL=${nmz('node_modules/package/index.ts.map')}`;
+
+    //sourceCode, sourcePath, appRoot
+    result = fix(code, nmz('/some/folder/node_modules/package/code.js'), nmz('/some/folder'));
+    expect(result).to.equal(expected);
+  });
+
+  it('Should leave the sourceMappingURL as it is when is a data URI', function() {
+    //I need to use path.normalize to support run the test on different OS
+    let nmz = path.normalize;
+    let fix = CompilerHost.fixNodeModulesSourceMappingSync;
+    let result = '';
+
+    let code = `//# sourceMappingURL=data:base64;nomething`;
+    let expected = `//# sourceMappingURL=data:base64;nomething`;
+
+    //sourceCode, sourcePath, appRoot
+    result = fix(code, nmz('/some/folder/node_modules/package/code.js'), nmz('/some/folder'));
+    expect(result).to.equal(expected);
+  });
+
+  it('Should leave the sourceMappingURL as it is when is used in code', function() {
+    //I need to use path.normalize to support run the test on different OS
+    let nmz = path.normalize;
+    let fix = CompilerHost.fixNodeModulesSourceMappingSync;
+    let result = '';
+
+    let code = `var somevar = "//# sourceMappingURL=" + anotherVar`;
+    let expected = `var somevar = "//# sourceMappingURL=" + anotherVar`;
+
+    //sourceCode, sourcePath, appRoot
+    result = fix(code, nmz('/some/folder/node_modules/package/code.js'), nmz('/some/folder'));
+    expect(result).to.equal(expected);
+  });
 });
