@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/paulcbetts/electron-compile",
   "main": "lib/index.js",
+  "engines": { "node" : ">= 5.0" }, 
   "dependencies": {
     "@paulcbetts/mime-types": "^2.1.10",
     "btoa": "^1.1.2",
