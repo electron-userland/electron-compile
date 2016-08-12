@@ -78,7 +78,6 @@ for (let mimeType of mimeTypesToTest) {
 
       let result = await this.fixture.compile(source, input, ctx);
       let expectedMimeType = expectedMimeTypeSpecialCases[mimeType] || 'application/javascript';
-      console.log(JSON.stringify(result, null, 2));
 
       expect(result.mimeType).to.equal(expectedMimeType);
 
