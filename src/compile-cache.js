@@ -210,13 +210,14 @@ export default class CompileCache {
     if (!cacheResult.dependentFiles || !cacheResult.dependentFiles.length) return false;
 
     for (let dependentFile of cacheResult.dependentFiles) {
-      if (await this.fileChangeCache.hasFileChanged(dependentFile)) {
+      let hasFileChanged = await this.fileChangeCache.hasFileChanged(dependentFile);
+      if (hasFileChanged) {
         return true;
       }
 
       let dependentFileCacheResult = await this.get(dependentFile);
       if (dependentFileCacheResult.dependentFiles && dependentFileCacheResult.dependentFiles.length) {
-        let anySubdependentFilesChanged = this.haveAnyDependentFilesChanged(dependentFileCacheResult);
+        let anySubdependentFilesChanged = await this.haveAnyDependentFilesChanged(dependentFileCacheResult);
         if (anySubdependentFilesChanged) return true;
       }
     }

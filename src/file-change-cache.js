@@ -179,9 +179,13 @@ export default class FileChangedCache {
    */
   async hasFileChanged(absoluteFilePath, cacheEntry=null, fileHashInfo=null) {
     cacheEntry = cacheEntry || this.getCacheEntryForPath(absoluteFilePath).cacheEntry;
-    fileHashInfo = fileHashInfo || this.getInfoForCacheEntry(absoluteFilePath);
+    fileHashInfo = fileHashInfo || await this.getInfoForCacheEntry(absoluteFilePath);
 
-    return !(cacheEntry.ctime >= fileHashInfo.ctime && cacheEntry.size === fileHashInfo.size);
+    if (cacheEntry) {
+      return !(cacheEntry.ctime >= fileHashInfo.ctime && cacheEntry.size === fileHashInfo.size);
+    }
+
+    return false;
   }
 
   /**
