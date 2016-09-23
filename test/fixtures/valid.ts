@@ -3,6 +3,7 @@ declare module WinJS {
         then<U>(success?: (value: T) => Promise<U>, error?: (error: any) => Promise<U>, progress?: (progress: any) => void): Promise<U>;
     }
 }
+
 declare module Data {
     export interface IListItem<T> {
         itemIndex: number;
@@ -21,5 +22,17 @@ declare module Data {
     export class VirtualList<T> implements IVirtualList<T> {
         //removeIndices: WinJS.Promise<IListItem<T>[]>;
         public removeIndices(indices: number[], options?: any): WinJS.Promise<IListItem<T>[]>;
+    }
+}
+
+class Person {
+    readonly name: string;
+    
+    constructor(name: string) {
+        if (name.length < 1) {
+            throw new Error("Empty name!");
+        }
+      
+      this.name = name;
     }
 }
