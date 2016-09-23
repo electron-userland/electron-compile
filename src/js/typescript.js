@@ -24,7 +24,7 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
   }
 
   compileSync(sourceCode, filePath) {
-    tss = tss || require('typescript-simple'); 
+    tss = tss || require('@paulcbetts/typescript-simple'); 
     ts = ts || require('typescript');
     
     // NB: We set outDir here to work around a bug in TypeScriptSimple
