@@ -13,6 +13,15 @@ cache:
   directories:
     - node_modules
 
+addons:
+  apt:
+    packages:
+    - wine
+
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update      ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install wine; fi
+
 install:
   - npm i -g npm
   - npm install
