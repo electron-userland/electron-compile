@@ -38,7 +38,7 @@
     "mkdirp": "^0.5.1",
     "pify": "^2.3.0",
     "rimraf": "^2.5.4",
-    "spawn-rx": "^1.0.0",
+    "spawn-rx": "^2.0.3",
     "yargs": "^4.8.1"
   },
   "devDependencies": {
