@@ -117,7 +117,7 @@ export function findExecutableOrGuess(cmdToFind, argsToUse) {
   let { cmd, args } = findActualExecutable(cmdToFind, argsToUse);
   if (cmd === electronPackager) {
     d(`Can't find ${cmdToFind}, falling back to where it should be as a guess!`);
-    cmd = findActualExecutable(path.resolve(__dirname, '..', '..', '.bin', cmdToFind)).cmd;
+    { cmd, args } = findActualExecutable(path.resolve(__dirname, '..', '..', '.bin', `${cmdToFind}${process.platform === 'win32' ? '.cmd' : ''}`), argsToUse);
   }
 
   return { cmd, args };
