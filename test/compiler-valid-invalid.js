@@ -3,7 +3,7 @@ import './support';
 import pify from 'pify';
 import fs from 'fs';
 import path from 'path';
-import mimeTypes from '@paulcbetts/mime-types';
+import mimeTypes from '../mime-types';
 
 const pfs = pify(fs);
 

@@ -1,6 +1,6 @@
 import url from 'url';
 import fs from 'fs';
-import mime from '@paulcbetts/mime-types';
+import mime from './mime-types';
 
 const magicWords = "__magic__file__to__help__electron__compile.js";
 
