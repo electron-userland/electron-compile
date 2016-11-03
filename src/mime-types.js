@@ -1,4 +1,5 @@
 import path from 'path';
+import mimeTypes from '@paulcbetts/mime-types';
 
 const MimeTypesToExtensions = {
   'application/javascript': ['js', 'es6'],
@@ -26,7 +27,7 @@ for (const mimetype of Object.keys(MimeTypesToExtensions)) {
 class MimeTypes {
   lookup(filepath) {
     const ext = path.extname(filepath);
-    return ExtensionsToMimeTypes[ext.slice(1)] || false;
+    return ExtensionsToMimeTypes[ext.slice(1)] || mimeTypes.lookup(filepath) || false;
   }
 
   extension(mimeType) {
@@ -34,7 +35,11 @@ class MimeTypes {
   }
 
   extensions(mimeType) {
-    return MimeTypesToExtensions[mimeType] || [];
+    if (MimeTypesToExtensions[mimeType]) {
+      return MimeTypesToExtensions[mimeType];
+    }
+    const official = mimeTypes.extension(mimeType);
+    return official ? [official] : [];
   }
 
 }
