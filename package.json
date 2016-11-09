@@ -1,6 +1,6 @@
 {
   "name": "electron-compilers",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "Compiler implementations for electron-compile",
   "main": "lib/main.js",
   "scripts": {

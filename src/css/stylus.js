@@ -1,9 +1,10 @@
 import {CompilerBase} from '../compiler-base';
 import {basename} from 'path';
-import nib from 'nib';
 
 const mimeTypes = ['text/stylus'];
+
 let stylusjs = null;
+let nib = null;
 
 function each(obj, sel) {
   for (let k in obj) {
@@ -37,6 +38,7 @@ export default class StylusCompiler extends CompilerBase {
   }
 
   async compile(sourceCode, filePath, compilerContext) {
+    nib = nib || require('nib');
     stylusjs = stylusjs || require('stylus');
     let opts = this.makeOpts(filePath);
 
@@ -107,6 +109,7 @@ export default class StylusCompiler extends CompilerBase {
   }
 
   compileSync(sourceCode, filePath, compilerContext) {
+    nib = nib || require('nib');
     stylusjs = stylusjs || require('stylus');
 
     let opts = this.makeOpts(filePath), styl = stylusjs(sourceCode, opts);
