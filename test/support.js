@@ -13,8 +13,6 @@ global.AssertionError = chai.AssertionError;
 global.Assertion = chai.Assertion;
 global.assert = chai.assert;
 
-require('../src/rig-mime-types').init();
-
 global.compilersByMimeType = allCompilerClasses.reduce((acc,x) => {
   acc = acc || {};
 

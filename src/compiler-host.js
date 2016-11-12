@@ -1,17 +1,15 @@
-import mimeTypes from '@paulcbetts/mime-types';
 import fs from 'fs';
 import zlib from 'zlib';
 import path from 'path';
 import {pfs, pzlib} from './promise';
 
+import mimeTypes from './mime-types';
 import {forAllFiles, forAllFilesSync} from './for-all-files';
 import CompileCache from './compile-cache';
 import FileChangedCache from './file-change-cache';
 import ReadOnlyCompiler from './read-only-compiler';
 
 const d = require('debug-electron')('electron-compile:compiler-host');
-
-require('./rig-mime-types').init();
 
 // This isn't even my
 const finalForms = {
