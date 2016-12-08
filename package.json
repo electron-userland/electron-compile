@@ -40,7 +40,7 @@
     "nib": "^1.1.2",
     "rimraf": "^2.5.4",
     "stylus": "^0.54.5",
-    "typescript": "^2.0.3"
+    "typescript": "~2.0.3"
   },
   "devDependencies": {
     "babel-cli": "^6.11.4",
