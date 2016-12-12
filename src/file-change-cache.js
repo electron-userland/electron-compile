@@ -326,8 +326,9 @@ export default class FileChangedCache {
 
     const encodings = ['utf8', 'utf16le'];
 
-    let encoding = encodings.find(
-      (x) => !FileChangedCache.containsControlCharacters(buf.toString(x)));
+    let encoding = encodings.find((x) =>
+      Buffer.compare(new Buffer(buffer.toString(), x), buffer) === 0
+    );
 
     return encoding;
   }
