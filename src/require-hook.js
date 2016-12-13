@@ -14,6 +14,9 @@ export default function registerRequireExtension(compilerHost) {
     
     require.extensions[`.${ext}`] = (module, filename) => {
       let {code} = compilerHost.compileSync(filename);
+      if (code === null) {
+        console.error(`null code returned for "${filename}".  Please raise an issue on 'electron-compile' with the contents of this file.`);
+      }
       module._compile(code, filename);
     };
   });
