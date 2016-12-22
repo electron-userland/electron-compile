@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import {pfs, pzlib} from './promise';
 import sanitizeFilePath from './sanitize-paths';
 
-const d = require('debug-electron')('electron-compile:file-change-cache');
+const d = require('debug')('electron-compile:file-change-cache');
 
 /**
  * This class caches information about files and determines whether they have

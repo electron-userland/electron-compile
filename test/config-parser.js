@@ -10,7 +10,7 @@ import {
   createCompilerHostFromBabelRc
 } from '../src/config-parser';
 
-const d = require('debug-electron')('test:config-parser');
+const d = require('debug')('test:config-parser');
 
 let testCount = 0;
 

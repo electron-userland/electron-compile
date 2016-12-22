@@ -8,7 +8,7 @@ import {main} from './cli';
 
 import {spawnPromise, findActualExecutable} from 'spawn-rx';
 
-const d = require('debug-electron')('electron-compile:packager');
+const d = require('debug')('electron-compile:packager');
 const electronPackager = 'electron-packager';
 
 export async function packageDirToResourcesDir(packageDir) {

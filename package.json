@@ -33,7 +33,7 @@
   "dependencies": {
     "@paulcbetts/mime-types": "^2.1.10",
     "btoa": "^1.1.2",
-    "debug-electron": "^0.0.2",
+    "debug": "^2.5.1",
     "lru-cache": "^4.0.1",
     "mkdirp": "^0.5.1",
     "pify": "^2.3.0",

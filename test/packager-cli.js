@@ -7,7 +7,7 @@ import mkdirp from 'mkdirp';
 
 import {packagerMain} from '../src/packager-cli';
 
-const d = require('debug-electron')('test:packager-cli');
+const d = require('debug')('test:packager-cli');
 
 let testCount = 0;
 

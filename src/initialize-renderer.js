@@ -5,7 +5,7 @@ import CompilerHost from './compiler-host';
 const magicGlobalForRootCacheDir = '__electron_compile_root_cache_dir';
 const magicGlobalForAppRootDir = '__electron_compile_app_root_dir';
 
-const d = require('debug-electron')('electron-compile:initialize-renderer');
+const d = require('debug')('electron-compile:initialize-renderer');
 
 let rendererInitialized = false;
 

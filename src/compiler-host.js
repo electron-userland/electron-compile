@@ -9,7 +9,7 @@ import CompileCache from './compile-cache';
 import FileChangedCache from './file-change-cache';
 import ReadOnlyCompiler from './read-only-compiler';
 
-const d = require('debug-electron')('electron-compile:compiler-host');
+const d = require('debug')('electron-compile:compiler-host');
 
 require('./rig-mime-types').init();
 

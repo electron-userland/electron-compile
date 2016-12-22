@@ -55,7 +55,7 @@ export async function main(appDir, sourceDirs, cacheDir) {
   await compilerHost.saveConfiguration();
 }
 
-const d = require('debug-electron')('electron-compile');
+const d = require('debug')('electron-compile');
 
 const yargs = require('yargs')
   .usage('Usage: electron-compile --appdir [root-app-dir] paths...')

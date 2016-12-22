@@ -14,7 +14,7 @@ const validInputs = [
 const pfs = pify(fs);
 const InlineHtmlCompiler = global.compilersByMimeType['text/html'];
 
-const d = require('debug-electron')('test:inline-html-compiler');
+const d = require('debug')('test:inline-html-compiler');
 
 describe('The inline HTML compiler', function() {
   beforeEach(function() {
