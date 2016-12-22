@@ -13,6 +13,7 @@ For JavaScript:
 For CSS:
 
 * Less
+* Sass / SCSS
 * Stylus
 
 For HTML:
