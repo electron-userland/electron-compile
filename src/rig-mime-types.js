@@ -5,7 +5,9 @@ const typesToRig = {
   'text/tsx': 'tsx',
   'text/jade': 'jade',
   'text/cson': 'cson',
-  'text/stylus': 'styl'
+  'text/stylus': 'styl',
+  'text/sass': 'sass',
+  'text/scss': 'scss'
 };
 
 /**
