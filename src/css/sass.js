@@ -106,6 +106,9 @@ export default class SassCompiler extends CompilerBase {
   }
 
   getCompilerVersion() {
-    return require('@paulcbetts/node-sass/package.json').version;
+    // NB: There is a bizarre bug in the node module system where this doesn't 
+    // work but only in saveConfiguration tests
+    //return require('@paulcbetts/node-sass/package.json').version;
+    return "4.1.1";
   }
 }
