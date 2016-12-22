@@ -7,6 +7,13 @@ let cheerio = null;
 
 const d = require('debug')('electron-compile:inline-html');
 
+const compiledCSS = {
+  'text/less': true,
+  'text/scss': true,
+  'text/sass': true,
+  'text/stylus': true,
+};
+
 /**
  * @access private
  */
@@ -144,7 +151,7 @@ export default class InlineHtmlCompiler extends CompilerBase {
       // NB: In recent versions of Chromium, the link type MUST be text/css or
       // it will be flat-out ignored. Also I hate myself for hardcoding these.
       let type = $(el).attr('type');
-      if (type === 'text/less' || type === 'text/stylus') $(el).attr('type', 'text/css');
+      if (compiledCSS[type]) $(el).attr('type', 'text/css');
     });
 
     $('x-require').map((i, el) => {
@@ -235,7 +242,7 @@ export default class InlineHtmlCompiler extends CompilerBase {
       // NB: In recent versions of Chromium, the link type MUST be text/css or
       // it will be flat-out ignored. Also I hate myself for hardcoding these.
       let type = $(el).attr('type');
-      if (type === 'text/less' || type === 'text/stylus') $(el).attr('type', 'text/css');
+      if (compiledCSS[type]) $(el).attr('type', 'text/css');
     });
 
     $('x-require').map((i, el) => {
