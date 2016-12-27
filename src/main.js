@@ -8,6 +8,7 @@ const filenames = [
   'json/cson',
   'html/inline-html',
   'html/jade',
+  'html/vue',
   'passthrough'
 ];
 
