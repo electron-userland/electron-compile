@@ -7,8 +7,9 @@ let vueify = null;
 const d = require('debug')('electron-compile:vue');
 
 const mimeTypeToSimpleType = {
-  'application/coffeescript': 'coffee',
+  'text/coffeescript': 'coffee',
   'application/typescript': 'ts',
+  'application/javascript': 'js',
   'text/jade': 'jade',
   'text/less': 'less',
   'text/sass': 'sass',
@@ -92,7 +93,7 @@ export default class VueCompiler extends CompilerBase {
 
     Object.defineProperty(ret, 'syncCompilers', {
       get: () => {
-        asyncCompilers = syncCompilers || makeSyncCompilers();
+        syncCompilers = syncCompilers || makeSyncCompilers();
         return syncCompilers;
       }
     });
