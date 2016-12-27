@@ -28,9 +28,7 @@ export default class VueCompiler extends CompilerBase {
   }
 
   static createFromCompilers(compilersByMimeType) {
-    d(`Setting up inline HTML compilers: ${JSON.stringify(Object.keys(compilersByMimeType))}`);
-
-    let asyncCompilers = Object.keys(compilersByMimeType).reduce((acc, mimeType) => {
+    let makeAsyncCompilers = () => Object.keys(compilersByMimeType).reduce((acc, mimeType) => {
       let compiler = compilersByMimeType[mimeType];
 
       acc[mimeType] = async (content, cb, vueCompiler, filePath) => {
@@ -55,7 +53,7 @@ export default class VueCompiler extends CompilerBase {
       return acc;
     }, {});
 
-    let syncCompilers = Object.keys(compilersByMimeType).reduce((acc, mimeType) => {
+    let makeSyncCompilers = () => Object.keys(compilersByMimeType).reduce((acc, mimeType) => {
       let compiler = compilersByMimeType[mimeType];
 
       acc[mimeType] = (content, cb, vueCompiler, filePath) => {
@@ -80,7 +78,26 @@ export default class VueCompiler extends CompilerBase {
       return acc;
     }, {});
 
-    return new VueCompiler(asyncCompilers, syncCompilers);
+    // NB: This is super hacky but we have to defer building asyncCompilers
+    // and syncCompilers until compilersByMimeType is filled out
+    let ret = new VueCompiler(null, null);
+
+    let asyncCompilers, syncCompilers;
+    Object.defineProperty(ret, 'asyncCompilers', {
+      get: () => {
+        asyncCompilers = asyncCompilers || makeAsyncCompilers();
+        return asyncCompilers;
+      }
+    });
+
+    Object.defineProperty(ret, 'syncCompilers', {
+      get: () => {
+        asyncCompilers = syncCompilers || makeSyncCompilers();
+        return syncCompilers;
+      }
+    });
+
+    return ret;
   }
 
   static getInputMimeTypes() {
