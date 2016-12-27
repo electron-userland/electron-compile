@@ -54,7 +54,7 @@ export default class VueCompiler extends CompilerBase {
 
       return acc;
     }, {});
-    
+
     let syncCompilers = Object.keys(compilersByMimeType).reduce((acc, mimeType) => {
       let compiler = compilersByMimeType[mimeType];
 
@@ -127,7 +127,7 @@ export default class VueCompiler extends CompilerBase {
 
     let err,code;
     toutSuite(() => {
-      vueify.compiler.compile(sourceCode, filePath, this.syncCompilers, opts, (e,r) => {
+      vueify.compiler.compileNoGlobals(sourceCode, filePath, this.syncCompilers, opts, (e,r) => {
         if (e) { err = e; } else { code = r; }
       });
     });
