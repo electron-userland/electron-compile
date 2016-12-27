@@ -7,7 +7,13 @@ let vueify = null;
 const d = require('debug')('electron-compile:vue');
 
 const mimeTypeToSimpleType = {
+  'application/coffeescript': 'coffee',
   'application/typescript': 'ts',
+  'text/jade': 'jade',
+  'text/less': 'less',
+  'text/sass': 'sass',
+  'text/scss': 'scss',
+  'text/stylus': 'stylus',
 };
 
 /**
@@ -36,7 +42,7 @@ export default class VueCompiler extends CompilerBase {
           }
 
           let result = await compiler.compile(content, filePath, ctx);
-          cb(null, result);
+          cb(null, result.code);
           return;
         } catch (e) {
           cb(e);
@@ -61,7 +67,7 @@ export default class VueCompiler extends CompilerBase {
           }
 
           let result = compiler.compileSync(content, filePath, ctx);
-          cb(null, result);
+          cb(null, result.code);
           return;
         } catch (e) {
           cb(e);
@@ -92,12 +98,10 @@ export default class VueCompiler extends CompilerBase {
   async compile(sourceCode, filePath, compilerContext) {
     vueify = vueify || require('@paulcbetts/vueify');
 
-    let opts = Object.assign({}, {
-      customCompilers: this.asyncCompilers
-    }, this.compilerOptions);
+    let opts = Object.assign({}, this.compilerOptions);
 
     let code = await new Promise((res, rej) => {
-      vueify.compiler.compile(sourceCode, filePath, opts, (e,r) => {
+      vueify.compiler.compileNoGlobals(sourceCode, filePath, this.asyncCompilers, opts, (e,r) => {
         if (e) { rej(e); } else { res(r); }
       });
     });
@@ -119,13 +123,11 @@ export default class VueCompiler extends CompilerBase {
   compileSync(sourceCode, filePath, compilerContext) {
     vueify = vueify || require('@paulcbetts/vueify');
 
-    let opts = Object.assign({}, {
-      customCompilers: this.asyncCompilers
-    }, this.compilerOptions);
+    let opts = Object.assign({}, this.compilerOptions);
 
     let err,code;
     toutSuite(() => {
-      vueify.compiler.compile(sourceCode, filePath, opts, (e,r) => {
+      vueify.compiler.compile(sourceCode, filePath, this.syncCompilers, opts, (e,r) => {
         if (e) { err = e; } else { code = r; }
       });
     });
