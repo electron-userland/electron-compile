@@ -26,7 +26,8 @@ const expectedMimeTypeSpecialCases = {
   'text/css': 'text/css',
   'text/stylus': 'text/css',
   'text/scss': 'text/css',
-  'text/sass': 'text/css'
+  'text/sass': 'text/css',
+  'text/vue': 'application/javascript'
 };
 
 const mimeTypesWithoutSourceMapSupport = [
@@ -59,7 +60,19 @@ for (let mimeType of mimeTypesToTest) {
 
   describe(`The ${klass.name} class for ${mimeType}`, function() {
     beforeEach(function() {
-      this.fixture = new klass();
+      if ('createFromCompilers' in klass) {
+        let innerCompilers = Object.keys(global.compilersByMimeType).reduce((acc, x) => {
+          if ('createFromCompilers' in global.compilersByMimeType[x]) return acc;
+
+          acc[x] = new global.compilersByMimeType[x]();
+          if (x in compilerOptionsForMimeType) acc[x].compilerOptions = compilerOptionsForMimeType[x];
+          return acc;
+        }, {});
+
+        this.fixture = klass.createFromCompilers(innerCompilers);
+      } else {
+        this.fixture = new klass();
+      }
 
       if (mimeType in compilerOptionsForMimeType) {
         this.fixture.compilerOptions = compilerOptionsForMimeType[mimeType];

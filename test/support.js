@@ -23,3 +23,19 @@ global.compilersByMimeType = allCompilerClasses.reduce((acc,x) => {
 }, {});
 
 global.compilersByMimeType['text/css'] = global.compilersByMimeType['text/plain'];
+
+const VueCompiler = global.compilersByMimeType['text/vue'];
+class AutoCreatedVueCompiler extends VueCompiler {
+  constructor() {
+    let dummy = VueCompiler.createFromCompilers(Object.keys(global.compilersByMimeType).reduce((acc, x) => {
+      if ('createFromCompilers' in global.compilersByMimeType[x]) return acc;
+
+      acc[x] = new global.compilersByMimeType[x]();
+      return acc;
+    }, {}));
+
+    super(dummy.asyncCompilers, dummy.syncCompilers);
+  }
+}
+
+global.compilersByMimeType['text/vue'] = AutoCreatedVueCompiler;
