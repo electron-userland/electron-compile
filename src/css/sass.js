@@ -1,4 +1,6 @@
 import path from 'path';
+import toutSuite from 'toutsuite';
+
 import {CompilerBase} from '../compiler-base';
 
 const mimeTypes = ['text/sass', 'text/scss'];
@@ -12,7 +14,7 @@ export default class SassCompiler extends CompilerBase {
     super();
 
     this.compilerOptions = {
-      sourceComments: true,
+      comments: true,
       sourceMapEmbed: true,
       sourceMapContents: true
     };
@@ -33,7 +35,7 @@ export default class SassCompiler extends CompilerBase {
   }
 
   async compile(sourceCode, filePath, compilerContext) {
-    sass = sass || require('@paulcbetts/node-sass');
+    sass = sass || require('sass.js/dist/sass.node').Sass;
 
     let thisPath = path.dirname(filePath);
     this.seenFilePaths[thisPath] = true;
@@ -47,21 +49,24 @@ export default class SassCompiler extends CompilerBase {
     paths.unshift('.');
 
     let opts = Object.assign({}, this.compilerOptions, {
-      data: sourceCode,
       indentedSyntax: filePath.match(/\.sass$/i),
       sourceMapRoot: filePath,		
-      includePaths: paths,
-      filename: path.basename(filePath)
     });
 
     let result = await new Promise((res,rej) => {
-      sass.render(opts, (e,r) => {
-        if (e) { rej(e); } else { res(r); }
+      sass.compile(sourceCode, opts, (r) => {
+        if (r.status !== 0) {
+          rej(new Error(r.formatted));
+          return;
+        }
+
+        res(r);
+        return;
       });
     });
 
     return {
-      code: result.css.toString('utf8'),
+      code: result.text,
       mimeType: 'text/css'
     };
   }
@@ -75,7 +80,7 @@ export default class SassCompiler extends CompilerBase {
   }
 
   compileSync(sourceCode, filePath, compilerContext) {
-    sass = sass || require('@paulcbetts/node-sass');
+    sass = sass || require('sass.js/dist/sass.node').Sass;
 
     let thisPath = path.dirname(filePath);
     this.seenFilePaths[thisPath] = true;
@@ -89,20 +94,24 @@ export default class SassCompiler extends CompilerBase {
     paths.unshift('.');
 
     let opts = Object.assign({}, this.compilerOptions, {
-      data: sourceCode,
       indentedSyntax: filePath.match(/\.sass$/i),
       sourceMapRoot: filePath,		
-      includePaths: paths,
-      filename: path.basename(filePath)
     });
 
-    let result = sass.renderSync(opts);
+    let result;
+    toutSuite(() => {
+      sass.compile(sourceCode, opts, (r) => {
+        if (r.status !== 0) {
+          throw new Error(r.formatted);
+        }
+        result = r;
+      });
+    });
 
     return {
-      code: result.css.toString('utf8'),
+      code: result.text,
       mimeType: 'text/css'
     };
-  
   }
 
   getCompilerVersion() {
