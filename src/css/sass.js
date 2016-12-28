@@ -14,7 +14,7 @@ export default class SassCompiler extends CompilerBase {
     super();
 
     this.compilerOptions = {
-      sourceComments: true,
+      comments: true,
       sourceMapEmbed: true,
       sourceMapContents: true
     };
@@ -49,11 +49,8 @@ export default class SassCompiler extends CompilerBase {
     paths.unshift('.');
 
     let opts = Object.assign({}, this.compilerOptions, {
-      data: sourceCode,
       indentedSyntax: filePath.match(/\.sass$/i),
       sourceMapRoot: filePath,		
-      includePaths: paths,
-      filename: path.basename(filePath)
     });
 
     let result = await new Promise((res,rej) => {
@@ -97,11 +94,8 @@ export default class SassCompiler extends CompilerBase {
     paths.unshift('.');
 
     let opts = Object.assign({}, this.compilerOptions, {
-      data: sourceCode,
       indentedSyntax: filePath.match(/\.sass$/i),
       sourceMapRoot: filePath,		
-      includePaths: paths,
-      filename: path.basename(filePath)
     });
 
     let result;
