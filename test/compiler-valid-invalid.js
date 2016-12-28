@@ -33,7 +33,9 @@ const expectedMimeTypeSpecialCases = {
 const mimeTypesWithoutSourceMapSupport = [
   'text/jade',
   'text/cson',
-  'text/css'
+  'text/css',
+  'text/sass',
+  'text/scss'
 ];
 
 const compilerOptionsForMimeType = {
