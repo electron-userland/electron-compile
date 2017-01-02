@@ -236,6 +236,16 @@ export default class CompilerHost {
       this.getPassthroughCompiler() :
       this.compilersByMimeType[type || '__lolnothere'];
 
+
+    // NB: We don't put this into shouldPassthrough because Inline HTML
+    // compiler is technically of type finalForms (i.e. a browser can
+    // natively handle this content), yet its compiler is 
+    // InlineHtmlCompiler. However, we still want to catch standard CSS files
+    // which will be processed by PassthroughCompiler.
+    if (finalForms[type] && !compiler) {
+      compiler = this.getPassthroughCompiler();
+    }
+
     if (!compiler) {
       compiler = this.fallbackCompiler;
 
@@ -464,6 +474,15 @@ export default class CompilerHost {
     let compiler = CompilerHost.shouldPassthrough(hashInfo) ?
       this.getPassthroughCompiler() :
       this.compilersByMimeType[type || '__lolnothere'];
+
+    // NB: We don't put this into shouldPassthrough because Inline HTML
+    // compiler is technically of type finalForms (i.e. a browser can
+    // natively handle this content), yet its compiler is 
+    // InlineHtmlCompiler. However, we still want to catch standard CSS files
+    // which will be processed by PassthroughCompiler.
+    if (finalForms[type] && !compiler) {
+      compiler = this.getPassthroughCompiler();
+    }
 
     if (!compiler) {
       compiler = this.fallbackCompiler;
