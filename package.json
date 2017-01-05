@@ -26,7 +26,6 @@
   },
   "dependencies": {
     "@paulcbetts/mime-types": "^2.1.10",
-    "@paulcbetts/typescript-simple": "^6.0.0",
     "@paulcbetts/vueify": "9.4.3",
     "babel-core": "^6.13.2",
     "babel-preset-es2015": "^6.13.2",
@@ -43,7 +42,8 @@
     "sass.js": "^0.10.1",
     "stylus": "^0.54.5",
     "toutsuite": "^0.6.0",
-    "typescript": "~2.1.4"
+    "typescript": "~2.1.4",
+    "typescript-simple": "^6.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.11.4",

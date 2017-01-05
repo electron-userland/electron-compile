@@ -24,7 +24,7 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
   }
 
   compileSync(sourceCode, filePath) {
-    tss = tss || require('@paulcbetts/typescript-simple');
+    tss = tss || require('typescript-simple');
     ts = ts || require('typescript');
 
     // NB: If you enable semantic checks with TSX, you're gonna have a
