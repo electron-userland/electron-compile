@@ -43,7 +43,7 @@
     "stylus": "^0.54.5",
     "toutsuite": "^0.6.0",
     "typescript": "~2.1.4",
-    "typescript-simple": "^6.0.0"
+    "typescript-simple": "^7.0.2"
   },
   "devDependencies": {
     "babel-cli": "^6.11.4",
