@@ -24,13 +24,15 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
   }
 
   compileSync(sourceCode, filePath) {
-    tss = tss || require('@paulcbetts/typescript-simple');
+    tss = tss || require('typescript-simple');
     ts = ts || require('typescript');
 
     // NB: If you enable semantic checks with TSX, you're gonna have a
     //     Bad Time
     let extraOpts = {target: ts.ScriptTarget.ES6};
     let isJsx = false;
+    let isTs = filePath.match(/\.ts$/i);
+
     if (filePath.match(/\.tsx$/i)) {
       extraOpts.jsx = ts.JsxEmit.React;
       isJsx = true;
@@ -41,10 +43,17 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
       Object.assign({}, this.compilerOptions, extraOpts),
       this.compilerOptions.doSemanticChecks && !isJsx);
 
-    return {
-      code: compiler.compile(sourceCode, path.basename(filePath)),
-      mimeType: 'application/javascript'
-    };
+    // NB: If we pass a filePath that is not a TypeScript file (i.e. we are
+    // compiling the script block inside a Vue component), TypeScript will barf
+    // attempting to find this file, even when it has a fully-qualified path.
+    let code;
+    if (isTs) {
+      code = compiler.compile(sourceCode, path.basename(filePath));
+    } else {
+      code = compiler.compile(sourceCode);
+    }
+
+    return { code, mimeType: 'application/javascript' };
   }
 
   getCompilerVersion() {
