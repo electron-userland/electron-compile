@@ -8,7 +8,7 @@ const d = require('debug')('electron-compile:vue');
 
 const mimeTypeToSimpleType = {
   'text/coffeescript': 'coffee',
-  'application/typescript': 'ts',
+  'text/typescript': 'ts',
   'application/javascript': 'js',
   'text/jade': 'jade',
   'text/less': 'less',
