@@ -2,7 +2,8 @@ import {SimpleCompilerBase} from '../compiler-base';
 import path from 'path';
 
 const inputMimeTypes = ['text/typescript', 'text/tsx'];
-let tss = null;
+const d = require('debug')('electron-compile:typescript-compiler');
+
 let ts = null;
 
 /**
@@ -12,10 +13,10 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
   constructor() {
     super();
 
+    this.outMimeType = 'application/javascript';
     this.compilerOptions = {
-      module: 'commonjs',
-      sourceMap: true,
-      doSemanticChecks: true
+      inlineSourceMap: true,
+      inlineSources: true
     };
   }
 
@@ -23,37 +24,35 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
     return inputMimeTypes;
   }
 
+  _getParsedConfigOptions(tsCompiler) {
+    let parsedConfig = this.parsedConfig;
+    if (!parsedConfig) {
+      const results = tsCompiler.convertCompilerOptionsFromJson(this.compilerOptions);
+      if (results.errors && results.errors.length) {
+        throw new Error(results.errors);
+      }
+      parsedConfig = this.parsedConfig = results.options;
+    }
+    return parsedConfig;
+  }
+
   compileSync(sourceCode, filePath) {
-    tss = tss || require('typescript-simple');
     ts = ts || require('typescript');
+    const options = this._getParsedConfigOptions(ts);
 
-    // NB: If you enable semantic checks with TSX, you're gonna have a
-    //     Bad Time
-    let extraOpts = {target: ts.ScriptTarget.ES6};
-    let isJsx = false;
-    let isTs = filePath.match(/\.ts$/i);
+    const transpileOptions = {
+      compilerOptions: options,
+      fileName: filePath.match(/\.(ts|tsx)$/i) ? path.basename(filePath) : null
+    };
 
-    if (filePath.match(/\.tsx$/i)) {
-      extraOpts.jsx = ts.JsxEmit.React;
-      isJsx = true;
-    }
+    const output = ts.transpileModule(sourceCode, transpileOptions);
 
-    // NB: Work around TypeScriptSimple modifying the options object
-    let compiler = new tss.TypeScriptSimple(
-      Object.assign({}, this.compilerOptions, extraOpts),
-      this.compilerOptions.doSemanticChecks && !isJsx);
+    d(output.diagnostics);
 
-    // NB: If we pass a filePath that is not a TypeScript file (i.e. we are
-    // compiling the script block inside a Vue component), TypeScript will barf
-    // attempting to find this file, even when it has a fully-qualified path.
-    let code;
-    if (isTs) {
-      code = compiler.compile(sourceCode, path.basename(filePath));
-    } else {
-      code = compiler.compile(sourceCode);
-    }
-
-    return { code, mimeType: 'application/javascript' };
+    return {
+      code: output.outputText,
+      mimeType: this.outMimeType
+    };
   }
 
   getCompilerVersion() {
