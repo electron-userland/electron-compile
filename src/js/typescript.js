@@ -29,7 +29,7 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
     if (!parsedConfig) {
       const results = tsCompiler.convertCompilerOptionsFromJson(this.compilerOptions);
       if (results.errors && results.errors.length) {
-        throw new Error(results.errors);
+        throw new Error(JSON.stringify(results.errors));
       }
       parsedConfig = this.parsedConfig = results.options;
     }
