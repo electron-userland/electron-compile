@@ -15,7 +15,7 @@ export default class CSONCompiler extends SimpleCompilerBase {
     return inputMimeTypes;
   }
 
-  compileSync(sourceCode, filePath) {
+  compileSync(sourceCode, filePath) { // eslint-disable-line no-unused-vars
     CSON = CSON || require('cson');
 
     let result = CSON.parse(sourceCode);

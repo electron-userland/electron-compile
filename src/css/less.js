@@ -24,7 +24,7 @@ export default class LessCompiler extends CompilerBase {
     return mimeTypes;
   }
 
-  async shouldCompileFile(fileName, compilerContext) {
+  async shouldCompileFile(fileName, compilerContext) { // eslint-disable-line no-unused-vars
     return true;
   }
 
@@ -32,7 +32,7 @@ export default class LessCompiler extends CompilerBase {
     return this.determineDependentFilesSync(sourceCode, filePath, compilerContext);
   }
 
-  async compile(sourceCode, filePath, compilerContext) {
+  async compile(sourceCode, filePath, compilerContext) { // eslint-disable-line no-unused-vars
     lessjs = lessjs || this.getLess();
 
     let thisPath = path.dirname(filePath);
@@ -66,11 +66,11 @@ export default class LessCompiler extends CompilerBase {
     };
   }
 
-  shouldCompileFileSync(fileName, compilerContext) {
+  shouldCompileFileSync(fileName, compilerContext) { // eslint-disable-line no-unused-vars
     return true;
   }
 
-  determineDependentFilesSync(sourceCode, filePath, compilerContext) {
+  determineDependentFilesSync(sourceCode, filePath, compilerContext) { // eslint-disable-line no-unused-vars
     let dependencyFilenames = detective(sourceCode);
     let dependencies = [];
 
@@ -81,7 +81,7 @@ export default class LessCompiler extends CompilerBase {
     return dependencies;
   }
 
-  compileSync(sourceCode, filePath, compilerContext) {
+  compileSync(sourceCode, filePath, compilerContext) { // eslint-disable-line no-unused-vars
     lessjs = lessjs || this.getLess();
 
     let source;

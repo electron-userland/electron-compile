@@ -65,11 +65,11 @@ export default class InlineHtmlCompiler extends CompilerBase {
     return inputMimeTypes;
   }
 
-  async shouldCompileFile(fileName, compilerContext) {
+  async shouldCompileFile(fileName, compilerContext) { // eslint-disable-line no-unused-vars
     return true;
   }
 
-  async determineDependentFiles(sourceCode, filePath, compilerContext) {
+  async determineDependentFiles(sourceCode, filePath, compilerContext) { // eslint-disable-line no-unused-vars
     return [];
   }
 
@@ -178,11 +178,11 @@ export default class InlineHtmlCompiler extends CompilerBase {
     };
   }
 
-  shouldCompileFileSync(fileName, compilerContext) {
+  shouldCompileFileSync(fileName, compilerContext) { // eslint-disable-line no-unused-vars
     return true;
   }
 
-  determineDependentFilesSync(sourceCode, filePath, compilerContext) {
+  determineDependentFilesSync(sourceCode, filePath, compilerContext) { // eslint-disable-line no-unused-vars
     return [];
   }
 
