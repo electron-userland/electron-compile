@@ -41,9 +41,7 @@
     "rimraf": "^2.5.4",
     "sass.js": "^0.10.1",
     "stylus": "^0.54.5",
-    "toutsuite": "^0.6.0"
-  },
-  "peerDependencies": {
+    "toutsuite": "^0.6.0",
     "typescript": ">=1.6"
   },
   "devDependencies": {
