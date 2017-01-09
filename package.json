@@ -6,6 +6,7 @@
   "scripts": {
     "doc": "esdoc -c ./esdoc.json",
     "compile": "git clean -xdf lib && babel -d lib/ src/",
+    "lint": "eslint src",
     "prepublish": "npm run compile"
   },
   "repository": {
