@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 import toutSuite from 'toutsuite';
 
 import {CompilerBase} from '../compiler-base';
@@ -48,15 +49,21 @@ export default class SassCompiler extends CompilerBase {
 
     paths.unshift('.');
 
+    const { includePaths } = this.compilerOptions
+    if (includePaths) {
+      sass.importer(this.buildImporterCallback(includePaths))
+      delete this.compilerOptions.includePaths;
+    }
+
     let opts = Object.assign({}, this.compilerOptions, {
       indentedSyntax: filePath.match(/\.sass$/i),
-      sourceMapRoot: filePath,		
+      sourceMapRoot: filePath,
     });
 
     let result = await new Promise((res,rej) => {
       sass.compile(sourceCode, opts, (r) => {
         if (r.status !== 0) {
-          rej(new Error(r.formatted));
+          rej(new Error(r.formatted || r.message));
           return;
         }
 
@@ -93,9 +100,15 @@ export default class SassCompiler extends CompilerBase {
 
     paths.unshift('.');
 
+    const { includePaths } = this.compilerOptions
+    if (includePaths) {
+      sass.importer(this.buildImporterCallback(includePaths))
+      delete this.compilerOptions.includePaths;
+    }
+
     let opts = Object.assign({}, this.compilerOptions, {
       indentedSyntax: filePath.match(/\.sass$/i),
-      sourceMapRoot: filePath,		
+      sourceMapRoot: filePath,
     });
 
     let result;
@@ -114,8 +127,40 @@ export default class SassCompiler extends CompilerBase {
     };
   }
 
+  buildImporterCallback (includePaths) {
+    const resolvedIncludePaths = includePaths.map((includePath) =>
+      path.resolve(process.cwd(), includePath)
+    );
+
+    return (function (request, done) {
+      let file
+      if (request.file) {
+        done();
+      } else {
+        // sass.js works in the '/sass/' directory
+        const cleanedRequestPath = request.resolved.replace(/^\/sass\//, '');
+        for (let includePath of includePaths) {
+          const filePath = path.resolve(includePath, cleanedRequestPath);
+          const validator = (file) => {
+            const stat = fs.statSync(file);
+            if (!stat.isFile()) throw new Error(`${file} is not a file`);
+          };
+          file = sass.findPathVariation(validator, filePath);
+          if (file) {
+            const content = fs.readFileSync(file, { encoding: 'utf8' });
+            return sass.writeFile(file, content, () => {
+              done({ path: file })
+            });
+          }
+        }
+
+        if (!file) done();
+      }
+    });
+  }
+
   getCompilerVersion() {
-    // NB: There is a bizarre bug in the node module system where this doesn't 
+    // NB: There is a bizarre bug in the node module system where this doesn't
     // work but only in saveConfiguration tests
     //return require('@paulcbetts/node-sass/package.json').version;
     return "4.1.1";
