@@ -49,9 +49,9 @@ export default class SassCompiler extends CompilerBase {
 
     paths.unshift('.');
 
-    const { includePaths } = this.compilerOptions
+    const { includePaths } = this.compilerOptions;
     if (includePaths) {
-      sass.importer(this.buildImporterCallback(includePaths))
+      sass.importer(this.buildImporterCallback(includePaths));
       delete this.compilerOptions.includePaths;
     }
 
@@ -100,9 +100,9 @@ export default class SassCompiler extends CompilerBase {
 
     paths.unshift('.');
 
-    const { includePaths } = this.compilerOptions
+    const { includePaths } = this.compilerOptions;
     if (includePaths) {
-      sass.importer(this.buildImporterCallback(includePaths))
+      sass.importer(this.buildImporterCallback(includePaths));
       delete this.compilerOptions.includePaths;
     }
 
@@ -130,9 +130,10 @@ export default class SassCompiler extends CompilerBase {
   buildImporterCallback (includePaths) {
     const self = this;
     return (function (request, done) {
-      let file
+      let file;
       if (request.file) {
         done();
+        return;
       } else {
         // sass.js works in the '/sass/' directory
         const cleanedRequestPath = request.resolved.replace(/^\/sass\//, '');
@@ -147,12 +148,16 @@ export default class SassCompiler extends CompilerBase {
           if (file) {
             const content = fs.readFileSync(file, { encoding: 'utf8' });
             return sass.writeFile(file, content, () => {
-              done({ path: file })
+              done({ path: file });
+              return;
             });
           }
         }
 
-        if (!file) done();
+        if (!file) {
+          done();
+          return;
+        }
       }
     });
   }
@@ -172,18 +177,21 @@ export default class SassCompiler extends CompilerBase {
 
   fixWindowsPath(file) {
     // Unfortunately, there's a bug in sass.js that seems to ignore the different
-    // path separators across platforms. We need to fix this.
+    // path separators across platforms
+
+    // For some reason, some files have a leading slash that we need to get rid of
     if (process.platform === 'win32' && file[0] === '/') {
       file = file.slice(1);
     }
 
+    // Sass.js generates paths such as `_C:\myPath\file.sass` instead of `C:\myPath\_file.sass`
     if (file[0] === '_') {
       const parts = file.slice(1).split(path.sep);
       const dir = parts.slice(0, -1).join(path.sep);
       const fileName = parts.reverse()[0];
       file = path.resolve(dir, '_' + fileName);
     }
-    return file
+    return file;
   }
 
   getCompilerVersion() {
