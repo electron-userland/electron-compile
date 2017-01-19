@@ -25,6 +25,13 @@ export default class FileChangedCache {
     this.changeCache = {};
   }
 
+  static removePrefix(needle, haystack) {
+    let idx = haystack.toLowerCase().indexOf(needle.toLowerCase());
+    if (idx < 0) return haystack;
+
+    return haystack.substring(idx + needle.length);
+  }
+
   /**
    * Allows you to create a FileChangedCache from serialized data saved from
    * {@link getSavedData}.
@@ -88,14 +95,15 @@ export default class FileChangedCache {
    */
   async getHashForPath(absoluteFilePath) {
     let cacheKey = sanitizeFilePath(absoluteFilePath);
+
     if (this.appRoot) {
-      cacheKey = cacheKey.replace(this.appRoot, '');
+      cacheKey = FileChangedCache.removePrefix(this.appRoot, cacheKey);
     }
 
     // NB: We do this because x-require will include an absolute path from the
     // original built app and we need to still grok it
     if (this.originalAppRoot) {
-      cacheKey = cacheKey.replace(this.originalAppRoot, '');
+      cacheKey = FileChangedCache.removePrefix(this.originalAppRoot, cacheKey);
     }
 
     let cacheEntry = this.changeCache[cacheKey];
@@ -185,18 +193,15 @@ export default class FileChangedCache {
 
   getHashForPathSync(absoluteFilePath) {
     let cacheKey = sanitizeFilePath(absoluteFilePath);
+
     if (this.appRoot) {
-      cacheKey = cacheKey.replace(this.appRoot, '');
+      cacheKey = FileChangedCache.removePrefix(this.appRoot, cacheKey);
     }
 
     // NB: We do this because x-require will include an absolute path from the
     // original built app and we need to still grok it
     if (this.originalAppRoot) {
-      cacheKey = cacheKey.replace(this.originalAppRoot, '');
-    }
-
-    if (this.realAppRoot) {
-      cacheKey = cacheKey.replace(this.realAppRoot, '');
+      cacheKey = FileChangedCache.removePrefix(this.originalAppRoot, cacheKey);
     }
 
     let cacheEntry = this.changeCache[cacheKey];
