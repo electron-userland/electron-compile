@@ -38,6 +38,10 @@ const mimeTypesWithoutSourceMapSupport = [
   'text/scss'
 ];
 
+const mimeTypesWithDependentFilesSupport = [
+  'text/less'
+];
+
 const compilerOptionsForMimeType = {
   'application/javascript': {
     "presets": ["es2016-node5"],
@@ -122,5 +126,17 @@ for (let mimeType of mimeTypesToTest) {
       let result = this.fixture.compile(source, input, ctx);
       expect(result).to.eventually.throw();
     });
+
+    if (mimeTypesWithDependentFilesSupport.includes(mimeType)) {
+      it(`should return a non-empty array of dependent files if a file has dependencies`, async function() {
+        let ext = mimeTypes.extension(mimeType);
+        let input = path.join(__dirname, '..', 'test', 'fixtures', `file-with-dependencies.${ext}`);
+
+        let ctx = {};
+        let source = await pfs.readFile(input, 'utf8');
+        let dependentFiles = await this.fixture.determineDependentFiles(source, input, ctx);
+        expect(dependentFiles).to.have.length.above(0);
+      });
+    }
   });
 }
