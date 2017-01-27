@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 import toutSuite from 'toutsuite';
 
 import {CompilerBase} from '../compiler-base';
@@ -48,15 +49,21 @@ export default class SassCompiler extends CompilerBase {
 
     paths.unshift('.');
 
+    const { includePaths } = this.compilerOptions;
+    if (includePaths) {
+      sass.importer(this.buildImporterCallback(includePaths));
+      delete this.compilerOptions.includePaths;
+    }
+
     let opts = Object.assign({}, this.compilerOptions, {
       indentedSyntax: filePath.match(/\.sass$/i),
-      sourceMapRoot: filePath,		
+      sourceMapRoot: filePath,
     });
 
     let result = await new Promise((res,rej) => {
       sass.compile(sourceCode, opts, (r) => {
         if (r.status !== 0) {
-          rej(new Error(r.formatted));
+          rej(new Error(r.formatted || r.message));
           return;
         }
 
@@ -93,9 +100,15 @@ export default class SassCompiler extends CompilerBase {
 
     paths.unshift('.');
 
+    const { includePaths } = this.compilerOptions;
+    if (includePaths) {
+      sass.importer(this.buildImporterCallback(includePaths));
+      delete this.compilerOptions.includePaths;
+    }
+
     let opts = Object.assign({}, this.compilerOptions, {
       indentedSyntax: filePath.match(/\.sass$/i),
-      sourceMapRoot: filePath,		
+      sourceMapRoot: filePath,
     });
 
     let result;
@@ -114,8 +127,75 @@ export default class SassCompiler extends CompilerBase {
     };
   }
 
+  buildImporterCallback (includePaths) {
+    const self = this;
+    return (function (request, done) {
+      let file;
+      if (request.file) {
+        done();
+        return;
+      } else {
+        // sass.js works in the '/sass/' directory
+        const cleanedRequestPath = request.resolved.replace(/^\/sass\//, '');
+        for (let includePath of includePaths) {
+          const filePath = path.resolve(includePath, cleanedRequestPath);
+          let variations = sass.getPathVariations(filePath);
+
+          file = variations
+            .map(self.fixWindowsPath.bind(self))
+            .reduce(self.importedFileReducer.bind(self), null);
+
+          if (file) {
+            const content = fs.readFileSync(file, { encoding: 'utf8' });
+            return sass.writeFile(file, content, () => {
+              done({ path: file });
+              return;
+            });
+          }
+        }
+
+        if (!file) {
+          done();
+          return;
+        }
+      }
+    });
+  }
+
+  importedFileReducer(found, path) {
+    // Find the first variation that actually exists
+    if (found) return found;
+
+    try {
+      const stat = fs.statSync(path);
+      if (!stat.isFile()) return null;
+      return path;
+    } catch(e) {
+      return null;
+    }
+  }
+
+  fixWindowsPath(file) {
+    // Unfortunately, there's a bug in sass.js that seems to ignore the different
+    // path separators across platforms
+
+    // For some reason, some files have a leading slash that we need to get rid of
+    if (process.platform === 'win32' && file[0] === '/') {
+      file = file.slice(1);
+    }
+
+    // Sass.js generates paths such as `_C:\myPath\file.sass` instead of `C:\myPath\_file.sass`
+    if (file[0] === '_') {
+      const parts = file.slice(1).split(path.sep);
+      const dir = parts.slice(0, -1).join(path.sep);
+      const fileName = parts.reverse()[0];
+      file = path.resolve(dir, '_' + fileName);
+    }
+    return file;
+  }
+
   getCompilerVersion() {
-    // NB: There is a bizarre bug in the node module system where this doesn't 
+    // NB: There is a bizarre bug in the node module system where this doesn't
     // work but only in saveConfiguration tests
     //return require('@paulcbetts/node-sass/package.json').version;
     return "4.1.1";
