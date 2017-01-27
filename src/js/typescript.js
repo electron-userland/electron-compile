@@ -49,9 +49,15 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
 
     d(output.diagnostics);
 
+    let sourceMaps;
+    if (output.sourceMapText) {
+      sourceMaps = output.sourceMapText;
+    }
+
     return {
       code: output.outputText,
-      mimeType: this.outMimeType
+      mimeType: this.outMimeType,
+      sourceMaps
     };
   }
 

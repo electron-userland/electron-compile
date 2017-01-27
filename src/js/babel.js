@@ -75,10 +75,19 @@ export default class BabelCompiler extends CompilerBase {
       let presets = this.attemptToPreload(opts.presets, 'preset');
       if (presets && presets.length === opts.presets.length) opts.presets = presets;
     }
+    const output = babel.transform(sourceCode, opts);
+    const sourceMapObject = output.map;
+
+    let sourceMaps;
+    if (sourceMapObject) {
+      sourceMapObject.sourcesContent && delete sourceMapObject.sourcesContent;
+      sourceMaps = JSON.stringify(sourceMapObject);
+    }
 
     return {
-      code: babel.transform(sourceCode, opts).code,
-      mimeType: 'application/javascript'
+      code: output.code,
+      mimeType: 'application/javascript',
+      sourceMaps
     };
   }
 
