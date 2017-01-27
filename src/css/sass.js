@@ -49,11 +49,7 @@ export default class SassCompiler extends CompilerBase {
 
     paths.unshift('.');
 
-    const { includePaths } = this.compilerOptions;
-    if (includePaths) {
-      sass.importer(this.buildImporterCallback(includePaths));
-      delete this.compilerOptions.includePaths;
-    }
+    sass.importer(this.buildImporterCallback(paths));
 
     let opts = Object.assign({}, this.compilerOptions, {
       indentedSyntax: filePath.match(/\.sass$/i),
@@ -99,12 +95,7 @@ export default class SassCompiler extends CompilerBase {
     }
 
     paths.unshift('.');
-
-    const { includePaths } = this.compilerOptions;
-    if (includePaths) {
-      sass.importer(this.buildImporterCallback(includePaths));
-      delete this.compilerOptions.includePaths;
-    }
+    sass.importer(this.buildImporterCallback(paths));
 
     let opts = Object.assign({}, this.compilerOptions, {
       indentedSyntax: filePath.match(/\.sass$/i),
