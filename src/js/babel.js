@@ -4,7 +4,6 @@ import {CompilerBase} from '../compiler-base';
 const mimeTypes = ['text/jsx', 'application/javascript'];
 let babel = null;
 
-
 /**
  * @access private
  */
@@ -57,7 +56,7 @@ export default class BabelCompiler extends CompilerBase {
     return null;
   }
 
-  async compile(sourceCode, filePath, compilerContext) {
+  transformCode(sourceCode, filePath) {
     babel = babel || require('babel-core');
 
     let opts = Object.assign({}, this.compilerOptions, {
@@ -91,6 +90,10 @@ export default class BabelCompiler extends CompilerBase {
     };
   }
 
+  async compile(sourceCode, filePath, compilerContext) {
+    return this.transformCode(sourceCode, filePath);
+  }
+
   shouldCompileFileSync(fileName, compilerContext) {
     return true;
   }
@@ -100,28 +103,7 @@ export default class BabelCompiler extends CompilerBase {
   }
 
   compileSync(sourceCode, filePath, compilerContext) {
-    babel = babel || require('babel-core');
-
-    let opts = Object.assign({}, this.compilerOptions, {
-      filename: filePath,
-      ast: false,
-      babelrc: false
-    });
-
-    if ('plugins' in opts) {
-      let plugins = this.attemptToPreload(opts.plugins, 'plugin');
-      if (plugins && plugins.length === opts.plugins.length) opts.plugins = plugins;
-    }
-
-    if ('presets' in opts) {
-      let presets = this.attemptToPreload(opts.presets, 'preset');
-      if (presets && presets.length === opts.presets.length) opts.presets = presets;
-    }
-
-    return {
-      code: babel.transform(sourceCode, opts).code,
-      mimeType: 'application/javascript'
-    };
+    return this.transformCode(sourceCode, filePath);
   }
 
   getCompilerVersion() {
