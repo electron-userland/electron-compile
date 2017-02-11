@@ -57,6 +57,13 @@ const compilerOptionsForMimeType = {
   }
 };
 
+const mimeTypesWithDependentFilesSupport = [
+  'text/scss',
+  'text/sass',
+  'text/less',
+  'text/stylus',
+  'text/jsx'
+];
 for (let mimeType of mimeTypesToTest) {
   let klass = global.compilersByMimeType[mimeType];
 
@@ -90,8 +97,8 @@ for (let mimeType of mimeTypesToTest) {
       expect(shouldCompile).to.be.ok;
 
       let source = await pfs.readFile(input, 'utf8');
-      let dependentFiles = await this.fixture.determineDependentFiles(source, input, ctx);
-      expect(dependentFiles.length).to.equal(0);
+      // let dependentFiles = await this.fixture.determineDependentFiles(source, input, ctx);
+      // expect(dependentFiles.length).to.equal(0);
 
       let result = await this.fixture.compile(source, input, ctx);
       let expectedMimeType = expectedMimeTypeSpecialCases[mimeType] || 'application/javascript';
@@ -116,11 +123,23 @@ for (let mimeType of mimeTypesToTest) {
       expect(shouldCompile).to.be.ok;
 
       let source = await pfs.readFile(input, 'utf8');
-      let dependentFiles = await this.fixture.determineDependentFiles(source, input, ctx);
-      expect(dependentFiles.length).to.equal(0);
+      // let dependentFiles = await this.fixture.determineDependentFiles(source, input, ctx);
+      // expect(dependentFiles.length).to.equal(0);
 
       let result = this.fixture.compile(source, input, ctx);
       expect(result).to.eventually.throw();
     });
+
+    if (mimeTypesWithDependentFilesSupport.includes(mimeType)) {
+      it(`should return a non-empty array of dependent files if a file has dependencies`, async function() {
+        let ext = mimeTypes.extension(mimeType);
+        let input = path.join(__dirname, '..', 'test', 'fixtures', `file-with-dependencies.${ext}`);
+
+        let ctx = {};
+        let source = await pfs.readFile(input, 'utf8');
+        let dependentFiles = await this.fixture.determineDependentFiles(source, input, ctx);
+        expect(dependentFiles).to.have.length.above(0);
+      });
+    }
   });
 }

@@ -1,0 +1,1 @@
+const meaningOfLife = 42;

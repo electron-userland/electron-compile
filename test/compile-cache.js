@@ -35,7 +35,8 @@ describe('The compile cache', function() {
       
       let code = hashInfo.sourceCode || await pfs.readFile(filePath, 'utf8');
       let mimeType = 'application/javascript';
-      return { code, mimeType };
+      let dependentFiles = []
+      return { code, mimeType, dependentFiles };
     };
     
     let result = await this.fixture.getOrFetch(inputFile, fetcher);
@@ -162,5 +163,89 @@ describe('The compile cache', function() {
     
     expect(callCount).to.equal(2);
     expect(weBlewUpCount).to.equal(2);
+  });
+
+  it('should re-compile a file if one of its dependencies have changed', async function() {
+    let callCount = 0;
+    let inputFile = path.resolve(__dirname, 'fixtures', 'file-with-dependencies.scss');
+    let dependencyPath = path.resolve(__dirname, 'fixtures', '_partial.scss');
+    let dependencyCode = await pfs.readFile(dependencyPath);
+
+    let fetcher = function(filePath, hashInfo) {
+      callCount++;
+
+      let code = hashInfo.sourceCode || fs.readFileSync(filePath, 'utf8');
+      let mimeType = 'text/scss';
+      let dependentFiles = [
+        dependencyPath
+      ];
+
+      return { code, mimeType, dependentFiles };
+    };
+
+    let result = await this.fixture.getOrFetch(inputFile, fetcher);
+
+    expect(result.mimeType).to.equal('text/scss');
+    expect(result.code.length > 10).to.be.ok;
+    expect(callCount).to.equal(1);
+
+    // Try it again - make sure it doesn't run the fetcher
+    result = await this.fixture.getOrFetch(inputFile, fetcher);
+
+    expect(result.mimeType).to.equal('text/scss');
+    expect(result.code.length > 10).to.be.ok;
+    expect(callCount).to.equal(1);
+
+    // Change a dependency
+    await pfs.writeFile(dependencyPath, '$background: red;');
+    result = await this.fixture.getOrFetch(inputFile, fetcher);
+
+    expect(result.mimeType).to.equal('text/scss');
+    expect(result.code.length > 10).to.be.ok;
+    expect(callCount).to.equal(2);
+
+    await pfs.writeFile(dependencyPath, dependencyCode);
+  });
+
+  it('should re-compile a file if one of its nested dependencies have changed', async function() {
+    let callCount = 0;
+    let inputFile = path.resolve(__dirname, 'fixtures', 'file-with-dependencies.scss');
+    let dependencyPath = path.resolve(__dirname, 'fixtures', 'dependency_b.scss');
+    let dependencyCode = await pfs.readFile(dependencyPath);
+
+    let fetcher = function(filePath, hashInfo) {
+      callCount++;
+
+      let code = hashInfo.sourceCode || fs.readFileSync(filePath, 'utf8');
+      let mimeType = 'text/scss';
+      let dependentFiles = [
+        dependencyPath
+      ];
+
+      return { code, mimeType, dependentFiles };
+    };
+
+    let result = await this.fixture.getOrFetch(inputFile, fetcher);
+
+    expect(result.mimeType).to.equal('text/scss');
+    expect(result.code.length > 10).to.be.ok;
+    expect(callCount).to.equal(1);
+
+    // Try it again - make sure it doesn't run the fetcher
+    result = await this.fixture.getOrFetch(inputFile, fetcher);
+
+    expect(result.mimeType).to.equal('text/scss');
+    expect(result.code.length > 10).to.be.ok;
+    expect(callCount).to.equal(1);
+
+    // Change a dependency
+    await pfs.writeFile(dependencyPath, '$black: black;'); // black is back
+    result = await this.fixture.getOrFetch(inputFile, fetcher);
+
+    expect(result.mimeType).to.equal('text/scss');
+    expect(result.code.length > 10).to.be.ok;
+    expect(callCount).to.equal(2);
+
+    await pfs.writeFile(dependencyPath, dependencyCode);
   });
 });
