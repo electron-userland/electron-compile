@@ -1,4 +1,5 @@
 import path from 'path';
+import detective from 'detective-less';
 import {CompilerBase} from '../compiler-base';
 
 const mimeTypes = ['text/less'];
@@ -27,7 +28,7 @@ export default class LessCompiler extends CompilerBase {
   }
 
   async determineDependentFiles(sourceCode, filePath, compilerContext) {
-    return [];
+    return this.determineDependentFilesSync(sourceCode, filePath, compilerContext);
   }
 
   async compile(sourceCode, filePath, compilerContext) {
@@ -60,7 +61,14 @@ export default class LessCompiler extends CompilerBase {
   }
 
   determineDependentFilesSync(sourceCode, filePath, compilerContext) {
-    return [];
+    let dependencyFilenames = detective(sourceCode)
+    let dependencies = []
+
+    for (let dependencyName of dependencyFilenames) {
+      dependencies.push(path.join(path.dirname(filePath), dependencyName))
+    }
+
+    return dependencies;
   }
 
   compileSync(sourceCode, filePath, compilerContext) {
