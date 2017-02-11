@@ -1,3 +1,6 @@
+import path from 'path';
+import detective from 'detective-stylus';
+import lookup from 'stylus-lookup';
 import {CompilerBase} from '../compiler-base';
 import {basename} from 'path';
 
@@ -34,7 +37,7 @@ export default class StylusCompiler extends CompilerBase {
   }
 
   async determineDependentFiles(sourceCode, filePath, compilerContext) {
-    return [];
+    return this.determineDependentFilesSync(sourceCode, filePath, compilerContext);
   }
 
   async compile(sourceCode, filePath, compilerContext) {
@@ -105,7 +108,14 @@ export default class StylusCompiler extends CompilerBase {
   }
 
   determineDependentFilesSync(sourceCode, filePath, compilerContext) {
-    return [];
+    let dependencyFilenames = detective(sourceCode)
+    let dependencies = []
+
+    for (let dependencyName of dependencyFilenames) {
+      dependencies.push(lookup(dependencyName, path.basename(filePath), path.dirname(filePath)))
+    }
+
+    return dependencies;
   }
 
   compileSync(sourceCode, filePath, compilerContext) {
