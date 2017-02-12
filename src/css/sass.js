@@ -81,11 +81,11 @@ export default class SassCompiler extends CompilerBase {
   }
 
   determineDependentFilesSync(sourceCode, filePath, compilerContext) {
-    let dependencyFilenames = path.extname(filePath) === '.sass' ? detectiveSASS(sourceCode) : detectiveSCSS(sourceCode)
-    let dependencies = []
+    let dependencyFilenames = path.extname(filePath) === '.sass' ? detectiveSASS(sourceCode) : detectiveSCSS(sourceCode);
+    let dependencies = [];
 
     for (let dependencyName of dependencyFilenames) {
-      dependencies.push(sassLookup(dependencyName, path.basename(filePath), path.dirname(filePath)))
+      dependencies.push(sassLookup(dependencyName, path.basename(filePath), path.dirname(filePath)));
     }
 
     return dependencies;

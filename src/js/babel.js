@@ -111,28 +111,28 @@ export default class BabelCompiler extends CompilerBase {
     let exists = fs.existsSync(packageDotJson);
 
     if (exists) {
-      return directory
+      return directory;
     }
 
-    let rt = (os.platform == "win32") ? directory.split(path.sep)[0] : "/"
+    let rt = (os.platform == "win32") ? directory.split(path.sep)[0] : "/";
 
     if (rt === directory) {
-      return false
+      return false;
     }
 
-    return this.walkUntilPackageJsonFound(up)
+    return this.walkUntilPackageJsonFound(up);
   }
 
   resolvePartial(partial, filePath) {
-    let dir = path.dirname(filePath)
+    let dir = path.dirname(filePath);
 
-    let packageJsonDirectory = this.walkUntilPackageJsonFound(dir)
+    let packageJsonDirectory = this.walkUntilPackageJsonFound(dir);
 
     if (packageJsonDirectory === false) {
-      return false
+      return false;
     }
 
-    let nodeModules = path.resolve(packageJsonDirectory, 'node_modules/')
+    let nodeModules = path.resolve(packageJsonDirectory, 'node_modules/');
 
     // add their node_modules to the list of resolution paths
     appModulePath.addPath(nodeModules);
@@ -142,23 +142,23 @@ export default class BabelCompiler extends CompilerBase {
       extensions: [ '.js', '.jsx' ]
     });
 
-    return result
+    return result;
   }
 
   determineDependentFilesSync(sourceCode, filePath, compilerContext) {
-    let dependencyPartials = detective(sourceCode)
-    let dependencies = []
+    let dependencyPartials = detective(sourceCode);
+    let dependencies = [];
 
     for (let dependencyPartial of dependencyPartials) {
       
       if (natives[dependencyPartial]) { 
-        continue
+        continue;
       }
 
       let absolute = this.resolvePartial(dependencyPartial, filePath);
 
       if (absolute === false) { // obviously invalid?
-        continue
+        continue;
       }
 
       dependencies.push(absolute);

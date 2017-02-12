@@ -108,11 +108,11 @@ export default class StylusCompiler extends CompilerBase {
   }
 
   determineDependentFilesSync(sourceCode, filePath, compilerContext) {
-    let dependencyFilenames = detective(sourceCode)
-    let dependencies = []
+    let dependencyFilenames = detective(sourceCode);
+    let dependencies = [];
 
     for (let dependencyName of dependencyFilenames) {
-      dependencies.push(lookup(dependencyName, path.basename(filePath), path.dirname(filePath)))
+      dependencies.push(lookup(dependencyName, path.basename(filePath), path.dirname(filePath)));
     }
 
     return dependencies;

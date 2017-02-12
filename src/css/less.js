@@ -61,11 +61,11 @@ export default class LessCompiler extends CompilerBase {
   }
 
   determineDependentFilesSync(sourceCode, filePath, compilerContext) {
-    let dependencyFilenames = detective(sourceCode)
-    let dependencies = []
+    let dependencyFilenames = detective(sourceCode);
+    let dependencies = [];
 
     for (let dependencyName of dependencyFilenames) {
-      dependencies.push(path.join(path.dirname(filePath), dependencyName))
+      dependencies.push(path.join(path.dirname(filePath), dependencyName));
     }
 
     return dependencies;
