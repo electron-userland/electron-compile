@@ -75,13 +75,7 @@ export default class BabelCompiler extends CompilerBase {
       if (presets && presets.length === opts.presets.length) opts.presets = presets;
     }
     const output = babel.transform(sourceCode, opts);
-    const sourceMapObject = output.map;
-
-    let sourceMaps;
-    if (sourceMapObject) {
-      sourceMapObject.sourcesContent && delete sourceMapObject.sourcesContent;
-      sourceMaps = JSON.stringify(sourceMapObject);
-    }
+    const sourceMaps = output.map ? JSON.stringify(output.map) : null;
 
     return {
       code: output.code,
