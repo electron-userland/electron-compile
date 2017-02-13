@@ -102,7 +102,14 @@ describe('The compiler host', function() {
   it('Should read files from cache once we compile them', async function() {
     let input = path.join(__dirname, '..', 'test', 'fixtures');
 
+    let compileEventCount = 0;
+    let expectedEventCount = 0;
+    this.fixture.listenToCompileEvents().subscribe(() => compileEventCount++);
+
+    expect(compileEventCount).to.equal(0);
+
     await this.fixture.compileAll(input, (filePath) => {
+
       if (filePath.match(/invalid/)) return false;
       if (filePath.match(/binaryfile/)) return false;
       if (filePath.match(/minified/)) return false;
@@ -110,8 +117,12 @@ describe('The compiler host', function() {
       if (filePath.match(/babelrc/)) return false;
       if (filePath.match(/compilerc/)) return false;
 
+      expectedEventCount++;
       return true;
     });
+
+    expect(compileEventCount).to.equal(expectedEventCount);
+    expect(expectedEventCount > 0).to.be.ok;
 
     this.fixture = new CompilerHost(this.tempCacheDir, this.compilersByMimeType, this.fileChangeCache, true);
     this.fixture.compileUncached = () => Promise.reject(new Error("Fail!"));
