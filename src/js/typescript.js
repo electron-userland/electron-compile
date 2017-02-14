@@ -46,13 +46,9 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
     };
 
     const output = ts.transpileModule(sourceCode, transpileOptions);
+    const sourceMaps = output.sourceMapText ? output.sourceMapText : null;
 
     d(output.diagnostics);
-
-    let sourceMaps;
-    if (output.sourceMapText) {
-      sourceMaps = output.sourceMapText;
-    }
 
     return {
       code: output.outputText,
