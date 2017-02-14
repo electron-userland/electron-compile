@@ -39,6 +39,7 @@
     "detective-scss": "^1.0.0",
     "detective-stylus": "^1.0.0",
     "jade": "^1.11.0",
+    "js-string-escape": "^1.0.1",
     "less": "^2.7.1",
     "mkdirp": "^0.5.1",
     "nib": "^1.1.2",
