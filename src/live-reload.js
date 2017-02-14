@@ -18,9 +18,11 @@ export function enableLiveReload(options={}) {
 
 function reloadAllWindows() {
   let ret = BrowserWindow.getAllWindows().map(wnd => {
+    if (!wnd.isVisible()) return Promise.resolve(true);
+
     return new Promise((res) => {
       wnd.webContents.reloadIgnoringCache();
-      wnd.once('ready-to-show', () => res());
+      wnd.once('ready-to-show', () => res(true));
     });
   });
 
