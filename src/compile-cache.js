@@ -185,7 +185,11 @@ export default class CompileCache {
    */
   async getOrFetch(filePath, fetcher) {
     let cacheResult = await this.get(filePath);
-    if (cacheResult.code || cacheResult.binaryData) return cacheResult;
+    let anyDependenciesChanged = await this.haveAnyDependentFilesChanged(cacheResult);
+
+     if ((cacheResult.code || cacheResult.binaryData) && !anyDependenciesChanged) {
+       return cacheResult;
+     }
 
     let result = await fetcher(filePath, cacheResult.hashInfo) || { hashInfo: cacheResult.hashInfo };
 
@@ -197,6 +201,29 @@ export default class CompileCache {
     result.hashInfo = cacheResult.hashInfo;
     return result;
   }
+
+  /**
+   * @private Check if any of a file's dependencies have changed
+   */
+  async haveAnyDependentFilesChanged(cacheResult) {
+    if (!cacheResult.code || !cacheResult.dependentFiles.length) return false;
+  
+    for (let dependentFile of cacheResult.dependentFiles) {
+      let hasFileChanged = await this.fileChangeCache.hasFileChanged(dependentFile);
+      if (hasFileChanged) {
+        return true;
+      }
+  
+      let dependentFileCacheResult = await this.get(dependentFile);
+      if (dependentFileCacheResult.dependentFiles && dependentFileCacheResult.dependentFiles.length) {
+        let anySubdependentFilesChanged = await this.haveAnyDependentFilesChanged(dependentFileCacheResult);
+        if (anySubdependentFilesChanged) return true;
+      }
+    }
+  
+    return false;
+  }
+
 
   getSync(filePath) {
     d(`Fetching ${filePath} from cache`);

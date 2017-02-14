@@ -94,37 +94,18 @@ export default class FileChangedCache {
    *                                     was text and there was a cache miss
    */
   async getHashForPath(absoluteFilePath) {
-    let cacheKey = sanitizeFilePath(absoluteFilePath);
-
-    if (this.appRoot) {
-      cacheKey = FileChangedCache.removePrefix(this.appRoot, cacheKey);
-    }
-
-    // NB: We do this because x-require will include an absolute path from the
-    // original built app and we need to still grok it
-    if (this.originalAppRoot) {
-      cacheKey = FileChangedCache.removePrefix(this.originalAppRoot, cacheKey);
-    }
-
-    let cacheEntry = this.changeCache[cacheKey];
+    let {cacheEntry, cacheKey} = this.getCacheEntryForPath(absoluteFilePath);
 
     if (this.failOnCacheMiss) {
-      if (!cacheEntry) {
-        d(`Tried to read file cache entry for ${absoluteFilePath}`);
-        d(`cacheKey: ${cacheKey}, appRoot: ${this.appRoot}, originalAppRoot: ${this.originalAppRoot}`);
-        throw new Error(`Asked for ${absoluteFilePath} but it was not precompiled!`);
-      }
-
       return cacheEntry.info;
     }
 
-    let stat = await pfs.stat(absoluteFilePath);
-    let ctime = stat.ctime.getTime();
-    let size = stat.size;
-    if (!stat || !stat.isFile()) throw new Error(`Can't stat ${absoluteFilePath}`);
+    let {ctime, size} = await this.getInfoForCacheEntry(absoluteFilePath);
 
     if (cacheEntry) {
-      if (cacheEntry.ctime >= ctime && cacheEntry.size === size) {
+      let fileHasChanged = await this.hasFileChanged(absoluteFilePath, cacheEntry, {ctime, size});
+
+      if (!fileHasChanged) {
         return cacheEntry.info;
       }
 
@@ -152,6 +133,67 @@ export default class FileChangedCache {
     }
   }
 
+  async getInfoForCacheEntry(absoluteFilePath) {
+    let stat = await pfs.stat(absoluteFilePath);
+    if (!stat || !stat.isFile()) throw new Error(`Can't stat ${absoluteFilePath}`);
+
+    return {
+      stat,
+      ctime: stat.ctime.getTime(),
+      size: stat.size
+    };
+  }
+
+  /**
+   * Gets the cached data for a file path, if it exists.
+   *
+   * @param  {string} absoluteFilePath  The path to a file to retrieve info on.
+   *
+   * @return {Object}
+   */
+  getCacheEntryForPath(absoluteFilePath) {
+    let cacheKey = sanitizeFilePath(absoluteFilePath);
+    if (this.appRoot) {
+      cacheKey = cacheKey.replace(this.appRoot, '');
+    }
+
+    // NB: We do this because x-require will include an absolute path from the
+    // original built app and we need to still grok it
+    if (this.originalAppRoot) {
+      cacheKey = cacheKey.replace(this.originalAppRoot, '');
+    }
+
+    let cacheEntry = this.changeCache[cacheKey];
+
+    if (this.failOnCacheMiss) {
+      if (!cacheEntry) {
+        d(`Tried to read file cache entry for ${absoluteFilePath}`);
+        d(`cacheKey: ${cacheKey}, appRoot: ${this.appRoot}, originalAppRoot: ${this.originalAppRoot}`);
+        throw new Error(`Asked for ${absoluteFilePath} but it was not precompiled!`);
+      }
+    }
+
+    return {cacheEntry, cacheKey};
+  }
+
+  /**
+   * Checks the file cache to see if a file has changed.
+   *
+   * @param  {string} absoluteFilePath  The path to a file to retrieve info on.
+   * @param  {Object} cacheEntry  Cache data from {@link getCacheEntryForPath}
+   *
+   * @return {boolean}
+   */
+  async hasFileChanged(absoluteFilePath, cacheEntry=null, fileHashInfo=null) {
+    cacheEntry = cacheEntry || this.getCacheEntryForPath(absoluteFilePath).cacheEntry;
+    fileHashInfo = fileHashInfo || await this.getInfoForCacheEntry(absoluteFilePath);
+
+    if (cacheEntry) {
+      return !(cacheEntry.ctime >= fileHashInfo.ctime && cacheEntry.size === fileHashInfo.size);
+    }
+
+    return false;
+  }
 
   /**
    * Returns data that can passed to {@link loadFromData} to rehydrate this cache.
