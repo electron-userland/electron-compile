@@ -1,7 +1,9 @@
 import path from 'path';
 import fs from 'fs';
 import toutSuite from 'toutsuite';
-
+import detectiveSASS from 'detective-sass';
+import detectiveSCSS from 'detective-scss';
+import sassLookup from 'sass-lookup';
 import {CompilerBase} from '../compiler-base';
 
 const mimeTypes = ['text/sass', 'text/scss'];
@@ -32,7 +34,7 @@ export default class SassCompiler extends CompilerBase {
   }
 
   async determineDependentFiles(sourceCode, filePath, compilerContext) {
-    return [];
+    return this.determineDependentFilesSync(sourceCode, filePath, compilerContext);
   }
 
   async compile(sourceCode, filePath, compilerContext) {
@@ -79,7 +81,14 @@ export default class SassCompiler extends CompilerBase {
   }
 
   determineDependentFilesSync(sourceCode, filePath, compilerContext) {
-    return [];
+    let dependencyFilenames = path.extname(filePath) === '.sass' ? detectiveSASS(sourceCode) : detectiveSCSS(sourceCode);
+    let dependencies = [];
+
+    for (let dependencyName of dependencyFilenames) {
+      dependencies.push(sassLookup(dependencyName, path.basename(filePath), path.dirname(filePath)));
+    }
+
+    return dependencies;
   }
 
   compileSync(sourceCode, filePath, compilerContext) {
