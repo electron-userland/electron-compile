@@ -12,6 +12,8 @@ import {listen, send} from './browser-signal';
 
 const d = require('debug')('electron-compile:compiler-host');
 
+import 'rxjs/add/operator/map';
+
 require('./rig-mime-types').init();
 
 // This isn't even my
