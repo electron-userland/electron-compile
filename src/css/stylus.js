@@ -26,6 +26,8 @@ export default class StylusCompiler extends CompilerBase {
       sourcemap: 'inline',
       import: ['nib']
     };
+
+    this.seenFilePaths = {};
   }
 
   static getInputMimeTypes() {
@@ -43,6 +45,8 @@ export default class StylusCompiler extends CompilerBase {
   async compile(sourceCode, filePath, compilerContext) {
     nib = nib || require('nib');
     stylusjs = stylusjs || require('stylus');
+    this.seenFilePaths[path.dirname(filePath)] = true;
+
     let opts = this.makeOpts(filePath);
 
     let code = await new Promise((res,rej) => {
@@ -101,6 +105,8 @@ export default class StylusCompiler extends CompilerBase {
         break;
       }
     });
+
+    stylus.set('paths', Object.keys(this.seenFilePaths).concat(['.']));
   }
 
   shouldCompileFileSync(fileName, compilerContext) {
@@ -121,6 +127,7 @@ export default class StylusCompiler extends CompilerBase {
   compileSync(sourceCode, filePath, compilerContext) {
     nib = nib || require('nib');
     stylusjs = stylusjs || require('stylus');
+    this.seenFilePaths[path.dirname(filePath)] = true;
 
     let opts = this.makeOpts(filePath), styl = stylusjs(sourceCode, opts);
 
