@@ -1,8 +1,12 @@
 import fs from 'fs';
 import {Observable} from 'rxjs/Observable';
 import {Subscription} from 'rxjs/Subscription';
+import LRU from 'lru-cache';
 
-export default function watchPath(directory) {
+import 'rxjs/add/operator/publish';
+import 'rxjs/add/operator/refCount';
+
+export function watchPathDirect(directory) {
   return Observable.create((subj) => {
     let dead = false;
 
@@ -18,4 +22,14 @@ export default function watchPath(directory) {
 
     return new Subscription(() => { if (!dead) { watcher.close(); } });
   });
+}
+
+const pathCache = new LRU({ length: 256 });
+export function watchPath(directory) {
+  let ret = pathCache.get(directory);
+  if (ret) return ret;
+
+  ret = watchPathDirect(directory).publish().refCount();
+  pathCache.set(directory, ret);
+  return ret;
 }
