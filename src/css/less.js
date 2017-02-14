@@ -1,6 +1,7 @@
 import path from 'path';
 import detective from 'detective-less';
 import {CompilerBase} from '../compiler-base';
+import toutSuite from 'toutsuite';
 
 const mimeTypes = ['text/less'];
 let lessjs = null;
@@ -32,7 +33,7 @@ export default class LessCompiler extends CompilerBase {
   }
 
   async compile(sourceCode, filePath, compilerContext) {
-    lessjs = lessjs || require('less');
+    lessjs = lessjs || this.getLess();
 
     let thisPath = path.dirname(filePath);
     this.seenFilePaths[thisPath] = true;
@@ -49,9 +50,18 @@ export default class LessCompiler extends CompilerBase {
     });
 
     let result = await lessjs.render(sourceCode, opts);
+    let source = result.css;
+
+    // NB: If you compile a file that is solely imports, its
+    // actual content is '' yet it is a valid file. '' is not
+    // truthy, so we're going to replace it with a string that
+    // is truthy.
+    if (!source && typeof source === 'string') {
+      source = ' ';
+    }
 
     return {
-      code: result.css,
+      code: source,
       mimeType: 'text/css'
     };
   }
@@ -72,9 +82,9 @@ export default class LessCompiler extends CompilerBase {
   }
 
   compileSync(sourceCode, filePath, compilerContext) {
-    lessjs = lessjs || require('less');
+    lessjs = lessjs || this.getLess();
 
-    let source = '';
+    let source;
     let error = null;
 
     let thisPath = path.dirname(filePath);
@@ -92,23 +102,39 @@ export default class LessCompiler extends CompilerBase {
       fileAsync: false, async: false, syncImport: true
     });
 
-    lessjs.render(sourceCode, opts, (err, out) => {
-      if (err) {
-        error = err;
-      } else {
-        // NB: Because we've forced less to work in sync mode, we can do this
-        source = out.css;
-      }
+    toutSuite(() => {
+      lessjs.render(sourceCode, opts, (err, out) => {
+        if (err) {
+          error = err;
+        } else {
+          // NB: Because we've forced less to work in sync mode, we can do this
+          source = out.css;
+        }
+      });
     });
 
     if (error) {
       throw error;
     }
 
+    // NB: If you compile a file that is solely imports, its
+    // actual content is '' yet it is a valid file. '' is not
+    // truthy, so we're going to replace it with a string that
+    // is truthy.
+    if (!source && typeof source === 'string') {
+      source = ' ';
+    }
+
     return {
       code: source,
       mimeType: 'text/css'
     };
+  }
+
+  getLess() {
+    let ret;
+    toutSuite(() => ret = require('less'));
+    return ret;
   }
 
   getCompilerVersion() {

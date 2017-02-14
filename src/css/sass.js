@@ -70,8 +70,18 @@ export default class SassCompiler extends CompilerBase {
       });
     });
 
+    let source = result.text;
+
+    // NB: If you compile a file that is solely imports, its
+    // actual content is '' yet it is a valid file. '' is not
+    // truthy, so we're going to replace it with a string that
+    // is truthy.
+    if (!source && typeof source === 'string') {
+      source = ' ';
+    }
+
     return {
-      code: result.text,
+      code: source,
       mimeType: 'text/css'
     };
   }
@@ -121,8 +131,18 @@ export default class SassCompiler extends CompilerBase {
       });
     });
 
+    let source = result.text;
+
+    // NB: If you compile a file that is solely imports, its
+    // actual content is '' yet it is a valid file. '' is not
+    // truthy, so we're going to replace it with a string that
+    // is truthy.
+    if (!source && typeof source === 'string') {
+      source = ' ';
+    }
+
     return {
-      code: result.text,
+      code: source,
       mimeType: 'text/css'
     };
   }
