@@ -56,13 +56,6 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
 
     d(JSON.stringify(output.diagnostics));
 
-    let sourceMaps;
-    if (output.sourceMapText) {
-      sourceMaps = output.sourceMapText;
-    }
-
-
-    console.log(output.outputText);
     return {
       code: output.outputText,
       mimeType: this.outMimeType,
