@@ -8,6 +8,7 @@ import {forAllFiles, forAllFilesSync} from './for-all-files';
 import CompileCache from './compile-cache';
 import FileChangedCache from './file-change-cache';
 import ReadOnlyCompiler from './read-only-compiler';
+import {listen, send} from './browser-signal';
 
 const d = require('debug')('electron-compile:compiler-host');
 
@@ -239,7 +240,7 @@ export default class CompilerHost {
 
     // NB: We don't put this into shouldPassthrough because Inline HTML
     // compiler is technically of type finalForms (i.e. a browser can
-    // natively handle this content), yet its compiler is 
+    // natively handle this content), yet its compiler is
     // InlineHtmlCompiler. However, we still want to catch standard CSS files
     // which will be processed by PassthroughCompiler.
     if (finalForms[type] && !compiler) {
@@ -274,6 +275,8 @@ export default class CompilerHost {
 
     let hashInfo = await this.fileChangeCache.getHashForPath(filePath);
     let type = mimeTypes.lookup(filePath);
+
+    send('electron-compile-compiled-file', { filePath, mimeType: type });
 
     if (hashInfo.isInNodeModules) {
       let code = hashInfo.sourceCode || await pfs.readFile(filePath, 'utf8');
@@ -383,6 +386,10 @@ export default class CompilerHost {
     });
   }
 
+  listenToCompileEvents() {
+    return listen('electron-compile-compiled-file').map(([x]) => x);
+  }
+
   /*
    * Sync Methods
    */
@@ -477,7 +484,7 @@ export default class CompilerHost {
 
     // NB: We don't put this into shouldPassthrough because Inline HTML
     // compiler is technically of type finalForms (i.e. a browser can
-    // natively handle this content), yet its compiler is 
+    // natively handle this content), yet its compiler is
     // InlineHtmlCompiler. However, we still want to catch standard CSS files
     // which will be processed by PassthroughCompiler.
     if (finalForms[type] && !compiler) {
@@ -507,6 +514,8 @@ export default class CompilerHost {
 
     let hashInfo = this.fileChangeCache.getHashForPathSync(filePath);
     let type = mimeTypes.lookup(filePath);
+
+    send('electron-compile-compiled-file', { filePath, mimeType: type });
 
     if (hashInfo.isInNodeModules) {
       let code = hashInfo.sourceCode || fs.readFileSync(filePath, 'utf8');
@@ -621,7 +630,7 @@ export default class CompilerHost {
   static shouldPassthrough(hashInfo) {
     return hashInfo.isMinified || hashInfo.isInNodeModules || hashInfo.hasSourceMap || hashInfo.isFileBinary;
   }
-    
+
   /**
    * Look at the code of a node modules and see the sourceMapping path.
    * If there is any, check the path and try to fix it with and
@@ -634,18 +643,18 @@ export default class CompilerHost {
 
     if (sourceMappingCheck && sourceMappingCheck[1] && sourceMappingCheck[1] !== ''){
       let sourceMapPath = sourceMappingCheck[1];
-      
+
       try {
         await pfs.stat(sourceMapPath);
       } catch (error) {
         let normRoot = path.normalize(appRoot);
         let absPathToModule = path.dirname(sourcePath.replace(normRoot, '').substring(1));
         let newMapPath = path.join(absPathToModule, sourceMapPath);
-        
+
         return sourceCode.replace(regexSourceMapping, `//# sourceMappingURL=${newMapPath}`);
       }
     }
-    
+
     return sourceCode;
   }
 
@@ -661,18 +670,18 @@ export default class CompilerHost {
 
     if (sourceMappingCheck && sourceMappingCheck[1] && sourceMappingCheck[1] !== ''){
       let sourceMapPath = sourceMappingCheck[1];
-      
+
       try {
         fs.statSync(sourceMapPath);
       } catch (error) {
         let normRoot = path.normalize(appRoot);
         let absPathToModule = path.dirname(sourcePath.replace(normRoot, '').substring(1));
         let newMapPath = path.join(absPathToModule, sourceMapPath);
-        
+
         return sourceCode.replace(regexSourceMapping, `//# sourceMappingURL=${newMapPath}`);
       }
     }
-    
+
     return sourceCode;
   }
 }
