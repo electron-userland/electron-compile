@@ -1,5 +1,5 @@
 import path from 'path';
-import {CompilerBase} from '../compiler-base';
+import {SimpleCompilerBase} from '../compiler-base';
 
 const mimeTypes = ['text/jsx', 'application/javascript'];
 let babel = null;
@@ -7,21 +7,13 @@ let babel = null;
 /**
  * @access private
  */
-export default class BabelCompiler extends CompilerBase {
+export default class BabelCompiler extends SimpleCompilerBase {
   constructor() {
     super();
   }
 
   static getInputMimeTypes() {
     return mimeTypes;
-  }
-
-  async shouldCompileFile(fileName, compilerContext) {
-    return true;
-  }
-
-  async determineDependentFiles(sourceCode, filePath, compilerContext) {
-    return [];
   }
 
   // NB: This method exists to stop Babel from trying to load plugins from the
@@ -56,7 +48,7 @@ export default class BabelCompiler extends CompilerBase {
     return null;
   }
 
-  transformCode(sourceCode, filePath) {
+  compileSync(sourceCode, filePath, compilerContext) {
     babel = babel || require('babel-core');
 
     let opts = Object.assign({}, this.compilerOptions, {
@@ -82,22 +74,6 @@ export default class BabelCompiler extends CompilerBase {
       mimeType: 'application/javascript',
       sourceMaps
     };
-  }
-
-  async compile(sourceCode, filePath, compilerContext) {
-    return this.transformCode(sourceCode, filePath);
-  }
-
-  shouldCompileFileSync(fileName, compilerContext) {
-    return true;
-  }
-
-  determineDependentFilesSync(sourceCode, filePath, compilerContext) {
-    return [];
-  }
-
-  compileSync(sourceCode, filePath, compilerContext) {
-    return this.transformCode(sourceCode, filePath);
   }
 
   getCompilerVersion() {
