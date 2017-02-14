@@ -1,4 +1,3 @@
-import {BrowserWindow} from 'electron';
 import FileChangedCache from './file-change-cache';
 import {watchFile} from './pathwatcher-rx';
 
@@ -14,6 +13,11 @@ export function enableLiveReload(options={}) {
   default:
     enableLiveReloadNaive();
   }
+}
+
+let BrowserWindow;
+if (process.type === 'browser') {
+  BrowserWindow = require('electron').BrowserWindow;
 }
 
 function reloadAllWindows() {
