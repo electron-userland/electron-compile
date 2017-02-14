@@ -88,7 +88,7 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
     let tmpl = `
 ${sourceCode}
 
-if (__REACT_HOT_LOADER__) {
+if (typeof __REACT_HOT_LOADER__ !== 'undefined') {
   const __FILENAME__ = "${jsEscape(fileName)}";
   ${registrations}
 }`;
