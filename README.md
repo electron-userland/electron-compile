@@ -27,11 +27,11 @@ For JSON:
 
 ### How does it work? (Easiest Way)
 
-Use `electron-prebuilt-compile` instead of the `electron-prebuilt` module. Tada! You did it.
+Use `electron-prebuilt-compile` instead of the `electron` module. Tada! You did it.
 
 ### Wait, seriously?
 
-Yeah. `electron-prebuilt-compile` is like an `electron-prebuilt` that Just Works with all of these languages above.
+Yeah. `electron-prebuilt-compile` is like an `electron` that Just Works with all of these languages above.
 
 ### How does it work? (Slightly Harder Way)
 
@@ -48,9 +48,7 @@ Create a new file that will be the entry point of your app (perhaps changing 'ma
 // Assuming this file is ./src/es6-init.js
 var appRoot = path.join(__dirname, '..');
 
-// ...and that your main app is called ./src/main.js. This is written as if
-// you were going to `require` the file from here.
-require('electron-compile').init(appRoot, './main');
+require('electron-compile').init(appRoot, require.resolve('./main'));
 ```
 
 
@@ -70,6 +68,18 @@ or just require them in:
 ```js
 require('./mylib')   // mylib.ts
 ```
+
+### Live Reload / Hot Module Reloading
+
+In your main file, before you create a `BrowserWindow` instance:
+
+```js
+import {enableLiveReload} from 'electron-compile';
+
+enableLiveReload();
+```
+
+Currently LiveReload simply reloads the page, but future versions of electron-compile will support React Hot Module Loading.
 
 ### Something isn't working / I'm getting weird errors
 
@@ -150,7 +160,7 @@ In this example `.compilerc`, JavaScript files won't be compiled:
 
 ## How can I precompile my code for release-time?
 
-electron-compile comes with a wrapper around the [electron-packager](https://github.com/electron-userland/electron-packager) project, `electron-packager-compile` (if you use the `electron-prebuilt-compile` project, this will just be `electron-packager`). Run it the same way you run `electron-packager` and the compilation wire-up will be done in the background.
+By *far*, the easiest way to do this is via using [electron-forge](https://github.com/electron-userland/electron-forge/). electron-forge handles every aspect of packaging your app on all platforms and helping you publish it. Unless you have a very good reason, you should be using it!
 
 ## How can I precompile my code for release-time? (the hard way)
 
