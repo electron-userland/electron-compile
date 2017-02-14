@@ -1,7 +1,18 @@
 import FileChangedCache from './file-change-cache';
-import {watchFile} from './pathwatcher-rx';
+import {watchPath} from './pathwatcher-rx';
+import {Observable} from 'rxjs/Observable';
 
 import './custom-operators';
+
+import 'rxjs/add/observable/defer';
+import 'rxjs/add/observable/empty';
+import 'rxjs/add/observable/fromPromise';
+
+import 'rxjs/add/operator/catch';
+import 'rxjs/add/operator/filter';
+import 'rxjs/add/operator/mergeMap';
+import 'rxjs/add/operator/switchMap';
+import 'rxjs/add/operator/timeout';
 
 export function enableLiveReload(options={}) {
   let { strategy } = options;
@@ -35,13 +46,13 @@ function reloadAllWindows() {
 
 function enableLiveReloadNaive() {
   let filesWeCareAbout = global.globalCompilerHost.listenToCompileEvents()
-    .filter(x => FileChangedCache.isInNodeModules(x.filePath));
+    .filter(x => !FileChangedCache.isInNodeModules(x.filePath))
 
   let weShouldReload = filesWeCareAbout
-    .mergeMap(x => watchFile(x).map(() => x))
-    .guaranteedThrottle(4*1000);
+    .mergeMap(x => watchPath(x.filePath).map(() => x))
+    .guaranteedThrottle(1*1000);
 
   return weShouldReload
-    .switchMap(() => reloadAllWindows())
+    .switchMap(() => Observable.defer(() => Observable.fromPromise(reloadAllWindows()).timeout(5*1000).catch(() => Observable.empty())))
     .subscribe(() => console.log("Reloaded all windows!"));
 }

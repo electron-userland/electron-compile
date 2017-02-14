@@ -276,7 +276,7 @@ export default class CompilerHost {
     let hashInfo = await this.fileChangeCache.getHashForPath(filePath);
     let type = mimeTypes.lookup(filePath);
 
-    send('electron-compile-compiled-file', { filePath, hashInfo, mimeType: type });
+    send('electron-compile-compiled-file', { filePath, mimeType: type });
 
     if (hashInfo.isInNodeModules) {
       let code = hashInfo.sourceCode || await pfs.readFile(filePath, 'utf8');
@@ -387,7 +387,7 @@ export default class CompilerHost {
   }
 
   listenToCompileEvents() {
-    return listen('electron-compile-compiled-file');
+    return listen('electron-compile-compiled-file').map(([x]) => x);
   }
 
   /*
@@ -515,7 +515,7 @@ export default class CompilerHost {
     let hashInfo = this.fileChangeCache.getHashForPathSync(filePath);
     let type = mimeTypes.lookup(filePath);
 
-    send('electron-compile-compiled-file', { filePath, hashInfo, mimeType: type });
+    send('electron-compile-compiled-file', { filePath, mimeType: type });
 
     if (hashInfo.isInNodeModules) {
       let code = hashInfo.sourceCode || fs.readFileSync(filePath, 'utf8');

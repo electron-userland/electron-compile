@@ -7,6 +7,5 @@ import {enableLiveReload} from './live-reload';
 
 module.exports = Object.assign({},
   configParser,
-  enableLiveReload,
-  { CompilerHost, FileChangedCache, CompileCache }
+  { enableLiveReload, CompilerHost, FileChangedCache, CompileCache }
 );

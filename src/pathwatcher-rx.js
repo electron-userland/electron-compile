@@ -4,7 +4,6 @@ import {Subscription} from 'rxjs/Subscription';
 import LRU from 'lru-cache';
 
 import 'rxjs/add/operator/publish';
-import 'rxjs/add/operator/refCount';
 
 export function watchPathDirect(directory) {
   return Observable.create((subj) => {

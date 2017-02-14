@@ -31,7 +31,7 @@ export function listen(channel) {
       let subj = new Subject();
       let ipcListener = (e, ...args) => { subj.next(args); };
 
-      channelList[channel] = { subj: new Subject(), refcount: 0 };
+      channelList[channel] = { subj, refcount: 0 };
       if (isElectron && isBrowser) {
         ipc.on(channel, ipcListener);
         channelList[channel].listener = ipcListener;
