@@ -76,7 +76,7 @@ export default class SassCompiler extends CompilerBase {
     // actual content is '' yet it is a valid file. '' is not
     // truthy, so we're going to replace it with a string that
     // is truthy.
-    if (!source && typeof source === 'string') {
+    if (!source) {
       source = ' ';
     }
 
@@ -137,7 +137,7 @@ export default class SassCompiler extends CompilerBase {
     // actual content is '' yet it is a valid file. '' is not
     // truthy, so we're going to replace it with a string that
     // is truthy.
-    if (!source && typeof source === 'string') {
+    if (!source) {
       source = ' ';
     }
 
