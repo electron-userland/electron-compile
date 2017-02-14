@@ -62,8 +62,8 @@ const mimeTypesWithDependentFilesSupport = [
   'text/sass',
   'text/less',
   'text/stylus',
-  'text/jsx'
 ];
+
 for (let mimeType of mimeTypesToTest) {
   let klass = global.compilersByMimeType[mimeType];
 
