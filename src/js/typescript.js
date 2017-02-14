@@ -7,6 +7,8 @@ const d = require('debug')('electron-compile:typescript-compiler');
 
 let ts = null;
 
+const builtinKeys = ['hotModuleReload'];
+
 /**
  * @access private
  */
@@ -27,13 +29,26 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
 
   _getParsedConfigOptions(tsCompiler) {
     let parsedConfig = this.parsedConfig;
+
     if (!parsedConfig) {
-      const results = tsCompiler.convertCompilerOptionsFromJson(this.compilerOptions);
+      let opts = Object.assign({}, this.compilerOptions);
+      let builtinOpts = {};
+      builtinKeys.forEach((k) => {
+        if (k in this.compilerOptions) {
+          delete opts[k];
+          builtinOpts[k] = this.compilerOptions[k];
+        }
+      });
+
+      const results = tsCompiler.convertCompilerOptionsFromJson(opts);
+
       if (results.errors && results.errors.length) {
         throw new Error(JSON.stringify(results.errors));
       }
-      parsedConfig = this.parsedConfig = results.options;
+
+      parsedConfig = this.parsedConfig = { typescriptOpts: results.options, builtinOpts };
     }
+
     return parsedConfig;
   }
 
@@ -43,12 +58,12 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
 
     const isTsx = filePath.match(/\.tsx$/i);
     const transpileOptions = {
-      compilerOptions: options,
+      compilerOptions: options.typescriptOpts,
       fileName: filePath.match(/\.(ts|tsx)$/i) ? path.basename(filePath) : null
     };
 
-    if (isTsx) {
-      sourceCode = this.addHotModuleLoadingRegistration(sourceCode, filePath, this.getExportsForFile(filePath, options));
+    if (isTsx && options.builtinOpts.hotModuleReload !== false) {
+      sourceCode = this.addHotModuleLoadingRegistration(sourceCode, filePath, this.getExportsForFile(filePath, options.typescriptOpts));
     }
 
     const output = ts.transpileModule(sourceCode, transpileOptions);
