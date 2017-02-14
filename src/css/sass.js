@@ -38,7 +38,7 @@ export default class SassCompiler extends CompilerBase {
   }
 
   async compile(sourceCode, filePath, compilerContext) {
-    sass = sass || require('sass.js/dist/sass.node').Sass;
+    sass = sass || this.getSass();
 
     let thisPath = path.dirname(filePath);
     this.seenFilePaths[thisPath] = true;
@@ -92,7 +92,7 @@ export default class SassCompiler extends CompilerBase {
   }
 
   compileSync(sourceCode, filePath, compilerContext) {
-    sass = sass || require('sass.js/dist/sass.node').Sass;
+    sass = sass || this.getSass();
 
     let thisPath = path.dirname(filePath);
     this.seenFilePaths[thisPath] = true;
@@ -125,6 +125,12 @@ export default class SassCompiler extends CompilerBase {
       code: result.text,
       mimeType: 'text/css'
     };
+  }
+
+  getSass() {
+    let ret;
+    toutSuite(() => ret = require('sass.js/dist/sass.node').Sass);
+    return ret;
   }
 
   buildImporterCallback (includePaths) {
