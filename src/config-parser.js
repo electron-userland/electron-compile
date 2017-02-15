@@ -7,6 +7,8 @@ import {pfs} from './promise';
 import FileChangedCache from './file-change-cache';
 import CompilerHost from './compiler-host';
 import registerRequireExtension from './require-hook';
+import omit from 'lodash.omit';
+import merge from 'lodash.merge';
 
 const d = require('debug')('electron-compile:config-parser');
 
@@ -26,6 +28,37 @@ function statSyncNoException(fsPath) {
   }
 }
 
+/**
+ * Read compiler configuration from specified file.
+ * If configuration contains 'common' denominator with `env` object for environment
+ * specific configuration, returned object will inherit environment specific configuration
+ * from common configuration values.
+ *
+ * @param  {string} file  The path to a compiler configuration file
+ * @returns {Object} configuration objec from given file
+ */
+async function readCompilerConfig(file, env = 'development') {
+  const configuration = JSON.parse(await pfs.readFile(file, 'utf8'));
+  return readCompilerConfiguration(configuration, env);
+}
+
+function readCompilerConfigSync(file, env = 'development') {
+  const configuration = JSON.parse(fs.readFileSync(file, 'utf8'));
+  return readCompilerConfiguration(configuration, env);
+}
+
+export function readCompilerConfiguration(configObject, env) {
+  let config = configObject;
+
+  if ('babel' in configObject) {
+    d(`found 'babel' section in configuration, assume given object is package.json`);
+    config = configObject.babel;
+  }
+
+  return 'env' in config ?
+    merge({}, omit(config, 'env'), config.env[env]) :
+    config;
+}
 
 /**
  * Initialize the global hooks (protocol hook for file:, node.js hook)
@@ -89,12 +122,7 @@ export function init(appRoot, mainModule, productionMode = null, cacheDir = null
     compilerHost = CompilerHost.createReadonlyFromConfigurationSync(rootCacheDir, appRoot);
   } else {
     // if cacheDir was passed in, pass it along. Otherwise, default to a tempdir.
-    if (cacheDir) {
-      compilerHost = createCompilerHostFromProjectRootSync(appRoot, rootCacheDir);
-    } else {
-      compilerHost = createCompilerHostFromProjectRootSync(appRoot);
-    }
-
+    compilerHost = createCompilerHostFromProjectRootSync(appRoot, cacheDir ? rootCacheDir: null);
   }
 
   initializeGlobalHooks(compilerHost);
@@ -158,17 +186,8 @@ export function createCompilerHostFromConfiguration(info) {
  * @return {Promise<CompilerHost>}  A set-up compiler host
  */
 export async function createCompilerHostFromBabelRc(file, rootCacheDir=null) {
-  let info = JSON.parse(await pfs.readFile(file, 'utf8'));
-
-  // package.json
-  if ('babel' in info) {
-    info = info.babel;
-  }
-
-  if ('env' in info) {
-    let ourEnv = process.env.BABEL_ENV || process.env.NODE_ENV || 'development';
-    info = info.env[ourEnv];
-  }
+  const environment = process.env.BABEL_ENV || process.env.NODE_ENV || 'development';
+  const info = await readCompilerConfig(file, environment);
 
   // Are we still package.json (i.e. is there no babel info whatsoever?)
   if ('name' in info && 'version' in info) {
@@ -188,7 +207,6 @@ export async function createCompilerHostFromBabelRc(file, rootCacheDir=null) {
   });
 }
 
-
 /**
  * Creates a compiler host from a .compilerc file. This method is usually called
  * from {@link createCompilerHostFromProjectRoot} instead of used directly.
@@ -200,12 +218,8 @@ export async function createCompilerHostFromBabelRc(file, rootCacheDir=null) {
  * @return {Promise<CompilerHost>}  A set-up compiler host
  */
 export async function createCompilerHostFromConfigFile(file, rootCacheDir=null) {
-  let info = JSON.parse(await pfs.readFile(file, 'utf8'));
-
-  if ('env' in info) {
-    let ourEnv = process.env.ELECTRON_COMPILE_ENV || process.env.NODE_ENV || 'development';
-    info = info.env[ourEnv];
-  }
+  const environment = process.env.ELECTRON_COMPILE_ENV || process.env.NODE_ENV || 'development';
+  const info = await readCompilerConfig(file, environment);
 
   return createCompilerHostFromConfiguration({
     appRoot: path.dirname(file),
@@ -251,17 +265,8 @@ export async function createCompilerHostFromProjectRoot(rootDir, rootCacheDir=nu
 }
 
 export function createCompilerHostFromBabelRcSync(file, rootCacheDir=null) {
-  let info = JSON.parse(fs.readFileSync(file, 'utf8'));
-
-  // package.json
-  if ('babel' in info) {
-    info = info.babel;
-  }
-
-  if ('env' in info) {
-    let ourEnv = process.env.BABEL_ENV || process.env.NODE_ENV || 'development';
-    info = info.env[ourEnv];
-  }
+  const environment = process.env.BABEL_ENV || process.env.NODE_ENV || 'development';
+  const info = readCompilerConfigSync(file, environment);
 
   // Are we still package.json (i.e. is there no babel info whatsoever?)
   if ('name' in info && 'version' in info) {
@@ -282,12 +287,8 @@ export function createCompilerHostFromBabelRcSync(file, rootCacheDir=null) {
 }
 
 export function createCompilerHostFromConfigFileSync(file, rootCacheDir=null) {
-  let info = JSON.parse(fs.readFileSync(file, 'utf8'));
-
-  if ('env' in info) {
-    let ourEnv = process.env.ELECTRON_COMPILE_ENV || process.env.NODE_ENV || 'development';
-    info = info.env[ourEnv];
-  }
+  const environment = process.env.ELECTRON_COMPILE_ENV || process.env.NODE_ENV || 'development';
+  const info = readCompilerConfigSync(file, environment);
 
   return createCompilerHostFromConfiguration({
     appRoot: path.dirname(file),
