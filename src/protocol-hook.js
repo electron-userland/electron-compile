@@ -1,6 +1,7 @@
 import url from 'url';
 import fs from 'fs';
 import mime from '@paulcbetts/mime-types';
+import LRU from 'lru-cache';
 
 const magicWords = "__magic__file__to__help__electron__compile.js";
 
@@ -12,6 +13,21 @@ const magicGlobalForAppRootDir = '__electron_compile_app_root_dir';
 const d = require('debug')('electron-compile:protocol-hook');
 
 let protocol = null;
+
+const mapStatCache = new LRU({length: 512});
+function doesMapFileExist(filePath) {
+  let ret = mapStatCache.get(filePath);
+  if (ret !== undefined) return Promise.resolve(ret);
+
+  return new Promise((res) => {
+    fs.lstat(filePath, (err, s) => {
+      let failed = (err || !s);
+
+      mapStatCache.set(filePath, !failed);
+      res(!failed);
+    });
+  });
+}
 
 /**
  * Adds our script header to the top of all HTML files
@@ -135,6 +151,15 @@ export function initializeProtocolHook(compilerHost) {
       }
 
       requestFileJob(filePath, finish);
+      return;
+    }
+
+    // NB: Chromium will somehow decide that external source map references
+    // aren't relative to the file that was loaded for node.js modules, but
+    // relative to the HTML file. Since we can't really figure out what the
+    // real path is, we just need to squelch it.
+    if (filePath.match(/\.map$/i) && !(await doesMapFileExist(filePath))) {
+      finish({ data: new Buffer("", 'utf8'), mimeType: 'text/plain' });
       return;
     }
 
