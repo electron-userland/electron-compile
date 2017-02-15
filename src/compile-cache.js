@@ -23,10 +23,13 @@ export default class CompileCache {
    *
    * @param  {FileChangedCache} fileChangeCache  A file-change cache that is
    *                                             optionally pre-loaded.
+   * @param {string} sourceMapPath The directory to store sourcemap separately if compiler option enabled to emit.
+   *                               Default to cachePath if not specified.
    */
-  constructor(cachePath, fileChangeCache) {
+  constructor(cachePath, fileChangeCache, sourceMapPath = null) {
     this.cachePath = cachePath;
     this.fileChangeCache = fileChangeCache;
+    this.sourceMapPath = sourceMapPath || this.cachePath;
   }
 
   /**
@@ -46,9 +49,12 @@ export default class CompileCache {
    *
    * @param  {boolean} readOnlyMode  Don't attempt to create the cache directory.
    *
+   * @param {string} sourceMapPath The directory to store sourcemap separately if compiler option enabled to emit.
+   *                               Default to cachePath if not specified.
+   *
    * @return {CompileCache}  A configured CompileCache instance.
    */
-  static createFromCompiler(cachePath, compiler, fileChangeCache, readOnlyMode=false) {
+  static createFromCompiler(cachePath, compiler, fileChangeCache, readOnlyMode = false, sourceMapPath = null) {
     let newCachePath = null;
     let getCachePath = () => {
       if (newCachePath) return newCachePath;
@@ -70,6 +76,9 @@ export default class CompileCache {
 
     let ret = new CompileCache('', fileChangeCache);
     ret.getCachePath = getCachePath;
+
+    const newSourceMapPath = sourceMapPath;
+    ret.getSourceMapPath = () => newSourceMapPath || getCachePath();
 
     return ret;
   }
@@ -187,15 +196,21 @@ export default class CompileCache {
     let cacheResult = await this.get(filePath);
     let anyDependenciesChanged = await this.haveAnyDependentFilesChanged(cacheResult);
 
-     if ((cacheResult.code || cacheResult.binaryData) && !anyDependenciesChanged) {
-       return cacheResult;
-     }
+    if ((cacheResult.code || cacheResult.binaryData) && !anyDependenciesChanged) {
+      return cacheResult;
+    }
 
     let result = await fetcher(filePath, cacheResult.hashInfo) || { hashInfo: cacheResult.hashInfo };
 
     if (result.mimeType && !cacheResult.hashInfo.isInNodeModules) {
       d(`Cache miss: saving out info for ${filePath}`);
       await this.save(cacheResult.hashInfo, result.code || result.binaryData, result.mimeType, result.dependentFiles);
+
+      const map = result.sourceMaps;
+      if (map) {
+        d(`source map for ${filePath} found, saving it to ${this.getSourceMapPath()}`);
+        await this.saveSourceMap(cacheResult.hashInfo, filePath, map);
+      }
     }
 
     result.hashInfo = cacheResult.hashInfo;
@@ -291,10 +306,46 @@ export default class CompileCache {
       this.saveSync(cacheResult.hashInfo, result.code || result.binaryData, result.mimeType, result.dependentFiles);
     }
 
+    const map = result.sourceMaps;
+    if (map) {
+      d(`source map for ${filePath} found, saving it to ${this.getSourceMapPath()}`);
+      this.saveSourceMapSync(cacheResult.hashInfo, filePath, map);
+    }
+
     result.hashInfo = cacheResult.hashInfo;
     return result;
   }
 
+  buildSourceMapTarget(hashInfo, filePath) {
+    const fileName = path.basename(filePath);
+    const mapFileName = fileName.replace(path.extname(fileName), '.js.map');
+
+    const target = path.join(this.getSourceMapPath(), mapFileName);
+    d(`Sourcemap target is: ${target}`);
+
+    return target;
+  }
+
+  /**
+   * Saves sourcemap string into cache, or specified separate dir
+   *
+   * @param  {Object} hashInfo  The hash information returned from getHashForPath
+   *
+   * @param  {string} filePath Path to original file to construct sourcemap file name
+
+   * @param  {string} sourceMap Sourcemap data as string
+   *
+   * @memberOf CompileCache
+   */
+  async saveSourceMap(hashInfo, filePath, sourceMap) {
+    const target = this.buildSourceMapTarget(hashInfo, filePath);
+    await pfs.writeFile(target, sourceMap, 'utf-8');
+  }
+
+  saveSourceMapSync(hashInfo, filePath, sourceMap) {
+    const target = this.buildSourceMapTarget(hashInfo, filePath);
+    fs.writeFileSync(target, sourceMap, 'utf-8');
+  }
 
   /**
    * @private
@@ -305,6 +356,12 @@ export default class CompileCache {
     return this.cachePath;
   }
 
+  /**
+   * @private
+   */
+  getSourceMapPath() {
+    return this.sourceMapPath;
+  }
 
   /**
    * Returns whether a file should not be compiled. Note that this doesn't
