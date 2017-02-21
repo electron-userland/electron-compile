@@ -20,7 +20,7 @@ export function enableLiveReload(options={}) {
   if (process.type !== 'browser' || !global.globalCompilerHost) throw new Error("Call this from the browser process, right after initializing electron-compile");
 
   switch(strategy) {
-  case 'hmr':
+  case 'react-hmr':
     enableReactHMR();
     break;
   case 'naive':
@@ -64,11 +64,11 @@ function triggerHMRInRenderers() {
   BrowserWindow.getAllWindows().forEach((window) => {
     window.webContents.send('__electron-compile__HMR');
   });
-  return Promise.resolve();
 }
 
 function enableReactHMR() {
   global.__electron_compile_hmr_enabled__ = true;
+
   let filesWeCareAbout = global.globalCompilerHost.listenToCompileEvents()
     .filter(x => !FileChangedCache.isInNodeModules(x.filePath))
     .filter(x => x.filePath.endsWith('.js') || x.filePath.endsWith('.jsx'));
@@ -78,5 +78,5 @@ function enableReactHMR() {
     .guaranteedThrottle(1*1000);
 
   return weShouldReload
-    .switchMap(() => Observable.defer(() => Observable.fromPromise(triggerHMRInRenderers()).timeout(5*1000).catch(() => Observable.empty())));
+    .subscribe(() => triggerHMRInRenderers());
 }
