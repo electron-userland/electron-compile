@@ -112,7 +112,7 @@ export function init(appRoot, mainModule, productionMode = null, cacheDir = null
 export function createCompilerHostFromConfiguration(info) {
   let compilers = createCompilers();
   let rootCacheDir = info.rootCacheDir || calculateDefaultCompileCacheDirectory();
-  const sourceMapPath = info.rootCacheDir || info.sourceMapPath;
+  const sourceMapPath = info.sourceMapPath || info.rootCacheDir;
 
   if (info.sourceMapPath) {
     createSourceMapDirectory(sourceMapPath);
