@@ -76,8 +76,12 @@ export function initializeGlobalHooks(compilerHost) {
  *                            `appRoot/.cache` and dev mode will compile to a
  *                            temporary directory. If it is passed in, both modes
  *                            will cache to/from `appRoot/{cacheDir}`
+ *
+ * @param {string} sourceMapPath (optional) The directory to store sourcemap separately
+ *                               if compiler option enabled to emit.
+ *                               Default to cachePath if not specified, will be ignored for read-only mode.
  */
-export function init(appRoot, mainModule, productionMode = null, cacheDir = null) {
+export function init(appRoot, mainModule, productionMode = null, cacheDir = null, sourceMapPath = null) {
   let compilerHost = null;
   let rootCacheDir = path.join(appRoot, cacheDir || '.cache');
 
@@ -89,12 +93,9 @@ export function init(appRoot, mainModule, productionMode = null, cacheDir = null
     compilerHost = CompilerHost.createReadonlyFromConfigurationSync(rootCacheDir, appRoot);
   } else {
     // if cacheDir was passed in, pass it along. Otherwise, default to a tempdir.
-    if (cacheDir) {
-      compilerHost = createCompilerHostFromProjectRootSync(appRoot, rootCacheDir);
-    } else {
-      compilerHost = createCompilerHostFromProjectRootSync(appRoot);
-    }
-
+    const cachePath = cacheDir ? rootCacheDir : null;
+    const mapPath = sourceMapPath ? path.join(appRoot, sourceMapPath) : cachePath;
+    compilerHost = createCompilerHostFromProjectRootSync(appRoot, cachePath, mapPath);
   }
 
   initializeGlobalHooks(compilerHost);
@@ -111,8 +112,13 @@ export function init(appRoot, mainModule, productionMode = null, cacheDir = null
 export function createCompilerHostFromConfiguration(info) {
   let compilers = createCompilers();
   let rootCacheDir = info.rootCacheDir || calculateDefaultCompileCacheDirectory();
+  const sourceMapPath = info.rootCacheDir || info.sourceMapPath;
 
-  d(`Creating CompilerHost: ${JSON.stringify(info)}, rootCacheDir = ${rootCacheDir}`);
+  if (info.sourceMapPath) {
+    createSourceMapDirectory(sourceMapPath);
+  }
+
+  d(`Creating CompilerHost: ${JSON.stringify(info)}, rootCacheDir = ${rootCacheDir}, sourceMapPath = ${sourceMapPath}`);
   let fileChangeCache = new FileChangedCache(info.appRoot);
 
   let compilerInfo = path.join(rootCacheDir, 'compiler-info.json.gz');
@@ -157,7 +163,7 @@ export function createCompilerHostFromConfiguration(info) {
  *
  * @return {Promise<CompilerHost>}  A set-up compiler host
  */
-export async function createCompilerHostFromBabelRc(file, rootCacheDir=null) {
+export async function createCompilerHostFromBabelRc(file, rootCacheDir=null, sourceMapPath = null) {
   let info = JSON.parse(await pfs.readFile(file, 'utf8'));
 
   // package.json
@@ -175,7 +181,8 @@ export async function createCompilerHostFromBabelRc(file, rootCacheDir=null) {
     return createCompilerHostFromConfiguration({
       appRoot: path.dirname(file),
       options: getDefaultConfiguration(),
-      rootCacheDir
+      rootCacheDir,
+      sourceMapPath
     });
   }
 
@@ -184,7 +191,8 @@ export async function createCompilerHostFromBabelRc(file, rootCacheDir=null) {
     options: {
       'application/javascript': info
     },
-    rootCacheDir
+    rootCacheDir,
+    sourceMapPath
   });
 }
 
@@ -199,7 +207,7 @@ export async function createCompilerHostFromBabelRc(file, rootCacheDir=null) {
  *
  * @return {Promise<CompilerHost>}  A set-up compiler host
  */
-export async function createCompilerHostFromConfigFile(file, rootCacheDir=null) {
+export async function createCompilerHostFromConfigFile(file, rootCacheDir=null, sourceMapPath = null) {
   let info = JSON.parse(await pfs.readFile(file, 'utf8'));
 
   if ('env' in info) {
@@ -210,7 +218,8 @@ export async function createCompilerHostFromConfigFile(file, rootCacheDir=null) 
   return createCompilerHostFromConfiguration({
     appRoot: path.dirname(file),
     options: info,
-    rootCacheDir
+    rootCacheDir,
+    sourceMapPath
   });
 }
 
@@ -226,31 +235,34 @@ export async function createCompilerHostFromConfigFile(file, rootCacheDir=null) 
  *
  * @param  {string} rootCacheDir (optional)  The directory to use as a cache.
  *
+ * @param {string} sourceMapPath (optional) The directory to store sourcemap separately
+ *                               if compiler option enabled to emit.
+ *
  * @return {Promise<CompilerHost>}  A set-up compiler host
  */
-export async function createCompilerHostFromProjectRoot(rootDir, rootCacheDir=null) {
+export async function createCompilerHostFromProjectRoot(rootDir, rootCacheDir = null, sourceMapPath = null) {
   let compilerc = path.join(rootDir, '.compilerc');
   if (statSyncNoException(compilerc)) {
     d(`Found a .compilerc at ${compilerc}, using it`);
-    return await createCompilerHostFromConfigFile(compilerc, rootCacheDir);
+    return await createCompilerHostFromConfigFile(compilerc, rootCacheDir, sourceMapPath);
   }
   compilerc += '.json';
   if (statSyncNoException(compilerc)) {
     d(`Found a .compilerc at ${compilerc}, using it`);
-    return await createCompilerHostFromConfigFile(compilerc, rootCacheDir);
+    return await createCompilerHostFromConfigFile(compilerc, rootCacheDir, sourceMapPath);
   }
 
   let babelrc = path.join(rootDir, '.babelrc');
   if (statSyncNoException(babelrc)) {
     d(`Found a .babelrc at ${babelrc}, using it`);
-    return await createCompilerHostFromBabelRc(babelrc, rootCacheDir);
+    return await createCompilerHostFromBabelRc(babelrc, rootCacheDir, sourceMapPath);
   }
 
   d(`Using package.json or default parameters at ${rootDir}`);
-  return await createCompilerHostFromBabelRc(path.join(rootDir, 'package.json'), rootCacheDir);
+  return await createCompilerHostFromBabelRc(path.join(rootDir, 'package.json'), rootCacheDir, sourceMapPath);
 }
 
-export function createCompilerHostFromBabelRcSync(file, rootCacheDir=null) {
+export function createCompilerHostFromBabelRcSync(file, rootCacheDir=null, sourceMapPath = null) {
   let info = JSON.parse(fs.readFileSync(file, 'utf8'));
 
   // package.json
@@ -268,7 +280,8 @@ export function createCompilerHostFromBabelRcSync(file, rootCacheDir=null) {
     return createCompilerHostFromConfiguration({
       appRoot: path.dirname(file),
       options: getDefaultConfiguration(),
-      rootCacheDir
+      rootCacheDir,
+      sourceMapPath
     });
   }
 
@@ -277,11 +290,12 @@ export function createCompilerHostFromBabelRcSync(file, rootCacheDir=null) {
     options: {
       'application/javascript': info
     },
-    rootCacheDir
+    rootCacheDir,
+    sourceMapPath
   });
 }
 
-export function createCompilerHostFromConfigFileSync(file, rootCacheDir=null) {
+export function createCompilerHostFromConfigFileSync(file, rootCacheDir=null, sourceMapPath = null) {
   let info = JSON.parse(fs.readFileSync(file, 'utf8'));
 
   if ('env' in info) {
@@ -292,25 +306,26 @@ export function createCompilerHostFromConfigFileSync(file, rootCacheDir=null) {
   return createCompilerHostFromConfiguration({
     appRoot: path.dirname(file),
     options: info,
-    rootCacheDir
+    rootCacheDir,
+    sourceMapPath
   });
 }
 
-export function createCompilerHostFromProjectRootSync(rootDir, rootCacheDir=null) {
+export function createCompilerHostFromProjectRootSync(rootDir, rootCacheDir = null, sourceMapPath = null) {
   let compilerc = path.join(rootDir, '.compilerc');
   if (statSyncNoException(compilerc)) {
     d(`Found a .compilerc at ${compilerc}, using it`);
-    return createCompilerHostFromConfigFileSync(compilerc, rootCacheDir);
+    return createCompilerHostFromConfigFileSync(compilerc, rootCacheDir, sourceMapPath);
   }
 
   let babelrc = path.join(rootDir, '.babelrc');
   if (statSyncNoException(babelrc)) {
     d(`Found a .babelrc at ${babelrc}, using it`);
-    return createCompilerHostFromBabelRcSync(babelrc, rootCacheDir);
+    return createCompilerHostFromBabelRcSync(babelrc, rootCacheDir, sourceMapPath);
   }
 
   d(`Using package.json or default parameters at ${rootDir}`);
-  return createCompilerHostFromBabelRcSync(path.join(rootDir, 'package.json'), rootCacheDir);
+  return createCompilerHostFromBabelRcSync(path.join(rootDir, 'package.json'), rootCacheDir, sourceMapPath);
 }
 
 /**
@@ -331,6 +346,10 @@ export function calculateDefaultCompileCacheDirectory() {
   return cacheDir;
 }
 
+function createSourceMapDirectory(sourceMapPath) {
+  mkdirp.sync(sourceMapPath);
+  d(`Using separate sourcemap path at ${sourceMapPath}`);
+}
 
 /**
  * Returns the default .configrc if no configuration information can be found.

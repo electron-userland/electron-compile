@@ -16,7 +16,7 @@ process.on('uncaughtException', (e) => {
   d(e.stack || '');
 });
 
-export async function main(appDir, sourceDirs, cacheDir) {
+export async function main(appDir, sourceDirs, cacheDir, sourceMapDir) {
   let compilerHost = null;
   if (!cacheDir || cacheDir.length < 1) {
     cacheDir = '.cache';
@@ -24,6 +24,13 @@ export async function main(appDir, sourceDirs, cacheDir) {
 
   let rootCacheDir = path.join(appDir, cacheDir);
   mkdirp.sync(rootCacheDir);
+  let mapDir = rootCacheDir;
+
+  if (sourceMapDir) {
+    mapDir = path.join(appDir, sourceMapDir);
+    d(`specifed separate source map dir at ${mapDir}, creating it`);
+    mkdirp.sync(mapDir);
+  }
 
   if (process.env.NODE_ENV !== 'production') {
     console.log(`Using NODE_ENV = ${process.env.NODE_ENV || 'development'}`);
@@ -31,7 +38,7 @@ export async function main(appDir, sourceDirs, cacheDir) {
 
   d(`main: ${appDir}, ${JSON.stringify(sourceDirs)}`);
   try {
-    compilerHost = await createCompilerHostFromProjectRoot(appDir, rootCacheDir);
+    compilerHost = await createCompilerHostFromProjectRoot(appDir, rootCacheDir, sourceMapDir);
   } catch (e) {
     console.error(`Couldn't set up compilers: ${e.message}`);
     d(e.stack);
@@ -64,7 +71,8 @@ const yargs = require('yargs')
   .default('a', process.cwd())
   .alias('c', 'cachedir')
   .describe('c', 'The directory to put the cache')
-  .default('c', '.cache')
+  .alias('s', 'sourcemapdir')
+  .describe('s', 'The directory to store sourcemap if compiler configured to have sourcemap file. Default to cachedir if not specified.')
   .help('h')
   .alias('h', 'help')
   .epilog('Copyright 2015');
@@ -80,8 +88,9 @@ if (process.mainModule === module) {
   const sourceDirs = argv._;
   const appDir = argv.a;
   const cacheDir = argv.c;
+  const sourceMapDir = argv.s;
 
-  main(appDir, sourceDirs, cacheDir)
+  main(appDir, sourceDirs, cacheDir, sourceMapDir)
     .then(() => process.exit(0))
     .catch((e) => {
       console.error(e.message || e);

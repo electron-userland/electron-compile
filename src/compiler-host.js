@@ -66,8 +66,12 @@ export default class CompilerHost {
    *                                         alternate fallback is the compiler for
    *                                         'text/plain', which is guaranteed to be
    *                                         present.
+   *
+   * @param {string} sourceMapPath (optional) The directory to store sourcemap separately
+   *                               if compiler option enabled to emit.
+   *                               Default to cachePath if not specified.
    */
-  constructor(rootCacheDir, compilers, fileChangeCache, readOnlyMode, fallbackCompiler = null) {
+  constructor(rootCacheDir, compilers, fileChangeCache, readOnlyMode, fallbackCompiler = null, sourceMapPath = null) {
     let compilersByMimeType = Object.assign({}, compilers);
     Object.assign(this, {rootCacheDir, compilersByMimeType, fileChangeCache, readOnlyMode, fallbackCompiler});
     this.appRoot = this.fileChangeCache.appRoot;
@@ -78,7 +82,7 @@ export default class CompilerHost {
 
       acc.set(
         compiler,
-        CompileCache.createFromCompiler(rootCacheDir, compiler, fileChangeCache, readOnlyMode));
+        CompileCache.createFromCompiler(rootCacheDir, compiler, fileChangeCache, readOnlyMode, sourceMapPath));
       return acc;
     }, new Map());
   }
