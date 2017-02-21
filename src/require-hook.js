@@ -12,7 +12,7 @@ if (process.type === 'renderer') {
 
   if (HMR) {
     electron.ipcRenderer.on('__electron-compile__HMR', () => {
-      console.log("Got HMR signal!");
+      d("Got HMR signal!");
 
       // Reset the module cache
       let cache = require('module')._cache;
