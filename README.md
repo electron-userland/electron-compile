@@ -79,10 +79,23 @@ import {enableLiveReload} from 'electron-compile';
 enableLiveReload();
 ```
 
-This will do a simple refresh-based reload. If you are using React, you can also enable Hot Module Reloading, with a bit of setup:
+#### React Hot Module Loading
+
+If you are using React, you can also enable Hot Module Reloading for both JavaScript JSX files as well as TypeScript, with a bit of setup:
 
 1. `npm install --save react-hot-loader@next`
 1. Call `enableLiveReload({strategy: 'react-hmr'});` in your main file, after `app.ready` (similar to above)
+1. If you're using TypeScript, you're good out-of-the-box. If you're using JavaScript via Babel, add 'react-hot-loader/babel' to your plugins in `.compilerc`:
+
+```js
+{
+  "application/javascript": {
+    "presets": ["react", "es2017-node7"],
+    "plugins": ['react-hot-loader/babel', 'transform-async-to-generator']
+  }
+}
+```
+
 1. In your `index.html`, replace your initial call to `render`:
 
 Typical code without React HMR:
