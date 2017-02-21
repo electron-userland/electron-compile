@@ -1,12 +1,13 @@
 import mimeTypes from '@paulcbetts/mime-types';
-import electron from 'electron';
 
 let HMR = false;
 
 const d = require('debug')('electron-compile:require-hook');
+let electron = null;
 
 if (process.type === 'renderer') {
   window.__hot = [];
+  electron = require('electron');
   HMR = electron.remote.getGlobal('__electron_compile_hmr_enabled__');
 
   if (HMR) {
