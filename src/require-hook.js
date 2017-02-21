@@ -8,16 +8,18 @@ if (process.type === 'renderer') {
   window.__hot = [];
   HMR = electron.remote.getGlobal('__electron_compile_hmr_enabled__');
 
-  electron.ipcRenderer.on('__electron-compile__HMR', () => {
-    // Reset the module cache
-    require('module')._cache = {};
-    window.__hot.forEach(fn => fn());
-  });
+  if (HMR) {
+    electron.ipcRenderer.on('__electron-compile__HMR', () => {
+      // Reset the module cache
+      require('module')._cache = {};
+      window.__hot.forEach(fn => fn());
+    });
 
-  try {
-    require('react-hot-loader/patch');
-  } catch (e) {
-    console.error(`Couldn't require react-hot-loader/patch, you need to add react-hot-loader@3 as a dependency! ${e.message}`);
+    try {
+      require('react-hot-loader/patch');
+    } catch (e) {
+      console.error(`Couldn't require react-hot-loader/patch, you need to add react-hot-loader@3 as a dependency! ${e.message}`);
+    }
   }
 }
 
@@ -36,12 +38,15 @@ export default function registerRequireExtension(compilerHost) {
 
     require.extensions[`.${ext}`] = (module, filename) => {
       let {code} = compilerHost.compileSync(filename);
+
       if (injectModuleHot) {
         code = 'module.hot={accept:(cb)=>window.__hot.push(cb)};' + code;
       }
+
       if (code === null) {
         console.error(`null code returned for "${filename}".  Please raise an issue on 'electron-compile' with the contents of this file.`);
       }
+
       module._compile(code, filename);
     };
   });
