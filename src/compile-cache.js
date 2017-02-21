@@ -189,10 +189,13 @@ export default class CompileCache {
    *
    * @param  {Function} fetcher  A method which conforms to the description above.
    *
+   * @param  {string} appRoot   (optional)The top-level directory for your application to consturct hierarchy for map files.
+   *                            If not specified, all maps are stored as flattened under given sourcemap path.
+   *
    * @return {Promise<Object>}  An Object which has the same fields as the
    *                            {@link get} method return result.
    */
-  async getOrFetch(filePath, fetcher) {
+  async getOrFetch(filePath, fetcher, appRoot = null) {
     let cacheResult = await this.get(filePath);
     let anyDependenciesChanged = await this.haveAnyDependentFilesChanged(cacheResult);
 
@@ -209,7 +212,7 @@ export default class CompileCache {
       const map = result.sourceMaps;
       if (map) {
         d(`source map for ${filePath} found, saving it to ${this.getSourceMapPath()}`);
-        await this.saveSourceMap(cacheResult.hashInfo, filePath, map);
+        await this.saveSourceMap(cacheResult.hashInfo, filePath, appRoot, map);
       }
     }
 
@@ -295,7 +298,7 @@ export default class CompileCache {
     fs.writeFileSync(target, buf);
   }
 
-  getOrFetchSync(filePath, fetcher) {
+  getOrFetchSync(filePath, fetcher, appRoot = null) {
     let cacheResult = this.getSync(filePath);
     if (cacheResult.code || cacheResult.binaryData) return cacheResult;
 
@@ -309,18 +312,19 @@ export default class CompileCache {
     const map = result.sourceMaps;
     if (map) {
       d(`source map for ${filePath} found, saving it to ${this.getSourceMapPath()}`);
-      this.saveSourceMapSync(cacheResult.hashInfo, filePath, map);
+      this.saveSourceMapSync(cacheResult.hashInfo, filePath, appRoot, map);
     }
 
     result.hashInfo = cacheResult.hashInfo;
     return result;
   }
 
-  buildSourceMapTarget(hashInfo, filePath) {
-    const fileName = path.basename(filePath);
-    const mapFileName = fileName.replace(path.extname(fileName), '.js.map');
-
+  buildSourceMapTarget(hashInfo, filePath, appRoot) {
+    const mapPath = appRoot ? path.relative(appRoot, filePath) : filePath;
+    const mapFileName = mapPath.replace(path.extname(filePath), '.js.map');
     const target = path.join(this.getSourceMapPath(), mapFileName);
+
+    mkdirp.sync(path.dirname(target));
     d(`Sourcemap target is: ${target}`);
 
     return target;
@@ -332,18 +336,21 @@ export default class CompileCache {
    * @param  {Object} hashInfo  The hash information returned from getHashForPath
    *
    * @param  {string} filePath Path to original file to construct sourcemap file name
-
+   *
+   * @param  {string} appRoot The top-level directory for your application to consturct hierarchy for map files.
+   *                          If not specified, all maps are stored as flattened under given sourcemap path.
+   *
    * @param  {string} sourceMap Sourcemap data as string
    *
    * @memberOf CompileCache
    */
-  async saveSourceMap(hashInfo, filePath, sourceMap) {
-    const target = this.buildSourceMapTarget(hashInfo, filePath);
+  async saveSourceMap(hashInfo, filePath, appRoot, sourceMap) {
+    const target = this.buildSourceMapTarget(hashInfo, filePath, appRoot);
     await pfs.writeFile(target, sourceMap, 'utf-8');
   }
 
-  saveSourceMapSync(hashInfo, filePath, sourceMap) {
-    const target = this.buildSourceMapTarget(hashInfo, filePath);
+  saveSourceMapSync(hashInfo, filePath, appRoot, sourceMap) {
+    const target = this.buildSourceMapTarget(hashInfo, filePath, appRoot);
     fs.writeFileSync(target, sourceMap, 'utf-8');
   }
 

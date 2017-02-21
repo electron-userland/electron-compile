@@ -149,10 +149,13 @@ export default class CompilerHost {
    *                                         alternate fallback is the compiler for
    *                                         'text/plain', which is guaranteed to be
    *                                         present.
+   * @param {string} sourceMapPath (optional) The directory to store sourcemap separately
+   *                               if compiler option enabled to emit.
+   *                               Default to cachePath if not specified.
    *
    * @return {Promise<CompilerHost>}  A read-only CompilerHost
    */
-  static async createFromConfiguration(rootCacheDir, appRoot, compilersByMimeType, fallbackCompiler=null) {
+  static async createFromConfiguration(rootCacheDir, appRoot, compilersByMimeType, fallbackCompiler = null, sourceMapPath = null) {
     let target = path.join(rootCacheDir, 'compiler-info.json.gz');
     let buf = await pfs.readFile(target);
     let info = JSON.parse(await pzlib.gunzip(buf));
@@ -164,7 +167,7 @@ export default class CompilerHost {
       compilersByMimeType[x].compilerOptions = cur.compilerOptions;
     });
 
-    return new CompilerHost(rootCacheDir, compilersByMimeType, fileChangeCache, false, fallbackCompiler);
+    return new CompilerHost(rootCacheDir, compilersByMimeType, fileChangeCache, false, fallbackCompiler, sourceMapPath);
   }
 
 
@@ -306,7 +309,8 @@ export default class CompilerHost {
     let cache = this.cachesForCompilers.get(compiler);
     return await cache.getOrFetch(
       filePath,
-      (filePath, hashInfo) => this.compileUncached(filePath, hashInfo, compiler));
+      (filePath, hashInfo) => this.compileUncached(filePath, hashInfo, compiler),
+      this.appRoot);
   }
 
   /**
@@ -421,7 +425,7 @@ export default class CompilerHost {
     return new CompilerHost(rootCacheDir, compilers, fileChangeCache, true, fallbackCompiler);
   }
 
-  static createFromConfigurationSync(rootCacheDir, appRoot, compilersByMimeType, fallbackCompiler=null) {
+  static createFromConfigurationSync(rootCacheDir, appRoot, compilersByMimeType, fallbackCompiler=null, sourceMapPath = null) {
     let target = path.join(rootCacheDir, 'compiler-info.json.gz');
     let buf = fs.readFileSync(target);
     let info = JSON.parse(zlib.gunzipSync(buf));
@@ -433,7 +437,7 @@ export default class CompilerHost {
       compilersByMimeType[x].compilerOptions = cur.compilerOptions;
     });
 
-    return new CompilerHost(rootCacheDir, compilersByMimeType, fileChangeCache, false, fallbackCompiler);
+    return new CompilerHost(rootCacheDir, compilersByMimeType, fileChangeCache, false, fallbackCompiler, sourceMapPath);
   }
 
   saveConfigurationSync() {
@@ -545,7 +549,8 @@ export default class CompilerHost {
     let cache = this.cachesForCompilers.get(compiler);
     return cache.getOrFetchSync(
       filePath,
-      (filePath, hashInfo) => this.compileUncachedSync(filePath, hashInfo, compiler));
+      (filePath, hashInfo) => this.compileUncachedSync(filePath, hashInfo, compiler),
+      this.appRoot);
   }
 
   compileUncachedSync(filePath, hashInfo, compiler) {
