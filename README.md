@@ -136,7 +136,7 @@ If you've got a `.babelrc` and that's all you want to customize, you can simply 
 The opening Object is a list of MIME Types, and options passed to the compiler implementation. These parameters are documented here:
 
 * Babel - http://babeljs.io/docs/usage/options
-* CoffeeScript - http://coffeescript.org/documentation/docs/coffee-script.html#section-5
+* CoffeeScript - https://web.archive.org/web/20160110101607/http://coffeescript.org/documentation/docs/coffee-script.html#section-5
 * TypeScript - https://github.com/Microsoft/TypeScript/blob/v1.5.0-beta/bin/typescriptServices.d.ts#L1076
 * Less - http://lesscss.org/usage/index.html#command-line-usage-options
 * Jade - http://jade-lang.com/api
