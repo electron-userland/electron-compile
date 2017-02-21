@@ -1,17 +1,24 @@
 import mimeTypes from '@paulcbetts/mime-types';
 import electron from 'electron';
 
-const HMR = electron.remote && electron.remote.getGlobal('__electron_compile_hmr_enabled__');
+let HMR = false;
 const HMRSupported = ['text/jsx', 'application/javascript'];
 
 if (process.type === 'renderer') {
   window.__hot = [];
+  HMR = electron.remote.getGlobal('__electron_compile_hmr_enabled__');
 
   electron.ipcRenderer.on('__electron-compile__HMR', () => {
     // Reset the module cache
     require('module')._cache = {};
     window.__hot.forEach(fn => fn());
   });
+
+  try {
+    require('react-hot-loader/patch');
+  } catch (e) {
+    console.error(`Couldn't require react-hot-loader/patch, you need to add react-hot-loader@3 as a dependency! ${e.message}`);
+  }
 }
 
 /**
