@@ -3,6 +3,8 @@ import electron from 'electron';
 
 let HMR = false;
 
+const d = require('debug')('electron-compile:require-hook');
+
 if (process.type === 'renderer') {
   window.__hot = [];
   HMR = electron.remote.getGlobal('__electron_compile_hmr_enabled__');
@@ -13,8 +15,11 @@ if (process.type === 'renderer') {
 
       // Reset the module cache
       let cache = require('module')._cache;
-      let toEject = Object.keys(cache).filter(x => x && !x.match(/\\\/(node_modules|.*asar)\\\//i));
-      toEject.forEach(x => delete cache[x]);
+      let toEject = Object.keys(cache).filter(x => x && !x.match(/[\\\/](node_modules|.*\.asar)[\\\/]/i));
+      toEject.forEach(x => {
+        d(`Removing node module entry for ${x}`);
+        delete cache[x];
+      });
 
       window.__hot.forEach(fn => fn());
     });
