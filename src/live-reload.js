@@ -49,7 +49,7 @@ function reloadAllWindows() {
 
 function enableLiveReloadNaive() {
   let filesWeCareAbout = global.globalCompilerHost.listenToCompileEvents()
-    .filter(x => !FileChangedCache.isInNodeModules(x.filePath))
+    .filter(x => !FileChangedCache.isInNodeModules(x.filePath));
 
   let weShouldReload = filesWeCareAbout
     .mergeMap(x => watchPath(x.filePath).map(() => x))
@@ -64,19 +64,21 @@ function triggerHMRInRenderers() {
   BrowserWindow.getAllWindows().forEach((window) => {
     window.webContents.send('__electron-compile__HMR');
   });
+
+  return Promise.resolve(true);
 }
 
 function enableReactHMR() {
   global.__electron_compile_hmr_enabled__ = true;
 
   let filesWeCareAbout = global.globalCompilerHost.listenToCompileEvents()
-    .filter(x => !FileChangedCache.isInNodeModules(x.filePath))
-    .filter(x => x.filePath.endsWith('.js') || x.filePath.endsWith('.jsx'));
+    .filter(x => !FileChangedCache.isInNodeModules(x.filePath));
 
   let weShouldReload = filesWeCareAbout
     .mergeMap(x => watchPath(x.filePath).map(() => x))
     .guaranteedThrottle(1*1000);
 
   return weShouldReload
-    .subscribe(() => triggerHMRInRenderers());
+    .switchMap(() => Observable.defer(() => Observable.fromPromise(triggerHMRInRenderers()).catch(() => Observable.empty())))
+    .subscribe(() => console.log("HMR sent to all windows!"));
 }

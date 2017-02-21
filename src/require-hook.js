@@ -2,7 +2,6 @@ import mimeTypes from '@paulcbetts/mime-types';
 import electron from 'electron';
 
 let HMR = false;
-const HMRSupported = ['text/jsx', 'application/javascript'];
 
 if (process.type === 'renderer') {
   window.__hot = [];
@@ -10,16 +9,15 @@ if (process.type === 'renderer') {
 
   if (HMR) {
     electron.ipcRenderer.on('__electron-compile__HMR', () => {
+      console.log("Got HMR signal!");
+
       // Reset the module cache
-      require('module')._cache = {};
+      let cache = require('module')._cache;
+      let toEject = Object.keys(cache).filter(x => x && !x.match(/\\\/(node_modules|.*asar)\\\//i));
+      toEject.forEach(x => delete cache[x]);
+
       window.__hot.forEach(fn => fn());
     });
-
-    try {
-      require('react-hot-loader/patch');
-    } catch (e) {
-      console.error(`Couldn't require react-hot-loader/patch, you need to add react-hot-loader@3 as a dependency! ${e.message}`);
-    }
   }
 }
 
@@ -32,16 +30,23 @@ if (process.type === 'renderer') {
  * @param  {CompilerHost} compilerHost  The compiler host to use for compilation.
  */
 export default function registerRequireExtension(compilerHost) {
+  if (HMR) {
+    try {
+      require('module').prototype.hot = {
+        accept: (cb) => window.__hot.push(cb)
+      };
+
+      require.main.require('react-hot-loader/patch');
+    } catch (e) {
+      console.error(`Couldn't require react-hot-loader/patch, you need to add react-hot-loader@3 as a dependency! ${e.message}`);
+    }
+  }
+
   Object.keys(compilerHost.compilersByMimeType).forEach((mimeType) => {
     let ext = mimeTypes.extension(mimeType);
-    const injectModuleHot = HMR && (HMRSupported.indexOf(mimeType) !== -1);
 
     require.extensions[`.${ext}`] = (module, filename) => {
       let {code} = compilerHost.compileSync(filename);
-
-      if (injectModuleHot) {
-        code = 'module.hot={accept:(cb)=>window.__hot.push(cb)};' + code;
-      }
 
       if (code === null) {
         console.error(`null code returned for "${filename}".  Please raise an issue on 'electron-compile' with the contents of this file.`);
