@@ -79,7 +79,40 @@ import {enableLiveReload} from 'electron-compile';
 enableLiveReload();
 ```
 
-Currently LiveReload simply reloads the page, but future versions of electron-compile will support React Hot Module Loading.
+This will do a simple refresh-based reload. If you are using React, you can also enable Hot Module Reloading, with a bit of setup:
+
+1. `npm install --save react-hot-loader@next`
+1. Call `enableLiveReload({strategy: 'react-hmr'});` in your main file, after `app.ready` (similar to above)
+1. In your `index.html`, replace your initial call to `render`:
+
+Typical code without React HMR:
+
+```js
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
+import { MyApp } from './my-app';
+
+ReactDOM.render(<MyApp/>, document.getElementById('app'));
+```
+
+Rewrite this as:
+
+```js
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
+import { AppContainer } from 'react-hot-loader';
+
+const render = () => {
+  // NB: We have to re-require MyApp every time or else this won't work
+  // We also need to wrap our app in the AppContainer class
+  const MyApp = require('./myapp').MyApp;
+  ReactDOM.render(<AppContainer><MyApp/></AppContainer>, document.getElementById('app'));
+}
+
+render();
+if (module.hot) { module.hot.accept(render); }
+```
+
 
 ### Something isn't working / I'm getting weird errors
 
