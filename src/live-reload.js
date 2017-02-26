@@ -54,9 +54,9 @@ const defaultOptions = {
     'text/tsx': 'react-hmr',
     'text/jsx': 'react-hmr',
     'application/javascript': 'react-hmr',
-    'text/stylus': 'hot-assets',
-    'text/sass': 'hot-assets',
-    'text/scss': 'hot-assets'
+    'text/stylus': 'hot-stylesheets',
+    'text/sass': 'hot-stylesheets',
+    'text/scss': 'hot-stylesheets'
   }
 }
 
@@ -83,7 +83,7 @@ export function enableLiveReload(options=defaultOptions) {
     case 'react-hmr':
       global.__electron_compile_hmr_enabled__ = true;
       break;
-    case 'hot-assets':
+    case 'hot-stylesheets':
       global.__electron_compile_stylesheet_reload_enabled__ = true;
       break;
     }
@@ -97,7 +97,7 @@ export function enableLiveReload(options=defaultOptions) {
       case 'react-hmr':
         setupWatchHMR(x.filePath)
         break;
-      case 'hot-assets':
+      case 'hot-stylesheets':
         setWatchHotAssets(x.filePath)
         break;
       case 'naive':
