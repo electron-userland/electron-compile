@@ -33,8 +33,6 @@ function reloadAllWindows() {
 }
 
 function triggerHMRInRenderers() {
-  console.log('wat')
-
   BrowserWindow.getAllWindows().forEach((window) => {
     window.webContents.send('__electron-compile__HMR');
   });
@@ -81,8 +79,6 @@ export function enableLiveReload(options=defaultOptions) {
   let { strategy } = options;
 
   if (process.type !== 'browser' || !global.globalCompilerHost) throw new Error("Call this from the browser process, right after initializing electron-compile");
-
-  console.log()
 
   // Enable the methods described in the reload strategy
   for (let mime of Object.keys(strategy)) { 
