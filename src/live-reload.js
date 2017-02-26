@@ -56,7 +56,8 @@ const defaultOptions = {
     'application/javascript': 'react-hmr',
     'text/stylus': 'hot-stylesheets',
     'text/sass': 'hot-stylesheets',
-    'text/scss': 'hot-stylesheets'
+    'text/scss': 'hot-stylesheets',
+    'text/css' : 'hot-stylesheets'
   }
 }
 
