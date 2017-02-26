@@ -65,9 +65,6 @@ function setupWatchHMR(filePath) {
 }
 
 function setWatchHotAssets(filePath) {
-  // Deep dependencies of stylesheets don't seem to hit the CompilerHost 
-  // so we generate our own dependency trees.
-
   watchPath(filePath).subscribe(() => triggerAssetReloadInRenderers(filePath))
 }
 
