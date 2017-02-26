@@ -14,21 +14,6 @@ import 'rxjs/add/operator/mergeMap';
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/timeout';
 
-export function enableLiveReload(options={}) {
-  let { strategy } = options;
-
-  if (process.type !== 'browser' || !global.globalCompilerHost) throw new Error("Call this from the browser process, right after initializing electron-compile");
-
-  switch(strategy) {
-  case 'react-hmr':
-    enableReactHMR();
-    break;
-  case 'naive':
-  default:
-    enableLiveReloadNaive();
-  }
-}
-
 let BrowserWindow;
 if (process.type === 'browser') {
   BrowserWindow = require('electron').BrowserWindow;
@@ -47,20 +32,9 @@ function reloadAllWindows() {
   return Promise.all(ret);
 }
 
-function enableLiveReloadNaive() {
-  let filesWeCareAbout = global.globalCompilerHost.listenToCompileEvents()
-    .filter(x => !FileChangedCache.isInNodeModules(x.filePath));
-
-  let weShouldReload = filesWeCareAbout
-    .mergeMap(x => watchPath(x.filePath).map(() => x))
-    .guaranteedThrottle(1*1000);
-
-  return weShouldReload
-    .switchMap(() => Observable.defer(() => Observable.fromPromise(reloadAllWindows()).timeout(5*1000).catch(() => Observable.empty())))
-    .subscribe(() => console.log("Reloaded all windows!"));
-}
-
 function triggerHMRInRenderers() {
+  console.log('wat')
+
   BrowserWindow.getAllWindows().forEach((window) => {
     window.webContents.send('__electron-compile__HMR');
   });
@@ -68,17 +42,74 @@ function triggerHMRInRenderers() {
   return Promise.resolve(true);
 }
 
-function enableReactHMR() {
-  global.__electron_compile_hmr_enabled__ = true;
+function triggerAssetReloadInRenderers(filePath) {
+  BrowserWindow.getAllWindows().forEach((window) => {
+    window.webContents.send('__electron-compile__stylesheet_reload', filePath);
+  });
 
+  return Promise.resolve(true);
+}
+
+const defaultOptions = {
+  'strategy': {
+    'text/html': 'naive',
+    'text/tsx': 'react-hmr',
+    'text/jsx': 'react-hmr',
+    'application/javascript': 'react-hmr',
+    'text/stylus': 'hot-assets',
+    'text/sass': 'hot-assets',
+    'text/scss': 'hot-assets'
+  }
+}
+
+function setupWatchHMR(filePath) {
+  watchPath(filePath).subscribe(() => triggerHMRInRenderers())
+}
+
+function setWatchHotAssets(filePath) {
+  // Deep dependencies of stylesheets don't seem to hit the CompilerHost 
+  // so we generate our own dependency trees.
+
+  watchPath(filePath).subscribe(() => triggerAssetReloadInRenderers(filePath))
+}
+
+function setupWatchNaive(filePath) {
+  watchPath(filePath).subscribe(() => reloadAllWindows())
+}
+
+export function enableLiveReload(options=defaultOptions) {
+  let { strategy } = options;
+
+  if (process.type !== 'browser' || !global.globalCompilerHost) throw new Error("Call this from the browser process, right after initializing electron-compile");
+
+  console.log()
+
+  // Enable the methods described in the reload strategy
+  for (let mime of Object.keys(strategy)) { 
+    switch(strategy[mime]) {
+    case 'react-hmr':
+      global.__electron_compile_hmr_enabled__ = true;
+      break;
+    case 'hot-assets':
+      global.__electron_compile_stylesheet_reload_enabled__ = true;
+      break;
+    }
+  }
+
+  // Find all the files compiled by electron-compile and setup watchers
   let filesWeCareAbout = global.globalCompilerHost.listenToCompileEvents()
-    .filter(x => !FileChangedCache.isInNodeModules(x.filePath));
-
-  let weShouldReload = filesWeCareAbout
-    .mergeMap(x => watchPath(x.filePath).map(() => x))
-    .guaranteedThrottle(1*1000);
-
-  return weShouldReload
-    .switchMap(() => Observable.defer(() => Observable.fromPromise(triggerHMRInRenderers()).catch(() => Observable.empty())))
-    .subscribe(() => console.log("HMR sent to all windows!"));
+    .filter(x => !FileChangedCache.isInNodeModules(x.filePath))
+    .subscribe(x => {
+      switch(strategy[x.mimeType]) {
+      case 'react-hmr':
+        setupWatchHMR(x.filePath)
+        break;
+      case 'hot-assets':
+        setWatchHotAssets(x.filePath)
+        break;
+      case 'naive':
+      default:
+        setupWatchNaive(x.filePath)
+      }
+    });
 }
