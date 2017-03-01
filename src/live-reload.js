@@ -78,9 +78,15 @@ export function enableLiveReload(options=defaultOptions) {
 
   if (process.type !== 'browser' || !global.globalCompilerHost) throw new Error("Call this from the browser process, right after initializing electron-compile");
 
+  // Just to handle the old case
+  let oldsyntax = false
+  if (typeof strategy === 'string') {
+    oldsyntax = true
+  }
+
   // Enable the methods described in the reload strategy
   for (let mime of Object.keys(strategy)) { 
-    switch(strategy[mime]) {
+    switch(oldsyntax ? strategy : strategy[mime]) {
     case 'react-hmr':
       global.__electron_compile_hmr_enabled__ = true;
       break;
@@ -94,7 +100,7 @@ export function enableLiveReload(options=defaultOptions) {
   let filesWeCareAbout = global.globalCompilerHost.listenToCompileEvents()
     .filter(x => !FileChangedCache.isInNodeModules(x.filePath))
     .subscribe(x => {
-      switch(strategy[x.mimeType]) {
+      switch(oldsyntax ? strategy : strategy[x.mimeType]) {
       case 'react-hmr':
         setupWatchHMR(x.filePath)
         break;

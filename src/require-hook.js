@@ -30,25 +30,14 @@ if (process.type === 'renderer') {
 
   if (stylesheetReload) {
     electron.ipcRenderer.on('__electron-compile__stylesheet_reload', (e, path) => {
-      /*if (path.match(/.(jpg|jpeg|png|gif)$/i)) {
-        let images = document.getElementsByTagName('img');
+      let links = document.getElementsByTagName('link');
 
-        for (let img of images) {
-          let uri = img.src
-          if (uri.includes(path)) {
-            img.src = img.src; // trigger an update
-          }
+      for (let link of links) {
+        let uri = link.href
+        if (uri.includes(path)) {
+          link.href = link.href; // trigger a reload for this stylesheet
         }
-      } else {*/
-        let links = document.getElementsByTagName('link');
-
-        for (let link of links) {
-          let uri = link.href
-          if (uri.includes(path)) {
-            link.href = link.href; // trigger a reload for this stylesheet
-          }
-        }
-      //}
+      }
     });
   }
 }
