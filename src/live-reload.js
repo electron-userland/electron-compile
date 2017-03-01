@@ -52,8 +52,7 @@ function enableLiveReloadNaive() {
     .filter(x => !FileChangedCache.isInNodeModules(x.filePath));
 
   let weShouldReload = filesWeCareAbout
-    .mergeMap(x => watchPath(x.filePath).map(() => x))
-    .guaranteedThrottle(1*1000);
+    .mergeMap(x => watchPath(x.filePath).map(() => x));
 
   return weShouldReload
     .switchMap(() => Observable.defer(() => Observable.fromPromise(reloadAllWindows()).timeout(5*1000).catch(() => Observable.empty())))
@@ -75,8 +74,7 @@ function enableReactHMR() {
     .filter(x => !FileChangedCache.isInNodeModules(x.filePath));
 
   let weShouldReload = filesWeCareAbout
-    .mergeMap(x => watchPath(x.filePath).map(() => x))
-    .guaranteedThrottle(1*1000);
+    .mergeMap(x => watchPath(x.filePath).map(() => x));
 
   return weShouldReload
     .switchMap(() => Observable.defer(() => Observable.fromPromise(triggerHMRInRenderers()).catch(() => Observable.empty())))
