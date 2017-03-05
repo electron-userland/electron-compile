@@ -79,6 +79,19 @@ function requestFileJob(filePath, finish) {
   });
 }
 
+const bypassCheckers = [];
+
+/**
+ * Adds a function that will be called on electron-compile's protocol hook
+ * used to intercept file requests.  Use this to bypass electron-compile
+ * entirely for certain URI's.
+ * 
+ * @param {Function} bypassChecker Function that will be called with the file path to determine whether to bypass or not
+ */
+export function addBypassChecker(bypassChecker) {
+  bypassCheckers.push(bypassChecker);
+}
+
 /**
  * Initializes the protocol hook on file: that allows us to intercept files
  * loaded by Chromium and rewrite them. This method along with
@@ -161,6 +174,14 @@ export function initializeProtocolHook(compilerHost) {
     if (filePath.match(/\.map$/i) && !(await doesMapFileExist(filePath))) {
       finish({ data: new Buffer("", 'utf8'), mimeType: 'text/plain' });
       return;
+    }
+
+    for (const bypassChecker of bypassCheckers) {
+      if (bypassChecker(filePath)) {
+        d('bypassing compilers for:', filePath);
+        requestFileJob(filePath, finish);
+        return;
+      }
     }
 
     try {
