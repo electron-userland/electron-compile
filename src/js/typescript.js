@@ -62,7 +62,7 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
       fileName: filePath.match(/\.(ts|tsx)$/i) ? path.basename(filePath) : null
     };
 
-    if (isTsx && options.builtinOpts.hotModuleReload !== false) {
+    if (isTsx && options.builtinOpts.hotModuleReload === true) {
       sourceCode = this.addHotModuleLoadingRegistration(sourceCode, filePath, this.getExportsForFile(filePath, options.typescriptOpts));
     }
 
