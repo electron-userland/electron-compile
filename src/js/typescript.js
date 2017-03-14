@@ -81,9 +81,11 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
   addHotModuleLoadingRegistration(sourceCode, fileName, exports) {
     if (exports.length < 1) return sourceCode;
 
-    let registrations = exports.map(x => 
-      `__REACT_HOT_LOADER__.register(${x}, "${x}", __FILENAME__);\n`
-    );
+    let registrations = exports.map(x => {
+      let id = `${x}` == 'default' ? "_default" : `${x}`
+      let name = `"${x}"`
+      return `__REACT_HOT_LOADER__.register(${id}, ${name}, __FILENAME__);\n`
+    });
 
     let tmpl = `
 ${sourceCode}
