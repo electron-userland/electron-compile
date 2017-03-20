@@ -38,6 +38,7 @@
     "detective-sass": "^2.0.0",
     "detective-scss": "^1.0.0",
     "detective-stylus": "^1.0.0",
+    "istanbul": "^0.4.5",
     "jade": "^1.11.0",
     "js-string-escape": "^1.0.1",
     "less": "^2.7.1",

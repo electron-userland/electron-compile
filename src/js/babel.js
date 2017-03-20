@@ -3,10 +3,8 @@ import {SimpleCompilerBase} from '../compiler-base';
 
 const mimeTypes = ['text/jsx', 'application/javascript'];
 let babel = null;
+let istanbul = null;
 
-/**
- * @access private
- */
 export default class BabelCompiler extends SimpleCompilerBase {
   constructor() {
     super();
@@ -57,6 +55,12 @@ export default class BabelCompiler extends SimpleCompilerBase {
       babelrc: false
     });
 
+    let useCoverage = false;
+    if ('coverage' in opts) {
+      useCoverage = !!opts.coverage;
+      delete opts.coverage;
+    }
+
     if ('plugins' in opts) {
       let plugins = this.attemptToPreload(opts.plugins, 'plugin');
       if (plugins && plugins.length === opts.plugins.length) opts.plugins = plugins;
@@ -66,14 +70,19 @@ export default class BabelCompiler extends SimpleCompilerBase {
       let presets = this.attemptToPreload(opts.presets, 'preset');
       if (presets && presets.length === opts.presets.length) opts.presets = presets;
     }
-    const output = babel.transform(sourceCode, opts);
-    const sourceMaps = output.map ? JSON.stringify(output.map) : null;
 
-    return {
-      code: output.code,
-      mimeType: 'application/javascript',
-      sourceMaps
-    };
+    const output = babel.transform(sourceCode, opts);
+    let sourceMaps = output.map ? JSON.stringify(output.map) : null;
+
+    let code = output.code;
+    if (useCoverage) {
+      istanbul = istanbul || require('istanbul');
+
+      sourceMaps = null;
+      code = (new istanbul.Instrumenter()).instrumentSync(output.code, filePath);
+    }
+
+    return { code, sourceMaps, mimeType: 'application/javascript', };
   }
 
   getCompilerVersion() {
