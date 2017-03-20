@@ -6,12 +6,10 @@ const inputMimeTypes = ['text/typescript', 'text/tsx'];
 const d = require('debug')('electron-compile:typescript-compiler');
 
 let ts = null;
+let istanbul = null;
 
-const builtinKeys = ['hotModuleReload'];
+const builtinKeys = ['hotModuleReload', 'coverage'];
 
-/**
- * @access private
- */
 export default class TypeScriptCompiler extends SimpleCompilerBase {
   constructor() {
     super();
@@ -66,8 +64,15 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
       sourceCode = this.addHotModuleLoadingRegistration(sourceCode, filePath, this.getExportsForFile(filePath, options.typescriptOpts));
     }
 
-    const output = ts.transpileModule(sourceCode, transpileOptions);
-    const sourceMaps = output.sourceMapText ? output.sourceMapText : null;
+    let output = ts.transpileModule(sourceCode, transpileOptions);
+    let sourceMaps = output.sourceMapText ? output.sourceMapText : null;
+    if (options.builtinOpts.coverage) {
+      sourceMaps = null;
+      istanbul = istanbul || require('istanbul');
+
+      sourceMaps = null;
+      output.outputText = (new istanbul.Instrumenter()).instrumentSync(output.outputText, filePath);
+    }
 
     d(JSON.stringify(output.diagnostics));
 
