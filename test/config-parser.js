@@ -116,8 +116,15 @@ describe('the configuration parser module', function() {
     
     it('uses the development env when env is unset', async function() {
       let fixtureDir = path.join(__dirname, '..', 'test', 'fixtures');
-      
-      let result = await createCompilerHostFromBabelRc(path.join(fixtureDir, 'babelrc-production'));
+      let env = process.env.NODE_ENV;
+      delete process.env.NODE_ENV;
+
+      let result;
+      try {
+        result = await createCompilerHostFromBabelRc(path.join(fixtureDir, 'babelrc-production'));
+      } finally {
+        process.env.NODE_ENV = env;
+      }
       
       let compileInfo = await result.compile(path.join(fixtureDir, 'valid.js'));
       d(JSON.stringify(compileInfo));
@@ -176,8 +183,15 @@ describe('the configuration parser module', function() {
     
     it('uses the development env when env is unset', async function() {
       let fixtureDir = path.join(__dirname, '..', 'test', 'fixtures');
+      let env = process.env.NODE_ENV;
+      delete process.env.NODE_ENV;
       
-      let result = await createCompilerHostFromConfigFile(path.join(fixtureDir, 'compilerc-production'));
+      let result;
+      try {
+        result = await createCompilerHostFromConfigFile(path.join(fixtureDir, 'compilerc-production'));
+      } finally {
+        process.env.NODE_ENV = env;
+      }
       
       let compileInfo = await result.compile(path.join(fixtureDir, 'valid.js'));
       d(JSON.stringify(compileInfo));
