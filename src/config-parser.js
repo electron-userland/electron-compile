@@ -359,7 +359,14 @@ function createSourceMapDirectory(sourceMapPath) {
 export function getDefaultConfiguration() {
   return {
     'application/javascript': {
-      "presets": ["es2016-node5", "react"],
+      "presets": [
+        ["env", {
+          "targets": {
+            "electron": process.versions.electron
+          }
+        }],
+        "react"
+      ],
       "sourceMaps": "inline"
     }
   };
