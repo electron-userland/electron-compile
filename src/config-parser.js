@@ -351,6 +351,30 @@ function createSourceMapDirectory(sourceMapPath) {
   d(`Using separate sourcemap path at ${sourceMapPath}`);
 }
 
+function versionToFloat(ver) {
+  return parseFloat(ver.replace(/^([^\.]\.[^\.])\..*$/, '$1'));
+}
+
+function getElectronVersion() {
+  if (process.versions.electron) {
+    return versionToFloat(process.versions.electron);
+  }
+
+  let pkgJson = ['electron-prebuilt-compile', 'electron'].find(mod => {
+    try {
+      return process.mainModule.require(`${mod}/package.json`);
+    } catch (e) {
+      return null;
+    }
+  });
+
+  if (!pkgJson) {
+    throw new Error("Can't automatically discover the version of Electron, you probably need a .compilerc file");
+  }
+
+  return versionToFloat(pkgJson.version);
+}
+
 /**
  * Returns the default .configrc if no configuration information can be found.
  *
@@ -362,7 +386,7 @@ export function getDefaultConfiguration() {
       "presets": [
         ["env", {
           "targets": {
-            "electron": parseFloat(process.versions.electron.replace(/^([^\.]\.[^\.])\..*$/, '$1'))
+            "electron": getElectronVersion()
           }
         }],
         "react"
