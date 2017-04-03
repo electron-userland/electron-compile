@@ -136,7 +136,7 @@ describe('The compile cache', function() {
     expect(callCount).to.equal(1);
   });
 
-  it.only('Shouldnt cache compile failures', async function() {
+  it('Shouldnt cache compile failures', async function() {
     let inputFile = path.resolve(__dirname, '..', 'lib', 'compile-cache.js');
     let callCount = 0;
     let weBlewUpCount = 0;
