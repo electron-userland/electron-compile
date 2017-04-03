@@ -178,9 +178,10 @@ export async function createCompilerHostFromBabelRc(file, rootCacheDir=null, sou
 
   // Are we still package.json (i.e. is there no babel info whatsoever?)
   if ('name' in info && 'version' in info) {
+    let appRoot = path.dirname(file);
     return createCompilerHostFromConfiguration({
-      appRoot: path.dirname(file),
-      options: getDefaultConfiguration(),
+      appRoot: appRoot,
+      options: getDefaultConfiguration(appRoot),
       rootCacheDir,
       sourceMapPath
     });
@@ -277,9 +278,10 @@ export function createCompilerHostFromBabelRcSync(file, rootCacheDir=null, sourc
 
   // Are we still package.json (i.e. is there no babel info whatsoever?)
   if ('name' in info && 'version' in info) {
+    let appRoot = path.dirname(file)
     return createCompilerHostFromConfiguration({
-      appRoot: path.dirname(file),
-      options: getDefaultConfiguration(),
+      appRoot: appRoot,
+      options: getDefaultConfiguration(appRoot),
       rootCacheDir,
       sourceMapPath
     });
@@ -355,24 +357,40 @@ function versionToFloat(ver) {
   return parseFloat(ver.replace(/^([^\.]\.[^\.])\..*$/, '$1'));
 }
 
-function getElectronVersion() {
+function getElectronVersion(rootDir) {
   if (process.versions.electron) {
     return versionToFloat(process.versions.electron);
   }
 
-  let pkgJson = ['electron-prebuilt-compile', 'electron'].find(mod => {
+  let ourPkgJson = require(path.join(rootDir, 'package.json'));
+
+  let version = ['electron-prebuilt-compile', 'electron'].map(mod => {
+    if (ourPkgJson.devDependencies && ourPkgJson.devDependencies[mod]) {
+      // NB: lol this code
+      let verRange = ourPkgJson.devDependencies[mod];
+      let m = verRange.match(/(\d+\.\d+\.\d+)/);
+      if (m && m[1]) return m[1];
+    }
+
     try {
-      return process.mainModule.require(`${mod}/package.json`);
+      return process.mainModule.require(`${mod}/package.json`).version;
+    } catch (e) {
+      // NB: This usually doesn't work, but sometimes maybe?
+    }
+
+    try {
+      let p = path.join(rootDir, mod, 'package.json');
+      return require(p).version;
     } catch (e) {
       return null;
     }
-  });
+  }).find(x => !!x);
 
-  if (!pkgJson) {
+  if (!version) {
     throw new Error("Can't automatically discover the version of Electron, you probably need a .compilerc file");
   }
 
-  return versionToFloat(pkgJson.version);
+  return versionToFloat(version);
 }
 
 /**
@@ -380,13 +398,13 @@ function getElectronVersion() {
  *
  * @return {Object}  A list of default config settings for electron-compiler.
  */
-export function getDefaultConfiguration() {
+export function getDefaultConfiguration(rootDir) {
   return {
     'application/javascript': {
       "presets": [
         ["env", {
           "targets": {
-            "electron": getElectronVersion()
+            "electron": getElectronVersion(rootDir)
           }
         }],
         "react"
