@@ -4,14 +4,14 @@
       "presets": ["es2016-node5", "react"],
       "plugins": ["transform-async-to-generator", "array-includes", "istanbul"],
       "sourceMaps": "inline"
-    }, 
+    },
     "production": {
       "presets": ["es2016-node5", "react"],
       "plugins": ["transform-async-to-generator", "array-includes"],
     },
     "development": {
       "presets": ["es2016-node5", "react"],
-      "plugins": ["transform-async-to-generator", "array-includes", "istanbul"],
+      "plugins": ["transform-async-to-generator", "array-includes"],
       "sourceMaps": "inline"
     }
   }
