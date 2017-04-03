@@ -152,7 +152,6 @@ describe('The compile cache', function() {
       weBlewUpCount++;
     }
 
-    console.log(`weBlewUpCount: ${weBlewUpCount}, callCount: ${callCount}`);
     expect(callCount).to.equal(1);
     expect(weBlewUpCount).to.equal(1);
 
