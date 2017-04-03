@@ -362,7 +362,7 @@ export function getDefaultConfiguration() {
       "presets": [
         ["env", {
           "targets": {
-            "electron": process.versions.electron
+            "electron": parseFloat(process.versions.electron.replace(/^([^\.]\.[^\.])\..*$/, '$1'))
           }
         }],
         "react"
