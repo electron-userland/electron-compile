@@ -11,13 +11,13 @@ let watchPath = null;
 
 module.exports = Object.assign({
   // NB: delay-load live-reload so we don't load RxJS in production
-  enableLiveReload: function() {
+  enableLiveReload: function(...args) {
     enableLiveReload = enableLiveReload || require('./live-reload').enableLiveReload;
-    return enableLiveReload(arguments);
+    return enableLiveReload(...args);
   },
-  watchPath: function() {
+  watchPath: function(...args) {
     watchPath = watchPath || require('./pathwatcher-rx').watchPath;
-    return watchPath(arguments);
+    return watchPath(...args);
   },
 },
   configParser,
