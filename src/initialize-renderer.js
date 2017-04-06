@@ -26,6 +26,10 @@ export function initializeRendererProcess(readOnlyMode) {
   // until we're set up
   if (readOnlyMode) {
     d(`Setting up electron-compile in precompiled mode with cache dir: ${rootCacheDir}`);
+
+    // NB: React cares SUPER HARD about this, and this is the earliest place 
+    // we can set it up to ensure React picks it up correctly
+    process.env.NODE_ENV = 'production';
     compilerHost = CompilerHost.createReadonlyFromConfigurationSync(rootCacheDir, appRoot);
   } else {
     d(`Setting up electron-compile in development mode with cache dir: ${rootCacheDir}`);

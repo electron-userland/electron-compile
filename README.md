@@ -27,7 +27,13 @@ For JSON:
 
 ### How does it work? (Easiest Way)
 
-Use `electron-prebuilt-compile` instead of the `electron` module. Tada! You did it.
+Install `electron-prebuilt-compile` instead of the `electron`:
+```sh
+npm install electron-prebuilt-compile --save-dev
+```
+and keep using electron as usual.
+
+Tada! You did it!
 
 ### Wait, seriously?
 
