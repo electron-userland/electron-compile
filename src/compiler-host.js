@@ -71,7 +71,7 @@ export default class CompilerHost {
    *                               if compiler option enabled to emit.
    *                               Default to cachePath if not specified.
    */
-  constructor(rootCacheDir, compilers, fileChangeCache, readOnlyMode, fallbackCompiler = null, sourceMapPath = null) {
+  constructor(rootCacheDir, compilers, fileChangeCache, readOnlyMode, fallbackCompiler = null, sourceMapPath = null, mimeTypesToRegister = null) {
     let compilersByMimeType = Object.assign({}, compilers);
     Object.assign(this, {rootCacheDir, compilersByMimeType, fileChangeCache, readOnlyMode, fallbackCompiler});
     this.appRoot = this.fileChangeCache.appRoot;
@@ -85,6 +85,8 @@ export default class CompilerHost {
         CompileCache.createFromCompiler(rootCacheDir, compiler, fileChangeCache, readOnlyMode, sourceMapPath));
       return acc;
     }, new Map());
+
+    this.mimeTypesToRegister = mimeTypesToRegister || {};
   }
 
   /**
@@ -122,7 +124,7 @@ export default class CompilerHost {
       return acc;
     }, {});
 
-    return new CompilerHost(rootCacheDir, compilers, fileChangeCache, true, fallbackCompiler);
+    return new CompilerHost(rootCacheDir, compilers, fileChangeCache, true, fallbackCompiler, null, info.mimeTypesToRegister);
   }
 
   /**
@@ -164,7 +166,7 @@ export default class CompilerHost {
       compilersByMimeType[x].compilerOptions = cur.compilerOptions;
     });
 
-    return new CompilerHost(rootCacheDir, compilersByMimeType, fileChangeCache, false, fallbackCompiler);
+    return new CompilerHost(rootCacheDir, compilersByMimeType, fileChangeCache, false, fallbackCompiler, null, info.mimeTypesToRegister);
   }
 
 
@@ -193,7 +195,8 @@ export default class CompilerHost {
 
     let info = {
       fileChangeCache: this.fileChangeCache.getSavedData(),
-      compilers: serializedCompilerOpts
+      compilers: serializedCompilerOpts,
+      mimeTypesToRegister: this.mimeTypesToRegister
     };
 
     let target = path.join(this.rootCacheDir, 'compiler-info.json.gz');
@@ -215,8 +218,15 @@ export default class CompilerHost {
    * @property {string[]} dependentFiles  The dependent files returned from
    *                                      compiling the file, if any.
    */
-  compile(filePath) {
-    return (this.readOnlyMode ? this.compileReadOnly(filePath) : this.fullCompile(filePath));
+  async compile(filePath) {
+    let hashInfo = await this.fileChangeCache.getHashForPath(filePath);
+    let ret = await (this.readOnlyMode ? this.compileReadOnly(filePath, hashInfo) : this.fullCompile(filePath, hashInfo));
+
+    if (ret.mimeType === 'application/javascript') {
+      this.mimeTypesToRegister[mimeTypes.lookup(filePath)] = true;
+    }
+
+    return ret;
   }
 
 
@@ -225,7 +235,7 @@ export default class CompilerHost {
    *
    * @private
    */
-  async compileReadOnly(filePath) {
+  async compileReadOnly(filePath, hashInfo) {
     // We guarantee that node_modules are always shipped directly
     let type = mimeTypes.lookup(filePath);
     if (FileChangedCache.isInNodeModules(filePath)) {
@@ -234,8 +244,6 @@ export default class CompilerHost {
         code: await pfs.readFile(filePath, 'utf8')
       };
     }
-
-    let hashInfo = await this.fileChangeCache.getHashForPath(filePath);
 
     // NB: Here, we're basically only using the compiler here to find
     // the appropriate CompileCache
@@ -276,10 +284,8 @@ export default class CompilerHost {
    *
    * @private
    */
-  async fullCompile(filePath) {
+  async fullCompile(filePath, hashInfo) {
     d(`Compiling ${filePath}`);
-
-    let hashInfo = await this.fileChangeCache.getHashForPath(filePath);
     let type = mimeTypes.lookup(filePath);
 
     send('electron-compile-compiled-file', { filePath, mimeType: type });
@@ -401,7 +407,16 @@ export default class CompilerHost {
    */
 
   compileSync(filePath) {
-    return (this.readOnlyMode ? this.compileReadOnlySync(filePath) : this.fullCompileSync(filePath));
+    let hashInfo = this.fileChangeCache.getHashForPathSync(filePath);
+    let ret = (this.readOnlyMode ?
+      this.compileReadOnlySync(filePath, hashInfo) :
+      this.fullCompileSync(filePath, hashInfo));
+
+    if (ret.mimeType === 'application/javascript') {
+      this.mimeTypesToRegister[mimeTypes.lookup(filePath)] = true;
+    }
+
+    return ret;
   }
 
   static createReadonlyFromConfigurationSync(rootCacheDir, appRoot, fallbackCompiler=null) {
@@ -418,7 +433,7 @@ export default class CompilerHost {
       return acc;
     }, {});
 
-    return new CompilerHost(rootCacheDir, compilers, fileChangeCache, true, fallbackCompiler);
+    return new CompilerHost(rootCacheDir, compilers, fileChangeCache, true, fallbackCompiler, null, info.mimeTypesToRegister);
   }
 
   static createFromConfigurationSync(rootCacheDir, appRoot, compilersByMimeType, fallbackCompiler=null) {
@@ -433,7 +448,7 @@ export default class CompilerHost {
       compilersByMimeType[x].compilerOptions = cur.compilerOptions;
     });
 
-    return new CompilerHost(rootCacheDir, compilersByMimeType, fileChangeCache, false, fallbackCompiler);
+    return new CompilerHost(rootCacheDir, compilersByMimeType, fileChangeCache, false, fallbackCompiler, null, info.mimeTypesToRegister);
   }
 
   saveConfigurationSync() {
@@ -454,7 +469,8 @@ export default class CompilerHost {
 
     let info = {
       fileChangeCache: this.fileChangeCache.getSavedData(),
-      compilers: serializedCompilerOpts
+      compilers: serializedCompilerOpts,
+      mimeTypesToRegister: this.mimeTypesToRegister
     };
 
     let target = path.join(this.rootCacheDir, 'compiler-info.json.gz');
@@ -462,7 +478,7 @@ export default class CompilerHost {
     fs.writeFileSync(target, buf);
   }
 
-  compileReadOnlySync(filePath) {
+  compileReadOnlySync(filePath, hashInfo) {
     // We guarantee that node_modules are always shipped directly
     let type = mimeTypes.lookup(filePath);
     if (FileChangedCache.isInNodeModules(filePath)) {
@@ -471,8 +487,6 @@ export default class CompilerHost {
         code: fs.readFileSync(filePath, 'utf8')
       };
     }
-
-    let hashInfo = this.fileChangeCache.getHashForPathSync(filePath);
 
     // We guarantee that node_modules are always shipped directly
     if (hashInfo.isInNodeModules) {
@@ -515,10 +529,9 @@ export default class CompilerHost {
     return { code, mimeType };
   }
 
-  fullCompileSync(filePath) {
+  fullCompileSync(filePath, hashInfo) {
     d(`Compiling ${filePath}`);
 
-    let hashInfo = this.fileChangeCache.getHashForPathSync(filePath);
     let type = mimeTypes.lookup(filePath);
 
     send('electron-compile-compiled-file', { filePath, mimeType: type });
