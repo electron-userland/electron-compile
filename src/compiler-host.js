@@ -219,8 +219,7 @@ export default class CompilerHost {
    *                                      compiling the file, if any.
    */
   async compile(filePath) {
-    let hashInfo = await this.fileChangeCache.getHashForPath(filePath);
-    let ret = await (this.readOnlyMode ? this.compileReadOnly(filePath, hashInfo) : this.fullCompile(filePath, hashInfo));
+    let ret = await (this.readOnlyMode ? this.compileReadOnly(filePath) : this.fullCompile(filePath));
 
     if (ret.mimeType === 'application/javascript') {
       this.mimeTypesToRegister[mimeTypes.lookup(filePath)] = true;
@@ -235,7 +234,7 @@ export default class CompilerHost {
    *
    * @private
    */
-  async compileReadOnly(filePath, hashInfo) {
+  async compileReadOnly(filePath) {
     // We guarantee that node_modules are always shipped directly
     let type = mimeTypes.lookup(filePath);
     if (FileChangedCache.isInNodeModules(filePath)) {
@@ -244,6 +243,8 @@ export default class CompilerHost {
         code: await pfs.readFile(filePath, 'utf8')
       };
     }
+
+    let hashInfo = await this.fileChangeCache.getHashForPath(filePath);
 
     // NB: Here, we're basically only using the compiler here to find
     // the appropriate CompileCache
@@ -284,11 +285,13 @@ export default class CompilerHost {
    *
    * @private
    */
-  async fullCompile(filePath, hashInfo) {
+  async fullCompile(filePath) {
     d(`Compiling ${filePath}`);
     let type = mimeTypes.lookup(filePath);
 
     send('electron-compile-compiled-file', { filePath, mimeType: type });
+
+    let hashInfo = await this.fileChangeCache.getHashForPath(filePath);
 
     if (hashInfo.isInNodeModules) {
       let code = hashInfo.sourceCode || await pfs.readFile(filePath, 'utf8');
@@ -407,10 +410,9 @@ export default class CompilerHost {
    */
 
   compileSync(filePath) {
-    let hashInfo = this.fileChangeCache.getHashForPathSync(filePath);
     let ret = (this.readOnlyMode ?
-      this.compileReadOnlySync(filePath, hashInfo) :
-      this.fullCompileSync(filePath, hashInfo));
+      this.compileReadOnlySync(filePath) :
+      this.fullCompileSync(filePath));
 
     if (ret.mimeType === 'application/javascript') {
       this.mimeTypesToRegister[mimeTypes.lookup(filePath)] = true;
@@ -478,7 +480,7 @@ export default class CompilerHost {
     fs.writeFileSync(target, buf);
   }
 
-  compileReadOnlySync(filePath, hashInfo) {
+  compileReadOnlySync(filePath) {
     // We guarantee that node_modules are always shipped directly
     let type = mimeTypes.lookup(filePath);
     if (FileChangedCache.isInNodeModules(filePath)) {
@@ -487,6 +489,8 @@ export default class CompilerHost {
         code: fs.readFileSync(filePath, 'utf8')
       };
     }
+
+    let hashInfo = this.fileChangeCache.getHashForPathSync(filePath);
 
     // We guarantee that node_modules are always shipped directly
     if (hashInfo.isInNodeModules) {
@@ -529,12 +533,14 @@ export default class CompilerHost {
     return { code, mimeType };
   }
 
-  fullCompileSync(filePath, hashInfo) {
+  fullCompileSync(filePath) {
     d(`Compiling ${filePath}`);
 
     let type = mimeTypes.lookup(filePath);
 
     send('electron-compile-compiled-file', { filePath, mimeType: type });
+
+    let hashInfo = this.fileChangeCache.getHashForPathSync(filePath);
 
     if (hashInfo.isInNodeModules) {
       let code = hashInfo.sourceCode || fs.readFileSync(filePath, 'utf8');

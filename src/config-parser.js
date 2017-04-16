@@ -122,9 +122,10 @@ export function createCompilerHostFromConfiguration(info) {
   let fileChangeCache = new FileChangedCache(info.appRoot);
 
   let compilerInfo = path.join(rootCacheDir, 'compiler-info.json.gz');
+  let json = {};
   if (fs.existsSync(compilerInfo)) {
     let buf = fs.readFileSync(compilerInfo);
-    let json = JSON.parse(zlib.gunzipSync(buf));
+    json = JSON.parse(zlib.gunzipSync(buf));
     fileChangeCache = FileChangedCache.loadFromData(json.fileChangeCache, info.appRoot, false);
   }
 
@@ -144,7 +145,7 @@ export function createCompilerHostFromConfiguration(info) {
     compilers[x].compilerOptions = opts;
   });
 
-  let ret = new CompilerHost(rootCacheDir, compilers, fileChangeCache, false, compilers['text/plain']);
+  let ret = new CompilerHost(rootCacheDir, compilers, fileChangeCache, false, compilers['text/plain'], null, json.mimeTypesToRegister);
 
   // NB: It's super important that we guarantee that the configuration is saved
   // out, because we'll need to re-read it in the renderer process
