@@ -35,11 +35,11 @@ function statSyncNoException(fsPath) {
  * @param {CompilerHost} compilerHost  The compiler host to use.
  *
  */
-export function initializeGlobalHooks(compilerHost) {
+export function initializeGlobalHooks(compilerHost, isProduction=false) {
   let globalVar = (global || window);
   globalVar.globalCompilerHost = compilerHost;
 
-  registerRequireExtension(compilerHost);
+  registerRequireExtension(compilerHost, isProduction);
 
   if ('type' in process && process.type === 'browser') {
     const { app } = require('electron');
@@ -98,7 +98,7 @@ export function init(appRoot, mainModule, productionMode = null, cacheDir = null
     compilerHost = createCompilerHostFromProjectRootSync(appRoot, cachePath, mapPath);
   }
 
-  initializeGlobalHooks(compilerHost);
+  initializeGlobalHooks(compilerHost, productionMode);
   require.main.require(mainModule);
 }
 
