@@ -35,7 +35,8 @@ const mimeTypesWithoutSourceMapSupport = [
   'text/cson',
   'text/css',
   'text/sass',
-  'text/scss'
+  'text/scss',
+  'text/graphql'
 ];
 
 const compilerOptionsForMimeType = {
