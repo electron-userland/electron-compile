@@ -3,6 +3,7 @@ const filenames = [
   'css/sass',
   'css/stylus',
   'js/babel',
+  'js/graphql',
   'js/coffeescript',
   'js/typescript',
   'json/cson',
