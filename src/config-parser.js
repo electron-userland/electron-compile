@@ -35,11 +35,11 @@ function statSyncNoException(fsPath) {
  * @param {CompilerHost} compilerHost  The compiler host to use.
  *
  */
-export function initializeGlobalHooks(compilerHost) {
+export function initializeGlobalHooks(compilerHost, isProduction=false) {
   let globalVar = (global || window);
   globalVar.globalCompilerHost = compilerHost;
 
-  registerRequireExtension(compilerHost);
+  registerRequireExtension(compilerHost, isProduction);
 
   if ('type' in process && process.type === 'browser') {
     const { app } = require('electron');
@@ -98,7 +98,7 @@ export function init(appRoot, mainModule, productionMode = null, cacheDir = null
     compilerHost = createCompilerHostFromProjectRootSync(appRoot, cachePath, mapPath);
   }
 
-  initializeGlobalHooks(compilerHost);
+  initializeGlobalHooks(compilerHost, productionMode);
   require.main.require(mainModule);
 }
 
@@ -122,9 +122,10 @@ export function createCompilerHostFromConfiguration(info) {
   let fileChangeCache = new FileChangedCache(info.appRoot);
 
   let compilerInfo = path.join(rootCacheDir, 'compiler-info.json.gz');
+  let json = {};
   if (fs.existsSync(compilerInfo)) {
     let buf = fs.readFileSync(compilerInfo);
-    let json = JSON.parse(zlib.gunzipSync(buf));
+    json = JSON.parse(zlib.gunzipSync(buf));
     fileChangeCache = FileChangedCache.loadFromData(json.fileChangeCache, info.appRoot, false);
   }
 
@@ -144,7 +145,7 @@ export function createCompilerHostFromConfiguration(info) {
     compilers[x].compilerOptions = opts;
   });
 
-  let ret = new CompilerHost(rootCacheDir, compilers, fileChangeCache, false, compilers['text/plain']);
+  let ret = new CompilerHost(rootCacheDir, compilers, fileChangeCache, false, compilers['text/plain'], null, json.mimeTypesToRegister);
 
   // NB: It's super important that we guarantee that the configuration is saved
   // out, because we'll need to re-read it in the renderer process

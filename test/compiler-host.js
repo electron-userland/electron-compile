@@ -183,12 +183,16 @@ describe('The compiler host', function() {
       return true;
     });
 
+    expect(Object.keys(this.fixture.mimeTypesToRegister).length > 1).to.be.ok;
+
     d("Saving configuration");
     await this.fixture.saveConfiguration();
 
     d("Recreating from said configuration");
     this.fixture = await CompilerHost.createReadonlyFromConfiguration(this.tempCacheDir, this.appRootDir);
     this.fixture.compileUncached = () => Promise.reject(new Error("Fail!"));
+
+    expect(Object.keys(this.fixture.mimeTypesToRegister).length > 1).to.be.ok;
 
     d("Recompiling everything from cached data");
     await this.fixture.compileAll(input, (filePath) => {

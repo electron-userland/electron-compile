@@ -35,7 +35,7 @@ if (process.type === 'renderer') {
  *
  * @param  {CompilerHost} compilerHost  The compiler host to use for compilation.
  */
-export default function registerRequireExtension(compilerHost) {
+export default function registerRequireExtension(compilerHost, isProduction) {
   if (HMR) {
     try {
       require('module').prototype.hot = {
@@ -48,7 +48,11 @@ export default function registerRequireExtension(compilerHost) {
     }
   }
 
-  Object.keys(compilerHost.compilersByMimeType).forEach((mimeType) => {
+  let mimeTypeList = isProduction ?
+    Object.keys(compilerHost.mimeTypesToRegister) :
+    Object.keys(compilerHost.compilersByMimeType);
+
+  mimeTypeList.forEach((mimeType) => {
     let ext = mimeTypes.extension(mimeType);
 
     require.extensions[`.${ext}`] = (module, filename) => {

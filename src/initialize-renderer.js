@@ -27,7 +27,7 @@ export function initializeRendererProcess(readOnlyMode) {
   if (readOnlyMode) {
     d(`Setting up electron-compile in precompiled mode with cache dir: ${rootCacheDir}`);
 
-    // NB: React cares SUPER HARD about this, and this is the earliest place 
+    // NB: React cares SUPER HARD about this, and this is the earliest place
     // we can set it up to ensure React picks it up correctly
     process.env.NODE_ENV = 'production';
     compilerHost = CompilerHost.createReadonlyFromConfigurationSync(rootCacheDir, appRoot);
@@ -40,6 +40,6 @@ export function initializeRendererProcess(readOnlyMode) {
   }
 
   require('./x-require');
-  require('./require-hook').default(compilerHost);
+  require('./require-hook').default(compilerHost, readOnlyMode);
   rendererInitialized = true;
 }
