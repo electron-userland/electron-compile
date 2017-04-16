@@ -27,4 +27,8 @@ export default class GraphQLCompiler extends SimpleCompilerBase {
       mimeType: 'application/javascript'
     };
   }
+
+  getCompilerVersion() {
+    return require('graphql-tag/package.json').version;
+  }
 }
