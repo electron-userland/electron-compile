@@ -12,6 +12,7 @@ For JavaScript:
 * JavaScript ES6/ES7 (via Babel)
 * TypeScript
 * CoffeeScript
+* GraphQL
 
 For CSS:
 
