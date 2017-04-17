@@ -93,11 +93,11 @@ If you are using React, you can also enable Hot Module Reloading for both JavaSc
 1. Call `enableLiveReload({strategy: 'react-hmr'});` in your main file, after `app.ready` (similar to above)
 1. If you're using TypeScript, you're good out-of-the-box. If you're using JavaScript via Babel, add 'react-hot-loader/babel' to your plugins in `.compilerc`:
 
-```js
+```json
 {
   "application/javascript": {
     "presets": ["react", "es2017-node7"],
-    "plugins": ['react-hot-loader/babel', 'transform-async-to-generator']
+    "plugins": ["react-hot-loader/babel", "transform-async-to-generator"]
   }
 }
 ```
@@ -149,7 +149,7 @@ DEBUG=*,-babel npm start
 
 If you've got a `.babelrc` and that's all you want to customize, you can simply use it directly. electron-compile will respect it, even the environment-specific settings. If you want to customize other compilers, use a `.compilerc` or `.compilerc.json` file. Here's an example:
 
-```js
+```json
 {
   "application/javascript": {
     "presets": ["es2016-node5", "react"],
@@ -163,7 +163,7 @@ If you've got a `.babelrc` and that's all you want to customize, you can simply 
 
 `.compilerc` also accepts environments with the same syntax as `.babelrc`:
 
-```js
+```json
 {
   "env": {
     "development": {
@@ -199,7 +199,7 @@ With `passthrough` enabled, electron-compile will return your source files compl
 
 In this example `.compilerc`, JavaScript files won't be compiled:
 
-```js
+```json
 {
   "application/javascript": {
     "passthrough": true
