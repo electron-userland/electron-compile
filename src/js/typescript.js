@@ -87,7 +87,7 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
     if (exports.length < 1) return sourceCode;
 
     let registrations = exports.map(x => {
-      let id = `${x}` == 'default' ? "_default" : `${x}`
+      let id = `${x}` == 'default' ? '(typeof _default !== \'undefined\' ? _default : exports.default)' : `${x}`
       let name = `"${x}"`
       return `__REACT_HOT_LOADER__.register(${id}, ${name}, __FILENAME__);\n`
     });
