@@ -61,7 +61,7 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
     };
 
     if (isTsx && options.builtinOpts.hotModuleReload !== false) {
-      sourceCode = this.addHotModuleLoadingRegistration(sourceCode, filePath, this.getExportsForFile(filePath, options.typescriptOpts));
+      sourceCode = this.addHotModuleLoadingRegistration(sourceCode, filePath, this.getExportsForFile(sourceCode, filePath, options.typescriptOpts));
     }
 
     let output = ts.transpileModule(sourceCode, transpileOptions);
@@ -86,9 +86,11 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
   addHotModuleLoadingRegistration(sourceCode, fileName, exports) {
     if (exports.length < 1) return sourceCode;
 
-    let registrations = exports.map(x => 
-      `__REACT_HOT_LOADER__.register(${x}, "${x}", __FILENAME__);\n`
-    );
+    let registrations = exports.map(x => {
+      let id = `${x}` == 'default' ? '(typeof _default !== \'undefined\' ? _default : exports.default)' : `${x}`
+      let name = `"${x}"`
+      return `__REACT_HOT_LOADER__.register(${id}, ${name}, __FILENAME__);\n`
+    });
 
     let tmpl = `
 ${sourceCode}
@@ -101,9 +103,8 @@ if (typeof __REACT_HOT_LOADER__ !== 'undefined') {
     return tmpl;
   }
 
-  getExportsForFile(fileName, tsOptions) {
-    let pg = ts.createProgram([fileName], tsOptions);
-    let c = pg.getTypeChecker();
+  getExportsForFile(sourceCode, fileName, tsOptions) {
+    let sourceFile = ts.createSourceFile(fileName, sourceCode, ts.ScriptTarget.ES6);
     let ret = [];
 
     // Walk the tree to search for classes
@@ -111,18 +112,11 @@ if (typeof __REACT_HOT_LOADER__ !== 'undefined') {
       if (!this.isNodeExported(node)) return;
       
       if (node.kind === ts.SyntaxKind.ClassDeclaration || node.kind === ts.SyntaxKind.FunctionDeclaration) {
-        ret.push(c.getSymbolAtLocation(node.name).getName());
+        ret.push(node.name.text);
       }
     };
 
-    let filePathWithForwardSlashes = fileName.replace(/[\\]/g, '/');
-    for (const sourceFile of pg.getSourceFiles()) {
-      if (sourceFile.fileName !== filePathWithForwardSlashes) {
-        continue;
-      }
-      
-      ts.forEachChild(sourceFile, visit);
-    }
+    ts.forEachChild(sourceFile, visit);
 
     return ret;
   }
