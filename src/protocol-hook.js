@@ -187,7 +187,7 @@ export function initializeProtocolHook(compilerHost) {
     try {
       let result = await compilerHost.compile(filePath);
 
-      if (result.mimeType === 'text/html') {
+      if (result.mimeType === 'text/html' && result.code !== null) {
         result.code = rigHtmlDocumentToInitializeElectronCompile(result.code);
       }
 
