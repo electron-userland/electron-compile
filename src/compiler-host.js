@@ -265,7 +265,11 @@ export default class CompilerHost {
     if (!compiler) {
       compiler = this.fallbackCompiler;
 
-      let { code, binaryData, mimeType } = await compiler.get(filePath);
+      if (!compiler) {
+        compiler = this.getPassthroughCompiler();
+      }
+
+      let { code, binaryData, mimeType } = await this.cachesForCompilers.get(compiler).get(filePath);
       return { code: code || binaryData, mimeType };
     }
 
