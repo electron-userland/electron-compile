@@ -8,7 +8,7 @@ const d = require('debug')('electron-compile:typescript-compiler');
 let ts = null;
 let istanbul = null;
 
-const builtinKeys = ['hotModuleReload', 'coverage'];
+const builtinKeys = ['hotModuleReload', 'coverage', 'babel'];
 
 export default class TypeScriptCompiler extends SimpleCompilerBase {
   constructor() {
@@ -75,6 +75,16 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
     }
 
     d(JSON.stringify(output.diagnostics));
+
+    const babelOpts = this.parsedConfig.builtinOpts.babel;
+    if (babelOpts) {
+      if (!this.babel) {
+        const BabelCompiler = require("./babel").default;
+        this.babel = new BabelCompiler();
+        this.babel.compilerOptions = babelOpts;
+      }
+      return this.babel.compileSync(output.outputText, filePath);
+    }
 
     return {
       code: output.outputText,
