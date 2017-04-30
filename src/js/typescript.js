@@ -1,5 +1,6 @@
 import {SimpleCompilerBase} from '../compiler-base';
 import path from 'path';
+import sorcery from 'sorcery';
 import jsEscape from 'js-string-escape';
 
 const inputMimeTypes = ['text/typescript', 'text/tsx'];
@@ -83,7 +84,35 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
         this.babel = new BabelCompiler();
         this.babel.compilerOptions = babelOpts;
       }
-      return this.babel.compileSync(output.outputText, filePath);
+      if (!this.sorcery) {
+        this.sorcer = require("sorcery");
+      }
+      let tsOutputPath = filePath.replace(/.tsx?$/i, ".js");
+      let babelOutputPath = filePath.replace(/.tsx?$/i, ".babel.js");
+
+      output.outputText = output.outputText.replace(/\/\/# sourceMap.*/g, "");
+
+      let babelOutput = this.babel.compileSync(output.outputText, tsOutputPath);
+      let chain = sorcery.loadSync(babelOutputPath, {
+        content: {
+          [filePath]: sourceCode,
+          [tsOutputPath]: output.outputText,
+          [babelOutputPath]: babelOutput.code,
+        },
+        sourcemaps: {
+          [tsOutputPath]: JSON.parse(sourceMaps),
+          [babelOutputPath]: JSON.parse(babelOutput.sourceMaps),
+        }
+      });
+      let finalSourceMaps = chain.apply();
+      let outputCode = babelOutput.code + "\n//# sourceMappingURL=" + finalSourceMaps.toUrl();
+
+      // the only way to make sourceMaps usable seems to be to have
+      // them inlined right now, see https://github.com/electron/electron-compile/issues/172#issuecomment-277146112
+      return {
+        code: outputCode,
+        mimeType: babelOutput.mimeType,
+      };
     }
 
     return {
