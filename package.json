@@ -3,12 +3,11 @@
   "version": "6.4.1",
   "description": "Electron supporting package to compile JS and CSS in Electron applications",
   "scripts": {
-    "doc": "esdoc -c ./esdoc.json",
-    "compile": "cross-env NODE_ENV='production' git clean -xdf lib && babel -d lib/ src",
+    "compile": "cross-env NODE_ENV='production' git clean -xdf lib && tsc --outDir ./lib -p ./src",
     "prepublish": "npm run compile",
     "start": "npm run compile && electron ./test-dist/electron-smoke-test.js",
-    "test": "mocha --compilers js:babel-register test/*.js",
-    "test-cov": "cross-env NODE_ENV='test' istanbul cover ./node_modules/mocha/bin/_mocha -- --compilers js:babel-register test/*.js"
+    "test": "mocha --compilers ts:ts-node/register ./test/*",
+    "test-cov": "cross-env NODE_ENV='test' istanbul cover ./node_modules/mocha/bin/_mocha -- --compilers ts:ts-node/register test/*.js"
   },
   "bin": {
     "electron-compile": "lib/cli.js",
@@ -67,6 +66,7 @@
     "esdoc-plugin-async-to-sync": "^0.5.0",
     "eslint": "^3.3.0",
     "istanbul": "^0.4.5",
-    "mocha": "^3.0.2"
+    "mocha": "^3.0.2",
+    "typescript": "^2.3.2"
   }
 }
