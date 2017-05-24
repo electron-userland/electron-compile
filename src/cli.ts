@@ -1,23 +1,23 @@
 #!/usr/bin/env node
 
-import path from 'path';
-import mkdirp from 'mkdirp';
+import * as path from 'path';
+import * as mkdirp from 'mkdirp';
 
 import {createCompilerHostFromProjectRoot} from './config-parser';
 import {forAllFiles} from './for-all-files';
 
-process.on('unhandledRejection', (e) => {
+process.on('unhandledRejection', (e: Error) => {
   d(e.message || e);
   d(e.stack || '');
 });
 
-process.on('uncaughtException', (e) => {
+process.on('uncaughtException', (e: Error) => {
   d(e.message || e);
   d(e.stack || '');
 });
 
-export async function main(appDir, sourceDirs, cacheDir, sourceMapDir) {
-  let compilerHost = null;
+export async function main(appDir: string, sourceDirs: string[], cacheDir: string, sourceMapDir: string) {
+  let compilerHost: CompilerHost = null;
   if (!cacheDir || cacheDir.length < 1) {
     cacheDir = '.cache';
   }
@@ -46,6 +46,7 @@ export async function main(appDir, sourceDirs, cacheDir, sourceMapDir) {
     throw e;
   }
 
+
   await Promise.all(sourceDirs.map((dir) => forAllFiles(dir, async (f) => {
     try {
       d(`Starting compilation for ${f}`);
@@ -62,8 +63,10 @@ export async function main(appDir, sourceDirs, cacheDir, sourceMapDir) {
   await compilerHost.saveConfiguration();
 }
 
+// tslint:disable-next-line:no-var-requires
 const d = require('debug')('electron-compile');
 
+// tslint:disable-next-line:no-var-requires
 const yargs = require('yargs')
   .usage('Usage: electron-compile --appdir [root-app-dir] paths...')
   .alias('a', 'appdir')

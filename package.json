@@ -45,6 +45,8 @@
     "yargs": "^4.8.1"
   },
   "devDependencies": {
+    "@types/mkdirp": "^0.3.29",
+    "@types/pify": "0.0.28",
     "asar": "^0.12.1",
     "babel-cli": "^6.11.4",
     "babel-eslint": "^6.1.2",
@@ -67,6 +69,7 @@
     "eslint": "^3.3.0",
     "istanbul": "^0.4.5",
     "mocha": "^3.0.2",
+    "tslint": "^5.2.0",
     "typescript": "^2.3.2"
   }
 }

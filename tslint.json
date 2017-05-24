@@ -1,6 +1,5 @@
 {
   "rules": {
-    "curly": true,
     "eofline": false,
     "align": [true, "parameters"],
     "class-name": true,
