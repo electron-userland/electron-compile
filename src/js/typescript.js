@@ -1,6 +1,5 @@
 import {SimpleCompilerBase} from '../compiler-base';
 import path from 'path';
-import sorcery from 'sorcery';
 import jsEscape from 'js-string-escape';
 
 const inputMimeTypes = ['text/typescript', 'text/tsx'];
@@ -8,6 +7,7 @@ const d = require('debug')('electron-compile:typescript-compiler');
 
 let ts = null;
 let istanbul = null;
+let sorcery = null;
 
 const builtinKeys = ['hotModuleReload', 'coverage', 'babel'];
 
@@ -84,9 +84,9 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
         this.babel = new BabelCompiler();
         this.babel.compilerOptions = babelOpts;
       }
-      if (!this.sorcery) {
-        this.sorcer = require("sorcery");
-      }
+
+      sorcery = sorcery || require('sorcery');
+
       let tsOutputPath = filePath.replace(/.tsx?$/i, ".js");
       let babelOutputPath = filePath.replace(/.tsx?$/i, ".babel.js");
 
@@ -126,9 +126,9 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
     if (exports.length < 1) return sourceCode;
 
     let registrations = exports.map(x => {
-      let id = `${x}` == 'default' ? '(typeof _default !== \'undefined\' ? _default : exports.default)' : `${x}`
-      let name = `"${x}"`
-      return `__REACT_HOT_LOADER__.register(${id}, ${name}, __FILENAME__);\n`
+      let id = `${x}` == 'default' ? '(typeof _default !== \'undefined\' ? _default : exports.default)' : `${x}`;
+      let name = `"${x}"`;
+      return `__REACT_HOT_LOADER__.register(${id}, ${name}, __FILENAME__);\n`;
     });
 
     let tmpl = `
