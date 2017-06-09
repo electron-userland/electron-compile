@@ -53,9 +53,9 @@ Create a new file that will be the entry point of your app (perhaps changing 'ma
 
 ```js
 // Assuming this file is ./src/es6-init.js
-var appRoot = path.join(__dirname, '..');
-
-require('electron-compile').init(appRoot, require.resolve('./main'));
+const path = require('path')
+const appRoot = path.join(__dirname, '..')
+require('electron-compile').init(appRoot, path.resolve(__dirname, 'main'))
 ```
 
 
