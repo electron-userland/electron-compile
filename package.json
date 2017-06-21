@@ -8,7 +8,7 @@
     "prepublish": "npm run compile",
     "start": "npm run compile && electron ./test-dist/electron-smoke-test.js",
     "test": "mocha --compilers js:babel-register test/*.js",
-    "test-cov": "cross-env NODE_ENV='test' istanbul cover ./node_modules/mocha/bin/_mocha -- --compilers js:babel-register test/*.js"
+    "test-cov": "cross-env NODE_ENV='test' nyc --require babel-register mocha -- test/*.js"
   },
   "bin": {
     "electron-compile": "lib/cli.js",
@@ -50,7 +50,6 @@
     "babel-cli": "^6.11.4",
     "babel-eslint": "^6.1.2",
     "babel-plugin-array-includes": "^2.0.3",
-    "babel-plugin-istanbul": "^4.0.0",
     "babel-plugin-transform-async-to-generator": "^6.8.0",
     "babel-preset-es2016-node5": "^1.1.2",
     "babel-preset-react": "^6.11.1",
@@ -66,7 +65,7 @@
     "esdoc-es7-plugin": "0.0.3",
     "esdoc-plugin-async-to-sync": "^0.5.0",
     "eslint": "^3.3.0",
-    "istanbul": "^0.4.5",
-    "mocha": "^3.0.2"
+    "mocha": "^3.0.2",
+    "nyc": "^11.0.2"
   }
 }
