@@ -7,6 +7,7 @@ import {pfs} from './promise';
 import FileChangedCache from './file-change-cache';
 import CompilerHost from './compiler-host';
 import registerRequireExtension from './require-hook';
+import createDigestForObject from './digest-for-object';
 
 const d = require('debug')('electron-compile:config-parser');
 
@@ -111,7 +112,7 @@ export function init(appRoot, mainModule, productionMode = null, cacheDir = null
  */
 export function createCompilerHostFromConfiguration(info) {
   let compilers = createCompilers();
-  let rootCacheDir = info.rootCacheDir || calculateDefaultCompileCacheDirectory();
+  let rootCacheDir = info.rootCacheDir || calculateDefaultCompileCacheDirectory(info);
   const sourceMapPath = info.sourceMapPath || info.rootCacheDir;
 
   if (info.sourceMapPath) {
@@ -172,8 +173,8 @@ export async function createCompilerHostFromBabelRc(file, rootCacheDir=null, sou
     info = info.babel;
   }
 
+  let ourEnv = process.env.BABEL_ENV || process.env.NODE_ENV || 'development';
   if ('env' in info) {
-    let ourEnv = process.env.BABEL_ENV || process.env.NODE_ENV || 'development';
     info = info.env[ourEnv];
   }
 
@@ -181,6 +182,7 @@ export async function createCompilerHostFromBabelRc(file, rootCacheDir=null, sou
   if ('name' in info && 'version' in info) {
     let appRoot = path.dirname(file);
     return createCompilerHostFromConfiguration({
+      env: ourEnv,
       appRoot: appRoot,
       options: getDefaultConfiguration(appRoot),
       rootCacheDir,
@@ -189,6 +191,7 @@ export async function createCompilerHostFromBabelRc(file, rootCacheDir=null, sou
   }
 
   return createCompilerHostFromConfiguration({
+    env: ourEnv,
     appRoot: path.dirname(file),
     options: {
       'application/javascript': info
@@ -212,12 +215,13 @@ export async function createCompilerHostFromBabelRc(file, rootCacheDir=null, sou
 export async function createCompilerHostFromConfigFile(file, rootCacheDir=null, sourceMapPath = null) {
   let info = JSON.parse(await pfs.readFile(file, 'utf8'));
 
+  let ourEnv = process.env.ELECTRON_COMPILE_ENV || process.env.NODE_ENV || 'development';
   if ('env' in info) {
-    let ourEnv = process.env.ELECTRON_COMPILE_ENV || process.env.NODE_ENV || 'development';
     info = info.env[ourEnv];
   }
 
   return createCompilerHostFromConfiguration({
+    env: ourEnv,
     appRoot: path.dirname(file),
     options: info,
     rootCacheDir,
@@ -272,8 +276,8 @@ export function createCompilerHostFromBabelRcSync(file, rootCacheDir=null, sourc
     info = info.babel;
   }
 
+  let ourEnv = process.env.BABEL_ENV || process.env.NODE_ENV || 'development';
   if ('env' in info) {
-    let ourEnv = process.env.BABEL_ENV || process.env.NODE_ENV || 'development';
     info = info.env[ourEnv];
   }
 
@@ -281,6 +285,7 @@ export function createCompilerHostFromBabelRcSync(file, rootCacheDir=null, sourc
   if ('name' in info && 'version' in info) {
     let appRoot = path.dirname(file)
     return createCompilerHostFromConfiguration({
+      env: ourEnv,
       appRoot: appRoot,
       options: getDefaultConfiguration(appRoot),
       rootCacheDir,
@@ -289,6 +294,7 @@ export function createCompilerHostFromBabelRcSync(file, rootCacheDir=null, sourc
   }
 
   return createCompilerHostFromConfiguration({
+    env: ourEnv,
     appRoot: path.dirname(file),
     options: {
       'application/javascript': info
@@ -301,12 +307,13 @@ export function createCompilerHostFromBabelRcSync(file, rootCacheDir=null, sourc
 export function createCompilerHostFromConfigFileSync(file, rootCacheDir=null, sourceMapPath = null) {
   let info = JSON.parse(fs.readFileSync(file, 'utf8'));
 
+  let ourEnv = process.env.ELECTRON_COMPILE_ENV || process.env.NODE_ENV || 'development';
   if ('env' in info) {
-    let ourEnv = process.env.ELECTRON_COMPILE_ENV || process.env.NODE_ENV || 'development';
     info = info.env[ourEnv];
   }
 
   return createCompilerHostFromConfiguration({
+    env: ourEnv,
     appRoot: path.dirname(file),
     options: info,
     rootCacheDir,
@@ -338,9 +345,10 @@ export function createCompilerHostFromProjectRootSync(rootDir, rootCacheDir = nu
  * @return {string}  A path that may or may not exist where electron-compile would
  *                   set up a development mode cache.
  */
-export function calculateDefaultCompileCacheDirectory() {
+export function calculateDefaultCompileCacheDirectory(info) {
   let tmpDir = process.env.TEMP || process.env.TMPDIR || '/tmp';
-  let hash = require('crypto').createHash('md5').update(process.execPath).digest('hex');
+  let hashInput = process.execPath + info.env + createDigestForObject(info.options);
+  let hash = require('crypto').createHash('md5').update(hashInput).digest('hex');
 
   let cacheDir = path.join(tmpDir, `compileCache_${hash}`);
   mkdirp.sync(cacheDir);
