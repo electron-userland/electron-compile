@@ -276,10 +276,12 @@ Here's a simple `.compilerc` that instruments compiled TypeScript code:
 }
 ```
 
+The code will only be instrumented for the `test` environment.
+
 Enabling inline source maps is strongly recommended: since electron-compile
 does not write the intermediate code to disk, istanbul reporters will not
-be able to output, for example, HTML pages with that code and coverage information. See **How can I report coverage information ?** for more
-on that.
+be able to output, for example, HTML pages with that code and coverage information.
+See **How can I report coverage information ?** for more on that.
 
 If you're using a TypeScript+Babel setup, you only need to set `coverage`
 on the TypeScript config, not in the babel block. Like so:
@@ -296,27 +298,20 @@ on the TypeScript config, not in the babel block. Like so:
 }
 ```
 
-Since instrumented code is only useful when testing, you probably want to
-use environment-specific settings to enable it, like so:
+To customize which files are included or excluded by the instrumenter, pass
+an object instead. Valid options are described in the
+[babel-plugin-istanbul](https://github.com/istanbuljs/babel-plugin-istanbul) documentation.
+
+For example, if your test files end in `.spec.ts`, you might use the following `.compilerc`:
 
 ```json
 {
-  "env": {
-    "development": {
-      "text/typescript": {
-        "inlineSourceMap": true
-      }
-    },
-    "production": {
-      "text/typescript": {
-        "sourceMap": true
-      }
-    },
-    "test": {
-      "text/typescript": {
-        "inlineSourceMap": true,
-        "coverage": true
-      }
+  "text/typescript": {
+    "inlineSourceMap": true,
+    "coverage": {
+      "ignore": [
+        "**/*.spec.ts"
+      ]
     }
   }
 }
@@ -355,8 +350,9 @@ tree.visit(reports.create("html"), context);
 
 Note that the above only works if you set `coverage: true` in a TypeScript
 or Babel configuration block. Otherwise, no coverage information is collected
-and `global["__coverage__"]` will be undefined. See **How do I measure code coverage?**
-for more on this.
+and `global["__coverage__"]` will be undefined.
+
+See **How do I measure code coverage?** for more on this.
 
 ### But I use Grunt / Gulp / I want to do Something Interesting
 
