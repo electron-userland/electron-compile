@@ -215,26 +215,6 @@ In this example `.compilerc`, JavaScript files won't be compiled:
 
 By *far*, the easiest way to do this is via using [electron-forge](https://github.com/electron-userland/electron-forge/). electron-forge handles every aspect of packaging your app on all platforms and helping you publish it. Unless you have a very good reason, you should be using it!
 
-## How can I precompile my code for release-time? (the hard way)
-
-electron-compile comes with a command-line application to pre-create a cache for you.
-
-```sh
-Usage: electron-compile --appdir [root-app-dir] paths...
-
-Options:
-  -a, --appdir  The top-level application directory (i.e. where your
-                package.json is)
-  -v, --verbose  Print verbose information
-  -h, --help     Show help
-```
-
-Run `electron-compile` on all of your application assets, even if they aren't strictly code (i.e. your static assets like PNGs). electron-compile will recursively walk the given directories.
-
-```sh
-electron-compile --appDir /path/to/my/app ./src ./static
-```
-
 ### But I use Grunt / Gulp / I want to do Something Interesting
 
 Compilation also has its own API, check out the [documentation](http://electron.github.io/electron-compile/docs/) for more information.
