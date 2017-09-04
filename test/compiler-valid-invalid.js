@@ -36,6 +36,7 @@ const mimeTypesWithoutSourceMapSupport = [
   'text/css',
   'text/sass',
   'text/scss',
+  'text/elm',
   'text/graphql'
 ];
 

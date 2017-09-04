@@ -309,7 +309,7 @@ export default class CompilerHost {
     }
 
     if (!compiler) {
-      throw new Error(`Couldn't find a compiler for ${filePath}`);
+      throw new Error(`Couldn't find a compiler for ${filePath} (${type})`);
     }
 
     let cache = this.cachesForCompilers.get(compiler);
@@ -558,7 +558,7 @@ export default class CompilerHost {
     }
 
     if (!compiler) {
-      throw new Error(`Couldn't find a compiler for ${filePath}`);
+      throw new Error(`Couldn't find a compiler for ${filePath} (${type})`);
     }
 
     let cache = this.cachesForCompilers.get(compiler);

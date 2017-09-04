@@ -10,6 +10,7 @@ const typesToRig = {
   'text/scss': 'scss',
   'text/vue': 'vue',
   'text/graphql': 'graphql',
+  'text/elm': 'elm',
 };
 
 /**

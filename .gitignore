@@ -31,3 +31,5 @@ node_modules
 /docs
 
 .DS_Store
+elm-package.json
+elm-stuff/
