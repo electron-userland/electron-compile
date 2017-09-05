@@ -347,7 +347,7 @@ export default class FileChangedCache {
    * @private
    */
   static isInNodeModules(filePath) {
-    return !!(filePath.match(/(node_modules|bower_components)[\\\/]/i) || filePath.match(/(atom|electron)\.asar/));
+    return !!(filePath.match(/(node_modules|bower_components|elm-stuff)[\\\/]/i) || filePath.match(/(atom|electron)\.asar/));
   }
 
 

@@ -70,7 +70,7 @@ async function compileAndShim(packageDir) {
 
   d(`Looking in ${appDir}`);
   for (let entry of await pfs.readdir(appDir)) {
-    if (entry.match(/^(node_modules|bower_components)$/)) continue;
+    if (entry.match(/^(node_modules|bower_components|elm-stuff)$/)) continue;
 
     let fullPath = path.join(appDir, entry);
     let stat = await pfs.stat(fullPath);

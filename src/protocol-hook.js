@@ -85,7 +85,7 @@ const bypassCheckers = [];
  * Adds a function that will be called on electron-compile's protocol hook
  * used to intercept file requests.  Use this to bypass electron-compile
  * entirely for certain URI's.
- * 
+ *
  * @param {Function} bypassChecker Function that will be called with the file path to determine whether to bypass or not
  */
 export function addBypassChecker(bypassChecker) {
@@ -139,7 +139,7 @@ export function initializeProtocolHook(compilerHost) {
     }
 
     // NB: Special-case files coming from atom.asar or node_modules
-    if (filePath.match(/[\/\\](atom|electron).asar/) || filePath.match(/[\/\\](node_modules|bower_components)/)) {
+    if (filePath.match(/[\/\\](atom|electron).asar/) || filePath.match(/[\/\\](node_modules|bower_components|elm-stuff)/)) {
       // NBs on NBs: If we're loading an HTML file from node_modules, we still have
       // to do the HTML document rigging
       if (filePath.match(/\.html?$/i)) {
