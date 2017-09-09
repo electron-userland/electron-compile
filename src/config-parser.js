@@ -405,7 +405,7 @@ export function getDefaultConfiguration(rootDir) {
       "presets": [
         ["env", {
           "targets": {
-            "electron": getElectronVersion(rootDir)
+            "electron": getElectronVersion(rootDir).toString()
           }
         }],
         "react"
