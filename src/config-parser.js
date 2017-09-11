@@ -360,7 +360,7 @@ function versionToFloat(ver) {
 
 function getElectronVersion(rootDir) {
   if (process.versions.electron) {
-    return versionToFloat(process.versions.electron);
+    return versionToFloat(process.versions.electron).toString();
   }
 
   let ourPkgJson = require(path.join(rootDir, 'package.json'));
@@ -370,18 +370,18 @@ function getElectronVersion(rootDir) {
       // NB: lol this code
       let verRange = ourPkgJson.devDependencies[mod];
       let m = verRange.match(/(\d+\.\d+\.\d+)/);
-      if (m && m[1]) return m[1];
+      if (m && m[1]) return m[1].toString();
     }
 
     try {
-      return process.mainModule.require(`${mod}/package.json`).version;
+      return process.mainModule.require(`${mod}/package.json`).version.toString();
     } catch (e) {
       // NB: This usually doesn't work, but sometimes maybe?
     }
 
     try {
       let p = path.join(rootDir, mod, 'package.json');
-      return require(p).version;
+      return require(p).version.toString();
     } catch (e) {
       return null;
     }
@@ -391,7 +391,7 @@ function getElectronVersion(rootDir) {
     throw new Error("Can't automatically discover the version of Electron, you probably need a .compilerc file");
   }
 
-  return versionToFloat(version);
+  return versionToFloat(version).toString();
 }
 
 /**
