@@ -354,13 +354,9 @@ function createSourceMapDirectory(sourceMapPath) {
   d(`Using separate sourcemap path at ${sourceMapPath}`);
 }
 
-function versionToFloat(ver) {
-  return parseFloat(ver.replace(/^([^\.]\.[^\.])\..*$/, '$1'));
-}
-
 function getElectronVersion(rootDir) {
   if (process.versions.electron) {
-    return versionToFloat(process.versions.electron);
+    return process.versions.electron;
   }
 
   let ourPkgJson = require(path.join(rootDir, 'package.json'));
@@ -391,7 +387,7 @@ function getElectronVersion(rootDir) {
     throw new Error("Can't automatically discover the version of Electron, you probably need a .compilerc file");
   }
 
-  return versionToFloat(version);
+  return version;
 }
 
 /**
