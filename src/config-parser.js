@@ -100,7 +100,7 @@ export function init(appRoot, mainModule, productionMode = null, cacheDir = null
   }
 
   initializeGlobalHooks(compilerHost, productionMode);
-  const mainModulePath = require.main.require.resolve(mainModule);
+  const mainModulePath = Module._resolveFilename(mainModule, require.main);
   require.main.require(mainModulePath);
 
   // Override the mainModule for the process so that remote requires work
