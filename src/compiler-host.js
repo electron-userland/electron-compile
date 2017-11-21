@@ -323,7 +323,7 @@ export default class CompilerHost {
    *
    * @private
    */
-  async compileUncached(filePath, hashInfo, compiler, history=[]) {
+  async compileUncached(filePath, hashInfo, compiler, history=new Set()) {
     let inputMimeType = mimeTypes.lookup(filePath);
 
     if (hashInfo.isFileBinary) {
@@ -336,7 +336,7 @@ export default class CompilerHost {
 
     let ctx = {};
     let code = hashInfo.sourceCode || await pfs.readFile(filePath, 'utf8');
-    history.push(code);
+    history.add(code);
 
     if (!(await compiler.shouldCompileFile(code, ctx))) {
       d(`Compiler returned false for shouldCompileFile: ${filePath}`);
@@ -360,12 +360,11 @@ export default class CompilerHost {
     if ((finalForms[result.mimeType] && !shouldInlineHtmlify) || isPassthrough) {
       // Got something we can use in-browser, let's return it
       return Object.assign(result, {dependentFiles});
-    } else if (history.indexOf(result.code) !== -1) {
-      d(`Compiler loop, I have seen this source before: ${JSON.stringify(result)}`);
+    } else if (history.has(result.code)) {
+      d(`Compiler loop on ${filePath} after ${history.size - 1} prior candidates: assuming OK.`);
       return Object.assign(result, {dependentFiles});
-    } else if (history.length > 30) {
-      d(`Runaway compilation: ${JSON.stringify({history: history, result: result})}`);
-      throw new Error(`Compiling ${filePath} resulted in a recursive recompilation more than 30 levels deep; assuming broken...`);
+    } else if (history.size > 30) {
+      throw new Error(`Compiling ${filePath} resulted in a recursive recompilation more than 30 levels deep: assuming broken.`);
     } else {
       d(`Recursively compiling result of ${filePath} with non-final MIME type ${result.mimeType}, input was ${inputMimeType}`);
 
