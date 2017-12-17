@@ -1,11 +1,9 @@
 ## electron-compilers
 
-<a href="http://electron.github.io/electron-compilers/docs">
-![](http://electron.github.io/electron-compilers/docs/badge.svg)
-</a>
+[![](https://electron-userland.github.io/electron-compilers/docs/badge.svg)](https://electron-userland.github.io/electron-compilers/docs)
 
 electron-compilers are the actual implementations of classes that power
-[electron-compile](https://github.com/electron/electron-compile)
+[electron-compile](https://github.com/electron-userland/electron-compile)
 
 For JavaScript:
 
