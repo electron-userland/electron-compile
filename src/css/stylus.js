@@ -34,15 +34,15 @@ export default class StylusCompiler extends CompilerBase {
     return mimeTypes;
   }
 
-  async shouldCompileFile(fileName, compilerContext) {
+  async shouldCompileFile(fileName, compilerContext) { // eslint-disable-line no-unused-vars
     return true;
   }
 
-  async determineDependentFiles(sourceCode, filePath, compilerContext) {
+  async determineDependentFiles(sourceCode, filePath, compilerContext) { // eslint-disable-line no-unused-vars
     return this.determineDependentFilesSync(sourceCode, filePath, compilerContext);
   }
 
-  async compile(sourceCode, filePath, compilerContext) {
+  async compile(sourceCode, filePath, compilerContext) { // eslint-disable-line no-unused-vars
     nib = nib || require('nib');
     stylusjs = stylusjs || require('stylus');
     this.seenFilePaths[path.dirname(filePath)] = true;
@@ -89,8 +89,8 @@ export default class StylusCompiler extends CompilerBase {
 
     return opts;
   }
-  
-  
+
+
   applyOpts(opts, stylus) {
     each(opts, (val, key) => {
       switch(key) {
@@ -109,11 +109,11 @@ export default class StylusCompiler extends CompilerBase {
     stylus.set('paths', Object.keys(this.seenFilePaths).concat(['.']));
   }
 
-  shouldCompileFileSync(fileName, compilerContext) {
+  shouldCompileFileSync(fileName, compilerContext) { // eslint-disable-line no-unused-vars
     return true;
   }
 
-  determineDependentFilesSync(sourceCode, filePath, compilerContext) {
+  determineDependentFilesSync(sourceCode, filePath, compilerContext) { // eslint-disable-line no-unused-vars
     let dependencyFilenames = detective(sourceCode);
     let dependencies = [];
 
@@ -124,7 +124,7 @@ export default class StylusCompiler extends CompilerBase {
     return dependencies;
   }
 
-  compileSync(sourceCode, filePath, compilerContext) {
+  compileSync(sourceCode, filePath, compilerContext) { // eslint-disable-line no-unused-vars
     nib = nib || require('nib');
     stylusjs = stylusjs || require('stylus');
     this.seenFilePaths[path.dirname(filePath)] = true;

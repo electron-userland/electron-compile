@@ -29,7 +29,7 @@ export default class SassCompiler extends CompilerBase {
     return mimeTypes;
   }
 
-  async shouldCompileFile(fileName, compilerContext) {
+  async shouldCompileFile(fileName, compilerContext) { // eslint-disable-line no-unused-vars
     return true;
   }
 
@@ -37,7 +37,7 @@ export default class SassCompiler extends CompilerBase {
     return this.determineDependentFilesSync(sourceCode, filePath, compilerContext);
   }
 
-  async compile(sourceCode, filePath, compilerContext) {
+  async compile(sourceCode, filePath, compilerContext) { // eslint-disable-line no-unused-vars
     sass = sass || this.getSass();
 
     let thisPath = path.dirname(filePath);
@@ -86,11 +86,11 @@ export default class SassCompiler extends CompilerBase {
     };
   }
 
-  shouldCompileFileSync(fileName, compilerContext) {
+  shouldCompileFileSync(fileName, compilerContext) { // eslint-disable-line no-unused-vars
     return true;
   }
 
-  determineDependentFilesSync(sourceCode, filePath, compilerContext) {
+  determineDependentFilesSync(sourceCode, filePath, compilerContext) { // eslint-disable-line no-unused-vars
     let dependencyFilenames = path.extname(filePath) === '.sass' ? detectiveSASS(sourceCode) : detectiveSCSS(sourceCode);
     let dependencies = [];
 
@@ -101,7 +101,7 @@ export default class SassCompiler extends CompilerBase {
     return dependencies;
   }
 
-  compileSync(sourceCode, filePath, compilerContext) {
+  compileSync(sourceCode, filePath, compilerContext) { // eslint-disable-line no-unused-vars
     sass = sass || this.getSass();
 
     let thisPath = path.dirname(filePath);

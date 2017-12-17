@@ -73,7 +73,7 @@ export default class BabelCompiler extends SimpleCompilerBase {
     return names.map(name => preloadPossibleNames(name, selectedStrategy)).filter((mod) => mod !== null)
   }
 
-  compileSync(sourceCode, filePath, compilerContext) {
+  compileSync(sourceCode, filePath, compilerContext) { // eslint-disable-line no-unused-vars
     babel = babel || require('babel-core');
 
     let opts = Object.assign({}, this.compilerOptions, {

@@ -4,8 +4,6 @@ import toutSuite from 'toutsuite';
 const inputMimeTypes = ['text/vue'];
 let vueify = null;
 
-const d = require('debug')('electron-compile:vue');
-
 const mimeTypeToSimpleType = {
   'text/coffeescript': 'coffee',
   'text/typescript': 'ts',
@@ -105,15 +103,15 @@ export default class VueCompiler extends CompilerBase {
     return inputMimeTypes;
   }
 
-  async shouldCompileFile(fileName, compilerContext) {
+  async shouldCompileFile(fileName, compilerContext) { // eslint-disable-line no-unused-vars
     return true;
   }
 
-  async determineDependentFiles(sourceCode, filePath, compilerContext) {
+  async determineDependentFiles(sourceCode, filePath, compilerContext) { // eslint-disable-line no-unused-vars
     return [];
   }
 
-  async compile(sourceCode, filePath, compilerContext) {
+  async compile(sourceCode, filePath, compilerContext) { // eslint-disable-line no-unused-vars
     vueify = vueify || require('@paulcbetts/vueify');
 
     let opts = Object.assign({}, this.compilerOptions);
@@ -130,15 +128,15 @@ export default class VueCompiler extends CompilerBase {
     };
   }
 
-  shouldCompileFileSync(fileName, compilerContext) {
+  shouldCompileFileSync(fileName, compilerContext) { // eslint-disable-line no-unused-vars
     return true;
   }
 
-  determineDependentFilesSync(sourceCode, filePath, compilerContext) {
+  determineDependentFilesSync(sourceCode, filePath, compilerContext) { // eslint-disable-line no-unused-vars
     return [];
   }
 
-  compileSync(sourceCode, filePath, compilerContext) {
+  compileSync(sourceCode, filePath, compilerContext) { // eslint-disable-line no-unused-vars
     vueify = vueify || require('@paulcbetts/vueify');
 
     let opts = Object.assign({}, this.compilerOptions);
