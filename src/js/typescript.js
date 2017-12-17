@@ -62,7 +62,7 @@ export default class TypeScriptCompiler extends SimpleCompilerBase {
     };
 
     if (isTsx && options.builtinOpts.hotModuleReload !== false) {
-      sourceCode = this.addHotModuleLoadingRegistration(sourceCode, filePath, this.getExportsForFile(sourceCode, filePath, options.typescriptOpts));
+      sourceCode = this.addHotModuleLoadingRegistration(sourceCode, filePath, this.getExportsForFile(sourceCode, filePath));
     }
 
     let output = ts.transpileModule(sourceCode, transpileOptions);
@@ -142,14 +142,14 @@ if (typeof __REACT_HOT_LOADER__ !== 'undefined') {
     return tmpl;
   }
 
-  getExportsForFile(sourceCode, fileName, tsOptions) {
+  getExportsForFile(sourceCode, fileName) {
     let sourceFile = ts.createSourceFile(fileName, sourceCode, ts.ScriptTarget.ES6);
     let ret = [];
 
     // Walk the tree to search for classes
     let visit = (node) => {
       if (!this.isNodeExported(node)) return;
-      
+
       if (node.kind === ts.SyntaxKind.ClassDeclaration || node.kind === ts.SyntaxKind.FunctionDeclaration) {
         ret.push(node.name.text);
       }
