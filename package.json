@@ -55,7 +55,7 @@
     "stylus": "^0.54.5",
     "stylus-lookup": "^1.0.1",
     "toutsuite": "^0.6.0",
-    "typescript": ">=1.6"
+    "typescript": ">=1.7"
   },
   "devDependencies": {
     "babel-cli": "^6.11.4",
