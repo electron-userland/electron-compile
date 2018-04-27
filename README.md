@@ -45,7 +45,7 @@ Yeah. `electron-prebuilt-compile` is like an `electron` that Just Works with all
 First, add `electron-compile` and `electron-compilers` as a `devDependency`.
 
 ```sh
-npm install --save electron-compile
+npm install --save-dev electron-compile
 npm install --save-dev electron-compilers
 ```
 
