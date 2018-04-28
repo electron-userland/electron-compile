@@ -108,6 +108,8 @@ export declare function initializeProtocolHook(compilerHost: CompilerHost): void
 
 export declare function registerRequireExtension(compilerHost: CompilerHost): void;
 
+export declare function addBypassChecker(shouldBypass: (filePath: string) => boolean): void
+
 export interface CompilerBase {
 
 }
