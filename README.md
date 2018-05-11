@@ -237,4 +237,4 @@ electron-compile --appDir /path/to/my/app ./src ./static
 
 ### But I use Grunt / Gulp / I want to do Something Interesting
 
-Compilation also has its own API, check out the [documentation](http://electron.github.io/electron-compile/docs/) for more information.
+Compilation also has its own API, check out the [documentation](http://electron-userland.github.io/electron-compile/docs/) for more information.
