@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import zlib from 'zlib';
 import mkdirp from 'mkdirp';
+import Module from 'module';
 import {pfs} from './promise';
 
 import FileChangedCache from './file-change-cache';
@@ -99,7 +100,14 @@ export function init(appRoot, mainModule, productionMode = null, cacheDir = null
   }
 
   initializeGlobalHooks(compilerHost, productionMode);
-  require.main.require(mainModule);
+  const mainModulePath = Module._resolveFilename(mainModule, require.main);
+  require.main.require(mainModulePath);
+
+  // Override the mainModule for the process so that remote requires work
+  const mainModuleRaw = Module._cache[mainModulePath];
+  if (mainModuleRaw) {
+    process.mainModule = mainModuleRaw;
+  }
 }
 
 
