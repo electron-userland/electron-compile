@@ -10,7 +10,8 @@ import {addBypassChecker} from './protocol-hook';
 // NB: Patch a bug in Electron that affects electron-prebuilt-compile that
 // we can't fix any other way. Yes it _does_ feelbadman.jpg
 if ('versions' in process && (process.versions.electron === "3.0.0-beta.1"
-                              || process.versions.electron === "4.0.0-beta.1")) {
+                              || process.versions.electron === "4.0.0-beta.1"
+                              || process.versions.electron === "4.0.0-beta.2")) {
   const fs = require('fs');
   fs.statSyncNoException = (...args) => {
     try {
