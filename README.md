@@ -21,6 +21,7 @@ For HTML:
 
 * Jade
 * Vue.js 2.0 Single-File Components
+* EJS
 
 For JSON:
 
