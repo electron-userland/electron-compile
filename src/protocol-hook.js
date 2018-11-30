@@ -85,7 +85,7 @@ const bypassCheckers = [];
  * Adds a function that will be called on electron-compile's protocol hook
  * used to intercept file requests.  Use this to bypass electron-compile
  * entirely for certain URI's.
- * 
+ *
  * @param {Function} bypassChecker Function that will be called with the file path to determine whether to bypass or not
  */
 export function addBypassChecker(bypassChecker) {
@@ -109,7 +109,7 @@ export function initializeProtocolHook(compilerHost) {
   const electronCompileSetupCode = `if (window.require) require('electron-compile/lib/initialize-renderer').initializeRendererProcess(${compilerHost.readOnlyMode});`;
 
   protocol.interceptBufferProtocol('file', async function(request, finish) {
-    let uri = url.parse(request.url);
+    let uri = url.parse(request.url,true);
 
     d(`Intercepting url ${request.url}`);
     if (request.url.indexOf(magicWords) > -1) {
@@ -132,6 +132,13 @@ export function initializeProtocolHook(compilerHost) {
     }
 
     let filePath = decodeURIComponent(uri.pathname);
+
+    // Check if requested .css files need to be transpiled from another source file.
+    // Electron (or the V8 engine) does not permit loading of stylesheet files ending in
+    // anything other than '.css'
+    if(uri.query && uri.query['from']) {
+      filePath = filePath.replace(/\.css$/i,`.${uri.query['from']}`);
+    }
 
     // NB: pathname has a leading '/' on Win32 for some reason
     if (process.platform === 'win32') {
