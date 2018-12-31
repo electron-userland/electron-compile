@@ -1,6 +1,6 @@
 {
   "name": "electron-compile",
-  "version": "6.4.3",
+  "version": "6.4.4",
   "description": "Electron supporting package to compile JS and CSS in Electron applications",
   "scripts": {
     "doc": "esdoc -c ./esdoc.json",
