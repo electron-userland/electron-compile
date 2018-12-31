@@ -1,24 +1,19 @@
-import * as configParser from './config-parser';
-
-import CompilerHost from './compiler-host';
-import FileChangedCache from './file-change-cache';
 import CompileCache from './compile-cache';
+import CompilerHost from './compiler-host';
+import * as configParser from './config-parser';
+import FileChangedCache from './file-change-cache';
 import {addBypassChecker} from './protocol-hook';
-//import {enableLiveReload} from './live-reload';
-//import {watchPath} from './pathwatcher-rx';
 
 // NB: Patch a bug in Electron that affects electron-prebuilt-compile that
 // we can't fix any other way. Yes it _does_ feelbadman.jpg
-if ('versions' in process && process.versions.electron === "3.0.0-beta.1") {
-  const fs = require('fs');
-  fs.statSyncNoException = (...args) => {
-    try {
-      return fs.statSync(...args);
-    } catch (e) {
-      return null;
-    }
-  };
-}
+const fs = require('fs');
+fs.statSyncNoException = fs.statSyncNoException || ((...args) => {
+  try {
+    return fs.statSync(...args);
+  } catch (e) {
+    return null;
+  }
+});
 
 let enableLiveReload = null;
 let watchPath = null;
