@@ -1,0 +1,17 @@
+{
+  "name": "electron-latest",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "main": "index.js",
+  "scripts": {},
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "electron": "^4.0.1",
+    "mocha": "^5.2.0",
+    "spectron": "^5.0.0"
+  }
+}

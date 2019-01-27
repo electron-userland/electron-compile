@@ -20,7 +20,7 @@
     },
     "globals": {
       "expect": true,
-      "chai": true,
+      "chai": true
     },
     "extends": "eslint:recommended"
 }
