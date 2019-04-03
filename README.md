@@ -1,4 +1,10 @@
-## electron-compile
+## DEPRECATED: electron-compile
+
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+
+This project is no longer maintained, pull requests are no longer being reviewed or merged and issues are no longer being responded to. 
+
+---
 
 ![](https://img.shields.io/npm/dm/electron-compile.svg) <a href="http://electron.github.io/electron-compile/docs">![](http://electron.github.io/electron-compile/docs/badge.svg)</a>
 
