@@ -1,6 +1,7 @@
 import mimeTypes from '@paulcbetts/mime-types';
 
 let HMR = false;
+let stylesheetReload = false;
 
 const d = require('debug')('electron-compile:require-hook');
 let electron = null;
@@ -9,6 +10,7 @@ if (process.type === 'renderer') {
   window.__hot = [];
   electron = require('electron');
   HMR = electron.remote.getGlobal('__electron_compile_hmr_enabled__');
+  stylesheetReload = electron.remote.getGlobal('__electron_compile_stylesheet_reload_enabled__');
 
   if (HMR) {
     electron.ipcRenderer.on('__electron-compile__HMR', () => {
@@ -23,6 +25,19 @@ if (process.type === 'renderer') {
       });
 
       window.__hot.forEach(fn => fn());
+    });
+  }
+
+  if (stylesheetReload) {
+    electron.ipcRenderer.on('__electron-compile__stylesheet_reload', (e, path) => {
+      let links = document.getElementsByTagName('link');
+
+      for (let link of links) {
+        let uri = link.href
+        if (uri.includes(path)) {
+          link.href = link.href; // trigger a reload for this stylesheet
+        }
+      }
     });
   }
 }
