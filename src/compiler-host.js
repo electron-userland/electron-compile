@@ -26,6 +26,8 @@ const finalForms = {
   'application/json': true
 };
 
+const mimeTypesToPassthrough = ['text/plain', 'application/xml'];
+
 /**
  * This class is the top-level class that encapsulates all of the logic of
  * compiling and caching application code. If you're looking for a "Main class",
@@ -351,12 +353,8 @@ export default class CompilerHost {
       inputMimeType !== 'text/html' &&
       result.mimeType === 'text/html';
 
-    let isPassthrough =
-      result.mimeType === 'text/plain' ||
-      !result.mimeType ||
-      CompilerHost.shouldPassthrough(hashInfo);
 
-    if ((finalForms[result.mimeType] && !shouldInlineHtmlify) || isPassthrough) {
+    if ((finalForms[result.mimeType] && !shouldInlineHtmlify) || _isPassthrough(result, hashInfo)) {
       // Got something we can use in-browser, let's return it
       return Object.assign(result, {dependentFiles});
     } else {
@@ -594,12 +592,7 @@ export default class CompilerHost {
       inputMimeType !== 'text/html' &&
       result.mimeType === 'text/html';
 
-    let isPassthrough =
-      result.mimeType === 'text/plain' ||
-      !result.mimeType ||
-      CompilerHost.shouldPassthrough(hashInfo);
-
-    if ((finalForms[result.mimeType] && !shouldInlineHtmlify) || isPassthrough) {
+    if ((finalForms[result.mimeType] && !shouldInlineHtmlify) || _isPassthrough(result, hashInfo)) {
       // Got something we can use in-browser, let's return it
       return Object.assign(result, {dependentFiles});
     } else {
@@ -709,4 +702,17 @@ export default class CompilerHost {
 
     return sourceCode;
   }
+}
+
+// Private helper functions
+// (to help DRY up CompilerHost methods with shared code such as compileUncached & compileUncachedSync)
+
+function _isPassthrough(result, hashInfo) {
+  return _shouldIgnoreMimeType(result.mimeType) ||
+    CompilerHost.shouldPassthrough(hashInfo);
+}
+
+function _shouldIgnoreMimeType(mimeType) {
+  return mimeTypesToPassthrough.indexOf(mimeType) !== -1 ||
+    !mimeType;
 }
