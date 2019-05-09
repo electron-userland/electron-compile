@@ -35,15 +35,13 @@
   "dependencies": {
     "@paulcbetts/mime-types": "^2.1.10",
     "@types/node": "^7.0.12",
-    "btoa": "^1.1.2",
     "debug": "^2.5.1",
     "lru-cache": "^4.0.1",
     "mkdirp": "^0.5.1",
     "pify": "^2.3.0",
     "rimraf": "^2.5.4",
     "rxjs": "^5.1.1",
-    "spawn-rx": "^2.0.3",
-    "yargs": "^4.8.1"
+    "spawn-rx": "^2.0.3"
   },
   "devDependencies": {
     "asar": "^0.12.1",
