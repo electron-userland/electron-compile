@@ -335,13 +335,13 @@ export default class CompilerHost {
     }
 
     let ctx = {};
-    let code = hashInfo.sourceCode || await pfs.readFile(filePath, 'utf8');
 
-    if (!(await compiler.shouldCompileFile(code, ctx))) {
+    if (!(await compiler.shouldCompileFile(filePath, ctx))) {
       d(`Compiler returned false for shouldCompileFile: ${filePath}`);
-      return { code, mimeType: mimeTypes.lookup(filePath), dependentFiles: [] };
+      return { filePath, mimeType: mimeTypes.lookup(filePath), dependentFiles: [] };
     }
 
+    let code = hashInfo.sourceCode || await pfs.readFile(filePath, 'utf8');
     let dependentFiles = await compiler.determineDependentFiles(code, filePath, ctx);
 
     d(`Using compiler options: ${JSON.stringify(compiler.compilerOptions)}`);
@@ -579,13 +579,13 @@ export default class CompilerHost {
     }
 
     let ctx = {};
-    let code = hashInfo.sourceCode || fs.readFileSync(filePath, 'utf8');
 
-    if (!(compiler.shouldCompileFileSync(code, ctx))) {
+    if (!(compiler.shouldCompileFileSync(filePath, ctx))) {
       d(`Compiler returned false for shouldCompileFile: ${filePath}`);
-      return { code, mimeType: mimeTypes.lookup(filePath), dependentFiles: [] };
+      return { filePath, mimeType: mimeTypes.lookup(filePath), dependentFiles: [] };
     }
 
+    let code = hashInfo.sourceCode || fs.readFileSync(filePath, 'utf8');
     let dependentFiles = compiler.determineDependentFilesSync(code, filePath, ctx);
 
     let result = compiler.compileSync(code, filePath, ctx);
