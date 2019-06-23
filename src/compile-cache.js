@@ -223,16 +223,25 @@ export default class CompileCache {
   async haveAnyDependentFilesChanged(cacheResult) {
     if (!cacheResult.code || !cacheResult.dependentFiles.length) return false;
 
-    for (let dependentFile of cacheResult.dependentFiles) {
-      let hasFileChanged = await this.fileChangeCache.hasFileChanged(dependentFile);
-      if (hasFileChanged) {
-        return true;
-      }
+    try {
+      for (let dependentFile of cacheResult.dependentFiles) {
+        let hasFileChanged = await this.fileChangeCache.hasFileChanged(dependentFile);
+        if (hasFileChanged) {
+          return true;
+        }
 
-      let dependentFileCacheResult = await this.get(dependentFile);
-      if (dependentFileCacheResult.dependentFiles && dependentFileCacheResult.dependentFiles.length) {
-        let anySubdependentFilesChanged = await this.haveAnyDependentFilesChanged(dependentFileCacheResult);
-        if (anySubdependentFilesChanged) return true;
+        let dependentFileCacheResult = await this.get(dependentFile);
+        if (dependentFileCacheResult.dependentFiles && dependentFileCacheResult.dependentFiles.length) {
+          let anySubdependentFilesChanged = await this.haveAnyDependentFilesChanged(dependentFileCacheResult);
+          if (anySubdependentFilesChanged) return true;
+        }
+      }
+    }
+    catch (e) {
+      if (e.code != "ENOENT") {
+        throw e;
+      } else {
+        return true;
       }
     }
 
