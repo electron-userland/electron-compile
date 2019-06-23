@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 
 function updateDigestForJsonValue(shasum, value) {
-  // Implmentation is similar to that of pretty-printing a JSON object, except:
+  // Implementation is similar to that of pretty-printing a JSON object, except:
   // * Strings are not escaped.
   // * No effort is made to avoid trailing commas.
   // These shortcuts should not affect the correctness of this function.

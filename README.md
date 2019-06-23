@@ -241,6 +241,125 @@ Run `electron-compile` on all of your application assets, even if they aren't st
 electron-compile --appDir /path/to/my/app ./src ./static
 ```
 
+### How can I compile with TypeScript *then* Babel?
+
+If the TypeScript configuration contains a `babel` block, electron-compile
+will run Babel on the output of the TypeScript compiler.
+
+Here's an example `.compilerc`:
+
+```json
+{
+  "text/typescript": {
+    "target": "es2017",
+    "lib": ["dom", "es6"],
+    "module": "commonjs",
+    "babel": {
+      "presets": ["async-to-bluebird"],
+      "plugins": ["transform-es2015-modules-commonjs"]
+    }
+  }
+}
+```
+
+Enabling `sourceMap` or `inlineSourceMap` in the typescript configuration
+will seamlessly forward these options to Babel and preserve the whole
+source map chain.
+
+### How can I measure code coverage?
+
+Both the Babel and TypeScript compilers support a `coverage` option,
+powered by [babel-plugin-istanbul](https://github.com/istanbuljs/babel-plugin-istanbul).
+
+Here's a simple `.compilerc` that instruments compiled TypeScript code:
+
+```json
+{
+  "text/typescript": {
+    "inlineSourceMap": true,
+    "coverage": true
+  }
+}
+```
+
+The code will only be instrumented for the `test` environment.
+
+Enabling inline source maps is strongly recommended: since electron-compile
+does not write the intermediate code to disk, istanbul reporters will not
+be able to output, for example, HTML pages with that code and coverage information.
+See **How can I report coverage information ?** for more on that.
+
+If you're using a TypeScript+Babel setup, you only need to set `coverage`
+on the TypeScript config, not in the babel block. Like so:
+
+```json
+{
+  "text/typescript": {
+    "inlineSourceMap": true,
+    "coverage": true,
+    "babel": {
+      "plugins": "transform-inline-environment-variables"
+    }
+  }
+}
+```
+
+To customize which files are included or excluded by the instrumenter, pass
+an object instead. Valid options are described in the
+[babel-plugin-istanbul](https://github.com/istanbuljs/babel-plugin-istanbul) documentation.
+
+For example, if your test files end in `.spec.ts`, you might use the following `.compilerc`:
+
+```json
+{
+  "text/typescript": {
+    "inlineSourceMap": true,
+    "coverage": {
+      "ignore": [
+        "**/*.spec.ts"
+      ]
+    }
+  }
+}
+```
+
+### How can I report coverage information?
+
+Unfortunately, [nyc](https://www.npmjs.com/package/nyc) cannot be used directly
+with electron applications. Fortunately, the collection, remapping and
+reporting part is pretty easy to replicate in code.
+
+Instrumented code writes coverage data in the global variable `__coverage__`.
+Using the [istanbuljs low-level API](https://github.com/istanbuljs/istanbuljs/), one can collect, remap and report coverage information like this:
+
+```javascript
+// first, create a coverage map from the data gathered by the instrumented code
+const libCoverage = require("istanbul-lib-coverage");
+let map = libCoverage.createCoverageMap(global["__coverage__"]);
+
+// then, remap the coverage data according to the source maps
+const libSourceMaps = require("istanbul-lib-source-maps");
+// no source maps are actually read here, all the information
+// needed is already baked into the instrumented code by babel-plugin-istanbul
+const sourceMapCache = libSourceMaps.createSourceMapStore();
+map = sourceMapCache.transformCoverage(map).map;
+
+// now to emit reports. here we only emit an HTML report in the 'coverage' directory.
+const libReport = require("istanbul-lib-report");
+const context = libReport.createContext({dir: "coverage"});
+
+const reports = require("istanbul-reports");
+const tree = libReport.summarizers.pkg(map);
+// see the istanbul-reports package for other reporters (text, lcov, etc.)
+tree.visit(reports.create("html"), context);
+```
+
+Note that the above only works if you set `coverage: true` in a TypeScript
+or Babel configuration block. Otherwise, no coverage information is collected
+and `global["__coverage__"]` will be undefined.
+
+See **How do I measure code coverage?** for more on this.
+
 ### But I use Grunt / Gulp / I want to do Something Interesting
 
 Compilation also has its own API, check out the [documentation](http://electron-userland.github.io/electron-compile/docs/) for more information.
