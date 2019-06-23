@@ -1,7 +1,7 @@
-import fs from 'fs';
 import {Observable} from 'rxjs/Observable';
 import {Subscription} from 'rxjs/Subscription';
 import LRU from 'lru-cache';
+import chokidar from 'chokidar';
 
 import 'rxjs/add/operator/publish';
 
@@ -9,9 +9,12 @@ export function watchPathDirect(directory) {
   return Observable.create((subj) => {
     let dead = false;
 
-    const watcher = fs.watch(directory, {}, (eventType, fileName) => {
+    const watcher = chokidar.watch(directory)
+
+    watcher.on('change', (fileName) => {
       if (dead) return;
-      subj.next({eventType, fileName});
+  
+      subj.next({fileName});
     });
 
     watcher.on('error', (e) => {
